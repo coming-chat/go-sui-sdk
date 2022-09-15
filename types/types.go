@@ -30,9 +30,11 @@ func NewAddressFromHex(addr string) (*Address, error) {
 		return nil, fmt.Errorf("Hex string is too long. Address's length is %v bytes.", addressLength)
 	}
 
-	res := Address{}
-	copy(res.data[addressLength-len(bytes):], bytes[:])
-	return &res, nil
+	res := [addressLength]byte{}
+	copy(res[addressLength-len(bytes):], bytes[:])
+	return &Address{
+		data: res[:],
+	}, nil
 }
 
 // Returns the address with leading zeros trimmed, e.g. 0x2

@@ -86,15 +86,108 @@ type SignedTransaction struct {
 	PublicKey *Base64Data `json:"pub_key"`
 }
 
-type CertifiedTransaction map[string]interface{}
+type TransferObject struct {
+	Recipient Address   `json:"recipient"`
+	ObjectRef ObjectRef `json:"object_ref"`
+}
+type ModulePublish struct {
+	Modules [][]byte `json:"modules"`
+}
+type MoveCall struct {
+	Package  ObjectRef     `json:"package"`
+	Module   string        `json:"module"`
+	Function string        `json:"function"`
+	TypeArgs []interface{} `json:"type_arguments"`
+	Args     []interface{} `json:"arguments"`
+}
+type TransferSui struct {
+	Recipient Address `json:"recipient"`
+	Amount    uint64  `json:"amount"`
+}
+type ChangeEpoch struct {
+	Epoch             interface{} `json:"epoch"`
+	StorageCharge     uint64      `json:"storage_charge"`
+	ComputationCharge uint64      `json:"computation_charge"`
+}
 
-type TransactionEffects map[string]interface{}
+type SingleTransactionKind struct {
+	TransferObject *TransferObject `json:"TransferObject,omitempty"`
+	Publish        *ModulePublish  `json:"Publish,omitempty"`
+	Call           *MoveCall       `json:"Call,omitempty"`
+	TransferSui    *TransferSui    `json:"TransferSui,omitempty"`
+	ChangeEpoch    *ChangeEpoch    `json:"ChangeEpoch,omitempty"`
+}
+
+type SenderSignedData struct {
+	Transactions []SingleTransactionKind `json:"transactions,omitempty"`
+
+	Sender     *Address   `json:"sender"`
+	GasPayment *ObjectRef `json:"gasPayment"`
+	GasBudget  uint64     `json:"gasBudget"`
+	// GasPrice     uint64      `json:"gasPrice"`
+}
+
+type TransactionEnvelope struct {
+	TransactionDigest *Digest `json:"transactionDigest"`
+
+	Data *SenderSignedData `json:"data"`
+
+	TxSignature *Base64Data `json:"txSignature"`
+
+	AuthSignInfo interface{} `json:"authSignInfo"`
+}
+
+type CertifiedTransaction = TransactionEnvelope
+
+type OwnedObjectRef struct {
+	Owner     *ObjectOwner `json:"owner"`
+	Reference *ObjectRef   `json:"reference"`
+}
+
+type Event interface{}
+
+type GasCostSummary struct {
+	ComputationCost uint64 `json:"computationCost"`
+	StorageCost     uint64 `json:"storageCost"`
+	StorageRebate   uint64 `json:"storageRebate"`
+}
+
+const (
+	TransactionStatusSuccess = "success"
+	TransactionStatusFailure = "failure"
+)
+
+type TransactionStatus struct {
+	Status string `json:"status"`
+	Error  string `json:"error,omitempty"`
+}
+
+type TransactionEffects struct {
+	Status TransactionStatus `json:"status"`
+
+	TransactionDigest *Base64Data     `json:"transactionDigest"`
+	GasUsed           *GasCostSummary `json:"gasUsed"`
+	GasObject         *OwnedObjectRef `json:"gasObject"`
+	Events            []Event         `json:"events,omitempty"`
+	Dependencies      []Digest        `json:"dependencies,omitempty"`
+
+	// SharedObjects []ObjectRef      `json:"sharedObjects"`
+	Created   []OwnedObjectRef `json:"created,omitempty"`
+	Mutated   []OwnedObjectRef `json:"mutated,omitempty"`
+	Unwrapped []OwnedObjectRef `json:"unwrapped,omitempty"`
+	Deleted   []ObjectRef      `json:"deleted,omitempty"`
+	Wrapped   []ObjectRef      `json:"wrapped,omitempty"`
+}
+
+func (te *TransactionEffects) GasFee() uint64 {
+	return te.GasUsed.StorageCost - te.GasUsed.StorageRebate + te.GasUsed.ComputationCost
+}
 
 type ParsedTransactionResponse interface{}
 
 type TransactionResponse struct {
-	Certificate []CertifiedTransaction    `json:"certificate"`
-	Effects     []TransactionEffects      `json:"effects"`
+	Certificate *CertifiedTransaction     `json:"certificate"`
+	Effects     *TransactionEffects       `json:"effects"`
 	ParsedData  ParsedTransactionResponse `json:"parsed_data,omitempty"`
 	TimestampMs uint64                    `json:"timestamp_ms,omitempty"`
 }

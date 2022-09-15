@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"testing"
 
 	"github.com/coming-chat/go-sui/types"
@@ -31,4 +32,18 @@ func DevnetClient(t *testing.T) *Client {
 	c, err := Dial(DevnetRpcUrl)
 	assert.Nil(t, err)
 	return c
+}
+
+func TestTransaction(t *testing.T) {
+	// digest := "2yhXOzBqTsOpcWNZKCSsKySaUTJUVgpGyrzhQVu7PcM="
+	digest := "4nMHqXi60PLxj/DxLCWwkiO3L41kIz89qMDEpStRdP8="
+
+	dig, err := types.NewBase64Data(digest)
+	assert.Nil(t, err)
+
+	cli := DevnetClient(t)
+	resp, err := cli.GetTransaction(context.Background(), *dig)
+	assert.Nil(t, err)
+
+	t.Log(resp)
 }

@@ -83,6 +83,10 @@ func (c *Client) CallContext(ctx context.Context, result interface{}, method str
 	return json.Unmarshal(respmsg.Result, &result)
 }
 
+// TODO: Batch call
+// func (c *Client) BatchCall()        {}
+// func (c *Client) BatchCallContext() {}
+
 func (c *Client) nextID() json.RawMessage {
 	id := atomic.AddUint32(&c.idCounter, 1)
 	return strconv.AppendUint(nil, uint64(id), 10)

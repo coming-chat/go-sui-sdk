@@ -1,6 +1,45 @@
 package types
 
+import (
+	"encoding/hex"
+	"fmt"
+	"strings"
+)
+
 type Address = HexData
+
+/**
+ * Creates Address from a hex string.
+ * @param addr Hex string can be with a prefix or without a prefix,
+ *   e.g. '0x1aa' or '1aa'. Hex string will be left padded with 0s if too short.
+ */
+func NewAddressFromHex(addr string) (*Address, error) {
+	if strings.HasPrefix(addr, "0x") || strings.HasPrefix(addr, "0X") {
+		addr = addr[2:]
+	}
+	if len(addr)%2 != 0 {
+		addr = "0" + addr
+	}
+
+	bytes, err := hex.DecodeString(addr)
+	if err != nil {
+		return nil, err
+	}
+	const addressLength = 20
+	if len(bytes) > addressLength {
+		return nil, fmt.Errorf("Hex string is too long. Address's length is %v bytes.", addressLength)
+	}
+
+	res := Address{}
+	copy(res.data[addressLength-len(bytes):], bytes[:])
+	return &res, nil
+}
+
+// Returns the address with leading zeros trimmed, e.g. 0x2
+func (a Address) ShortString() string {
+	return "0x" + strings.TrimLeft(hex.EncodeToString(a.data), "0")
+}
+
 type ObjectId = HexData
 type Digest = Base64Data
 
@@ -58,7 +97,9 @@ type TransactionResponse struct {
 }
 
 type ObjectOwner struct {
-	AddressOwner *Address `json:"AddressOwner"`
+	AddressOwner *Address `json:"AddressOwner,omitempty"`
+	ObjectOwner  *Address `json:"ObjectOwner,omitempty"`
+	SingleOwner  *Address `json:"SingleOwner,omitempty"`
 }
 
 type ObjectReadDetail struct {
@@ -70,9 +111,17 @@ type ObjectReadDetail struct {
 	Reference           *ObjectRef `json:"reference"`
 }
 
+type ObjectStatus string
+
+const (
+	ObjectStatusExists    ObjectStatus = "Exists"
+	ObjectStatusNotExists ObjectStatus = "NotExists"
+	ObjectStatusDeleted   ObjectStatus = "Deleted"
+)
+
 type ObjectRead struct {
 	Details *ObjectReadDetail `json:"details"`
-	Status  string            `json:"status"`
+	Status  ObjectStatus      `json:"status"`
 }
 
 type ObjectInfo struct {

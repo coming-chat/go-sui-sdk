@@ -10,8 +10,7 @@ import (
 const DevnetRpcUrl = "https://gateway.devnet.sui.io:443"
 
 func TestClient_Call(t *testing.T) {
-	client, err := Dial(DevnetRpcUrl)
-	assert.Nil(t, err)
+	client := DevnetClient(t)
 
 	txn := types.TransactionBytes{}
 	params := []interface{}{
@@ -21,9 +20,15 @@ func TestClient_Call(t *testing.T) {
 		"0x9f662fec10f77b5cfd1bed5ffa53232b8a62a982",
 		2000,
 	}
-	err = client.Call(&txn, "sui_splitCoin", params...)
+	err := client.Call(&txn, "sui_splitCoin", params...)
 	assert.Nil(t, err)
 
 	t.Log(txn)
 	t.Log(txn.TxBytes.String())
+}
+
+func DevnetClient(t *testing.T) *Client {
+	c, err := Dial(DevnetRpcUrl)
+	assert.Nil(t, err)
+	return c
 }

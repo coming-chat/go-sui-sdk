@@ -1,6 +1,7 @@
 package types
 
 import (
+	"crypto/ed25519"
 	"encoding/hex"
 	"fmt"
 	"strings"
@@ -134,4 +135,19 @@ type ObjectInfo struct {
 	Owner    *ObjectOwner `json:"owner"`
 
 	PreviousTransaction *Digest `json:"previousTransaction"`
+}
+
+func (txn *TransactionBytes) SignWith(privateKey ed25519.PrivateKey) *SignedTransaction {
+	message := txn.TxBytes.Data()
+	signature := ed25519.Sign(privateKey, message)
+	sign := Bytes(signature).GetBase64Data()
+	publicKey := privateKey.Public().(ed25519.PublicKey)
+	pub := Bytes(publicKey).GetBase64Data()
+
+	return &SignedTransaction{
+		TxBytes:   &txn.TxBytes,
+		SigScheme: SignatureSchemeEd25519,
+		Signature: &sign,
+		PublicKey: &pub,
+	}
 }

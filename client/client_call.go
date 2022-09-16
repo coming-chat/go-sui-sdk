@@ -54,6 +54,27 @@ func (c *Client) GetTransaction(ctx context.Context, digest types.Base64Data) (*
 	return &resp, err
 }
 
+// Create an unsigned transaction to merge multiple coins into one coin.
+func (c *Client) MergeCoins(ctx context.Context, signer types.Address, primaryCoin, coinToMerge types.ObjectId, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	err := c.CallContext(ctx, &resp, "sui_mergeCoins", signer, primaryCoin, coinToMerge, gas, gasBudget)
+	return &resp, err
+}
+
+// Create an unsigned transaction to split a coin object into multiple coins.
+func (c *Client) SplitCoin(ctx context.Context, signer types.Address, Coin types.ObjectId, splitAmounts []uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	err := c.CallContext(ctx, &resp, "sui_splitCoin", signer, Coin, splitAmounts, gas, gasBudget)
+	return &resp, err
+}
+
+// Create an unsigned transaction to split a coin object into multiple equal-size coins.
+func (c *Client) SplitCoinEqual(ctx context.Context, signer types.Address, Coin types.ObjectId, splitCount uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	err := c.CallContext(ctx, &resp, "sui_splitCoinEqual", signer, Coin, splitCount, gas, gasBudget)
+	return &resp, err
+}
+
 // Create an unsigned transaction to transfer an object from one address to another. The object's type must allow public transfers
 func (c *Client) TransferObject(ctx context.Context, signer, recipient types.Address, objID, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}

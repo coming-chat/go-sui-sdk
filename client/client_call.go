@@ -2,9 +2,86 @@ package client
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
 
 	"github.com/coming-chat/go-sui/types"
 )
+
+func (c *Client) GetSuiCoinsOwnedByAddress(ctx context.Context, address types.Address) (types.Coins, error) {
+	coinType := "0x2::coin::Coin<0x2::sui::SUI>"
+	coinObjects, err := c.BatchGetObjectsOwnedByAddress(ctx, address, coinType)
+	if err != nil {
+		return nil, err
+	}
+
+	type coinData struct {
+		Fields struct {
+			Balance uint64 `json:"balance"`
+		} `json:"fields"`
+	}
+	coins := types.Coins{}
+	for _, coin := range coinObjects {
+		if coin.Status != types.ObjectStatusExists {
+			continue
+		}
+		bytes, err := json.Marshal(coin.Details.Data)
+		if err != nil {
+			return nil, err
+		}
+		coindata := coinData{}
+		err = json.Unmarshal(bytes, &coindata)
+		if err != nil {
+			return nil, err
+		}
+
+		coins = append(coins, types.Coin{
+			Balance:             coindata.Fields.Balance,
+			Type:                coinType,
+			Owner:               coin.Details.Owner,
+			PreviousTransaction: coin.Details.PreviousTransaction,
+			Reference:           coin.Details.Reference,
+		})
+	}
+
+	return coins, nil
+}
+
+// @param filterType You can specify filtering out the specified resources, this will fetch all resources if it is not empty ""
+func (c *Client) BatchGetObjectsOwnedByAddress(ctx context.Context, address types.Address, filterType string) ([]types.ObjectRead, error) {
+	infos, err := c.GetObjectsOwnedByAddress(ctx, address)
+	if err != nil {
+		return nil, err
+	}
+	filterType = strings.TrimSpace(filterType)
+	elems := []BatchElem{}
+	for _, info := range infos {
+		if filterType != "" && filterType != info.Type {
+			// ignore objects if non-specified type
+			continue
+		}
+		elems = append(elems, BatchElem{
+			Method: "sui_getObject",
+			Args:   []interface{}{info.ObjectId},
+			Result: &types.ObjectRead{},
+		})
+	}
+	if len(elems) == 0 {
+		return []types.ObjectRead{}, nil
+	}
+	err = c.BatchCallContext(ctx, elems)
+	if err != nil {
+		return nil, err
+	}
+	objects := make([]types.ObjectRead, len(elems))
+	for i, ele := range elems {
+		if ele.Error != nil {
+			return nil, ele.Error
+		}
+		objects[i] = *ele.Result.(*types.ObjectRead)
+	}
+	return objects, nil
+}
 
 func (c *Client) BatchTransaction(ctx context.Context, signer types.Address, txnParams []map[string]interface{}, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}

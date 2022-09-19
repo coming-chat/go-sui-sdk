@@ -15,6 +15,23 @@ import (
 	"time"
 )
 
+var (
+	ErrNoResult = errors.New("no result in JSON-RPC response")
+)
+
+// BatchElem is an element in a batch request.
+type BatchElem struct {
+	Method string
+	Args   []interface{}
+	// The result is unmarshaled into this field. Result must be set to a
+	// non-nil pointer value of the desired type, otherwise the response will be
+	// discarded.
+	Result interface{}
+	// Error is set if the server returns an error for this request, or if
+	// unmarshaling into Result fails. It is not set for I/O errors.
+	Error error
+}
+
 type Client struct {
 	idCounter uint32
 
@@ -77,15 +94,58 @@ func (c *Client) CallContext(ctx context.Context, result interface{}, method str
 	if respmsg.Error != nil {
 		return respmsg.Error
 	}
-	if bytes.Compare(msg.ID, respmsg.ID) != 0 {
-		return errors.New("Response ID does not match.")
+	if len(respmsg.Result) == 0 {
+		return ErrNoResult
 	}
 	return json.Unmarshal(respmsg.Result, &result)
 }
 
-// TODO: Batch call
-// func (c *Client) BatchCall()        {}
-// func (c *Client) BatchCallContext() {}
+// BatchCall sends all given requests as a single batch and waits for the server
+// to return a response for all of them.
+func (c *Client) BatchCall(b []BatchElem) error {
+	return c.BatchCallContext(context.Background(), b)
+}
+
+// BatchCallContext sends all given requests as a single batch and waits for the server
+// to return a response for all of them. The wait duration is bounded by the
+// context's deadline.
+func (c *Client) BatchCallContext(ctx context.Context, b []BatchElem) error {
+	var (
+		msgs = make([]*jsonrpcMessage, len(b))
+		byID = make(map[string]int, len(b))
+	)
+	for i, elem := range b {
+		msg, err := c.newMessage(elem.Method, elem.Args...)
+		if err != nil {
+			return err
+		}
+		msgs[i] = msg
+		byID[string(msg.ID)] = i
+	}
+	respBody, err := c.doRequest(ctx, msgs)
+	if err != nil {
+		return err
+	}
+	defer respBody.Close()
+
+	var respmsgs []jsonrpcMessage
+	if err := json.NewDecoder(respBody).Decode(&respmsgs); err != nil {
+		return err
+	}
+	for idx, resp := range respmsgs {
+		elem := &b[idx]
+		if resp.Error != nil {
+			elem.Error = resp.Error
+			continue
+		}
+		if len(resp.Result) == 0 {
+			elem.Error = ErrNoResult
+			continue
+		}
+		elem.Error = json.Unmarshal(resp.Result, elem.Result)
+	}
+	return nil
+}
 
 func (c *Client) nextID() json.RawMessage {
 	id := atomic.AddUint32(&c.idCounter, 1)

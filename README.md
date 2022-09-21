@@ -1,4 +1,4 @@
-# go-sui
+# go-sui-sdk
 Sui Golang SDK
 
 [![Documentation (master)](https://img.shields.io/badge/docs-master-59f)](https://github.com/coming-chat/go-sui-sdk)

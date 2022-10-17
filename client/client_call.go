@@ -138,6 +138,15 @@ func (c *Client) MergeCoins(ctx context.Context, signer types.Address, primaryCo
 	return &resp, err
 }
 
+// Create an unsigned transaction to execute a Move call on the network, by calling the specified function in the module of a given package.
+// TODO: not support param `typeArguments` yet.
+// So now only methods with `typeArguments` are supported
+func (c *Client) MoveCall(ctx context.Context, signer types.Address, packageId types.ObjectId, module, function string, arguments []any, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	err := c.CallContext(ctx, &resp, "sui_moveCall", signer, packageId, module, function, []string{}, arguments, gas, gasBudget)
+	return &resp, err
+}
+
 // Create an unsigned transaction to split a coin object into multiple coins.
 func (c *Client) SplitCoin(ctx context.Context, signer types.Address, Coin types.ObjectId, splitAmounts []uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}

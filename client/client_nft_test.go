@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/coming-chat/go-sui/account"
 	"github.com/coming-chat/go-sui/types"
@@ -23,8 +24,9 @@ func TestMintNFT(t *testing.T) {
 	gasObj, err := types.NewHexData("0x1dde86ffbc05ab0964b70f07029e65b8d74b4f66")
 	require.Nil(t, err)
 
-	const (
-		nftName = "ComingChat NFT"
+	var (
+		timeNow = time.Now().Format("06-01-02 15:04")
+		nftName = "ComingChat NFT at " + timeNow
 		nftDesc = "This is a NFT created by ComingChat"
 		nftUrl  = "https://coming.chat/favicon.ico"
 	)

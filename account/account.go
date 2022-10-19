@@ -4,6 +4,7 @@ import (
 	"crypto/ed25519"
 	"encoding/hex"
 
+	"github.com/coming-chat/go-aptos/crypto/derivation"
 	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/crypto/sha3"
 )
@@ -41,7 +42,20 @@ func NewAccountWithMnemonic(mnemonic string) (*Account, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewAccount(seed[:ed25519.SeedSize]), nil
+	key, err := derivation.DeriveForPath("m/44'/784'/0'/0'/0'", seed)
+	if err != nil {
+		return nil, err
+	}
+	return NewAccount(key.Key), nil
+}
+
+// GetOldVersionPrivateKeyWithMnemonic Deprecated
+func GetOldVersionPrivateKeyWithMnemonic(mnemonic string) ([]byte, error) {
+	seed, err := bip39.NewSeedWithErrorChecking(mnemonic, "")
+	if err != nil {
+		return nil, err
+	}
+	return seed[:ed25519.SeedSize], nil
 }
 
 func (a *Account) Sign(data []byte) []byte {

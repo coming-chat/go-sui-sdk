@@ -72,6 +72,15 @@ const (
 	SignatureSchemeSecp256k1 SignatureScheme = "Secp256k1"
 )
 
+type ExecuteTransactionRequestType string
+
+const (
+	TxnRequestTypeImmediateReturn       ExecuteTransactionRequestType = "ImmediateReturn"
+	TxnRequestTypeWaitForTxCert         ExecuteTransactionRequestType = "WaitForTxCert"
+	TxnRequestTypeWaitForEffectsCert    ExecuteTransactionRequestType = "WaitForEffectsCert"
+	TxnRequestTypeWaitForLocalExecution ExecuteTransactionRequestType = "WaitForLocalExecution"
+)
+
 type SignedTransaction struct {
 	// transaction data bytes
 	TxBytes *Base64Data `json:"tx_bytes"`

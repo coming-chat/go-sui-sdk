@@ -2,26 +2,23 @@ package client
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
-	"github.com/coming-chat/go-sui/account"
 	"github.com/coming-chat/go-sui/types"
 	"github.com/stretchr/testify/require"
 )
 
-var Mnemonic = os.Getenv("WalletSdkTestM1")
-
 func TestMintNFT(t *testing.T) {
-	account, err := account.NewAccountWithMnemonic(Mnemonic)
-	require.Nil(t, err)
-
+	account := M1Account(t)
 	client := DevnetClient(t)
 
 	signer, err := types.NewAddressFromHex(account.Address)
 	require.Nil(t, err)
-	gasObj, err := types.NewHexData("0x1dde86ffbc05ab0964b70f07029e65b8d74b4f66")
+	coins, err := client.GetSuiCoinsOwnedByAddress(context.Background(), *signer)
+	require.Nil(t, err)
+	gasBudget := uint64(100000)
+	gas, err := coins.PickGasCoin(gasBudget)
 	require.Nil(t, err)
 
 	var (
@@ -30,13 +27,13 @@ func TestMintNFT(t *testing.T) {
 		nftDesc = "This is a NFT created by ComingChat"
 		nftUrl  = "https://coming.chat/favicon.ico"
 	)
-	txnBytes, err := client.MintDevnetNFT(context.Background(), *signer, nftName, nftDesc, nftUrl, gasObj, 100000)
+	txnBytes, err := client.MintDevnetNFT(context.Background(), *signer, nftName, nftDesc, nftUrl, gas.Reference.ObjectId, gasBudget)
 	require.Nil(t, err)
 	t.Log(txnBytes.TxBytes)
 
 	// sign & send
 	signedTxn := txnBytes.SignWith(account.PrivateKey)
-	response, err := client.ExecuteTransaction(context.Background(), *signedTxn)
+	response, err := client.ExecuteTransaction(context.Background(), *signedTxn, types.TxnRequestTypeWaitForLocalExecution)
 	require.Nil(t, err)
 	t.Log("hash: ", response.Certificate.TransactionDigest)
 }

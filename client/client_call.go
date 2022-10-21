@@ -83,13 +83,13 @@ func (c *Client) BatchGetObjectsOwnedByAddress(ctx context.Context, address type
 	return objects, nil
 }
 
-func (c *Client) BatchTransaction(ctx context.Context, signer types.Address, txnParams []map[string]interface{}, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) BatchTransaction(ctx context.Context, signer types.Address, txnParams []map[string]interface{}, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	err := c.CallContext(ctx, &resp, "sui_batchTransaction", signer, txnParams, gas, gasBudget)
 	return &resp, err
 }
 
-func (c *Client) ExecuteTransaction(ctx context.Context, txn types.SignedTransaction) (*types.TransactionResponse, error) {
+func (c *Client) ExecuteTransaction(ctx context.Context, txn types.SignedTransaction, requestType types.ExecuteTransactionRequestType) (*types.TransactionResponse, error) {
 	resp := types.TransactionResponse{}
 	err := c.CallContext(ctx, &resp, "sui_executeTransaction", txn.TxBytes, txn.SigScheme, txn.Signature, txn.PublicKey)
 	return &resp, err
@@ -132,7 +132,7 @@ func (c *Client) GetTransaction(ctx context.Context, digest types.Base64Data) (*
 }
 
 // Create an unsigned transaction to merge multiple coins into one coin.
-func (c *Client) MergeCoins(ctx context.Context, signer types.Address, primaryCoin, coinToMerge types.ObjectId, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) MergeCoins(ctx context.Context, signer types.Address, primaryCoin, coinToMerge, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	err := c.CallContext(ctx, &resp, "sui_mergeCoins", signer, primaryCoin, coinToMerge, gas, gasBudget)
 	return &resp, err
@@ -141,28 +141,28 @@ func (c *Client) MergeCoins(ctx context.Context, signer types.Address, primaryCo
 // Create an unsigned transaction to execute a Move call on the network, by calling the specified function in the module of a given package.
 // TODO: not support param `typeArguments` yet.
 // So now only methods with `typeArguments` are supported
-func (c *Client) MoveCall(ctx context.Context, signer types.Address, packageId types.ObjectId, module, function string, arguments []any, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) MoveCall(ctx context.Context, signer types.Address, packageId types.ObjectId, module, function string, arguments []any, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	err := c.CallContext(ctx, &resp, "sui_moveCall", signer, packageId, module, function, []string{}, arguments, gas, gasBudget)
 	return &resp, err
 }
 
 // Create an unsigned transaction to split a coin object into multiple coins.
-func (c *Client) SplitCoin(ctx context.Context, signer types.Address, Coin types.ObjectId, splitAmounts []uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) SplitCoin(ctx context.Context, signer types.Address, Coin types.ObjectId, splitAmounts []uint64, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	err := c.CallContext(ctx, &resp, "sui_splitCoin", signer, Coin, splitAmounts, gas, gasBudget)
 	return &resp, err
 }
 
 // Create an unsigned transaction to split a coin object into multiple equal-size coins.
-func (c *Client) SplitCoinEqual(ctx context.Context, signer types.Address, Coin types.ObjectId, splitCount uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) SplitCoinEqual(ctx context.Context, signer types.Address, Coin types.ObjectId, splitCount uint64, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	err := c.CallContext(ctx, &resp, "sui_splitCoinEqual", signer, Coin, splitCount, gas, gasBudget)
 	return &resp, err
 }
 
 // Create an unsigned transaction to transfer an object from one address to another. The object's type must allow public transfers
-func (c *Client) TransferObject(ctx context.Context, signer, recipient types.Address, objID, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) TransferObject(ctx context.Context, signer, recipient types.Address, objID, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	err := c.CallContext(ctx, &resp, "sui_transferObject", signer, objID, gas, gasBudget, recipient)
 	return &resp, err

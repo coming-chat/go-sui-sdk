@@ -8,30 +8,33 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const DevnetRpcUrl = "https://gateway.devnet.sui.io:443"
-
 func TestClient_Call(t *testing.T) {
+	account := M1Account(t)
 	client := DevnetClient(t)
 
-	txn := types.TransactionBytes{}
-	params := []interface{}{
-		"0xbb8f7e72ae99d371020a1ccfe703bfb64a8a430f",
-		"0x36d3176a796e167ffcbd823c94718e7db56b955f",
-		[]int{40000, 5000, 5000},
-		"0x9f662fec10f77b5cfd1bed5ffa53232b8a62a982",
-		2000,
+	signer, err := types.NewAddressFromHex(account.Address)
+	require.Nil(t, err)
+	coins, err := client.GetSuiCoinsOwnedByAddress(context.Background(), *signer)
+	require.Nil(t, err)
+
+	firstCoin := coins[0]
+	everyAmount := firstCoin.Balance / 3
+	lastAmount := everyAmount
+	if lastAmount > 30000 {
+		lastAmount = everyAmount - 30000
 	}
-	err := client.Call(&txn, "sui_splitCoin", params...)
-	require.NoError(t, err)
+	amounts := []uint64{everyAmount, everyAmount, lastAmount}
+
+	txn, err := client.SplitCoin(context.Background(), *signer, firstCoin.Reference.ObjectId, amounts, firstCoin.Reference.ObjectId, 100000)
+	require.Nil(t, err)
 
 	t.Log(txn)
 	t.Log(txn.TxBytes.String())
-}
 
-func DevnetClient(t *testing.T) *Client {
-	c, err := Dial(DevnetRpcUrl)
-	require.NoError(t, err)
-	return c
+	signedTxn := txn.SignWith(account.PrivateKey)
+	resp, err := client.ExecuteTransaction(context.Background(), *signedTxn, types.TxnRequestTypeWaitForLocalExecution)
+	require.Nil(t, err)
+	t.Log(resp)
 }
 
 func TestTransaction(t *testing.T) {

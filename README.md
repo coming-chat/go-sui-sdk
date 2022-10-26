@@ -101,7 +101,7 @@ signedTxn := txnBytes.SignWith(acc.PrivateKey)
 ### Send Signed Transaction
 
 ```go
-txnResponse, err := cli.ExecuteTransaction(ctx, signedTxn)
+txnResponse, err := cli.ExecuteTransaction(ctx, signedTxn, requestType)
 
 print("transaction digest = ", txnResponse.Certificate.TransactionDigest)
 print("transaction status = ", txnResponse.Effects.Status)

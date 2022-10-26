@@ -201,6 +201,28 @@ type TransactionResponse struct {
 	TimestampMs uint64                    `json:"timestamp_ms,omitempty"`
 }
 
+type ExecuteTransactionResponse struct {
+	ImmediateReturn *ImmediateReturn `json:"ImmediateReturn,omitempty"`
+	TxCert          *TxCert          `json:"TxCert,omitempty"`
+	EffectsCert     *EffectsCer      `json:"EffectsCert,omitempty"`
+}
+
+// ImmediateReturn for TxnRequestTypeImmediateReturn
+type ImmediateReturn struct {
+	TxDigest string `json:"tx_digest"`
+}
+
+// TxCert for TxnRequestTypeWaitForTxCert
+type TxCert struct {
+	Certificate *CertifiedTransaction `json:"certificate"`
+}
+
+// EffectsCer for TxnRequestTypeWaitForEffectsCert and TxnRequestTypeWaitForLocalExecution
+type EffectsCer struct {
+	Certificate             *CertifiedTransaction `json:"certificate"`
+	Effects                 *TransactionEffects   `json:"effects"`
+	ConfirmedLocalExecution bool                  `json:"confirmed_local_execution"`
+}
 type ObjectOwner struct {
 	AddressOwner *Address `json:"AddressOwner,omitempty"`
 	ObjectOwner  *Address `json:"ObjectOwner,omitempty"`

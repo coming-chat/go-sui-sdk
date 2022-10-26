@@ -89,9 +89,9 @@ func (c *Client) BatchTransaction(ctx context.Context, signer types.Address, txn
 	return &resp, err
 }
 
-func (c *Client) ExecuteTransaction(ctx context.Context, txn types.SignedTransaction, requestType types.ExecuteTransactionRequestType) (*types.TransactionResponse, error) {
-	resp := types.TransactionResponse{}
-	err := c.CallContext(ctx, &resp, "sui_executeTransaction", txn.TxBytes, txn.SigScheme, txn.Signature, txn.PublicKey)
+func (c *Client) ExecuteTransaction(ctx context.Context, txn types.SignedTransaction, requestType types.ExecuteTransactionRequestType) (*types.ExecuteTransactionResponse, error) {
+	resp := types.ExecuteTransactionResponse{}
+	err := c.CallContext(ctx, &resp, "sui_executeTransaction", txn.TxBytes, txn.SigScheme, txn.Signature, txn.PublicKey, requestType)
 	return &resp, err
 }
 

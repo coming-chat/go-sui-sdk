@@ -24,8 +24,9 @@ func TestClient_Call(t *testing.T) {
 		lastAmount = everyAmount - 30000
 	}
 	amounts := []uint64{everyAmount, everyAmount, lastAmount}
+	gasCoin := coins[1]
 
-	txn, err := client.SplitCoin(context.Background(), *signer, firstCoin.Reference.ObjectId, amounts, firstCoin.Reference.ObjectId, 100000)
+	txn, err := client.SplitCoin(context.Background(), *signer, firstCoin.Reference.ObjectId, amounts, gasCoin.Reference.ObjectId, 100000)
 	require.Nil(t, err)
 
 	t.Log(txn)
@@ -34,12 +35,11 @@ func TestClient_Call(t *testing.T) {
 	signedTxn := txn.SignWith(account.PrivateKey)
 	resp, err := client.ExecuteTransaction(context.Background(), *signedTxn, types.TxnRequestTypeWaitForLocalExecution)
 	require.Nil(t, err)
-	t.Log(resp)
+	t.Log(resp.TransactionDigest())
 }
 
 func TestTransaction(t *testing.T) {
-	// digest := "2yhXOzBqTsOpcWNZKCSsKySaUTJUVgpGyrzhQVu7PcM="
-	digest := "4nMHqXi60PLxj/DxLCWwkiO3L41kIz89qMDEpStRdP8="
+	digest := "gTYc+0O3nl1m2uCf36HEOWMFgEAe/eyyKBKDpJT6wV0="
 
 	dig, err := types.NewBase64Data(digest)
 	require.NoError(t, err)

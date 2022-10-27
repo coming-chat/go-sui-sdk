@@ -35,7 +35,7 @@ func TestMintNFT(t *testing.T) {
 	signedTxn := txnBytes.SignWith(account.PrivateKey)
 	response, err := client.ExecuteTransaction(context.Background(), *signedTxn, types.TxnRequestTypeWaitForLocalExecution)
 	require.Nil(t, err)
-	t.Log("hash: ", response.Certificate.TransactionDigest)
+	t.Log("hash: ", response.TransactionDigest())
 }
 
 func TestGetDevNFTs(t *testing.T) {

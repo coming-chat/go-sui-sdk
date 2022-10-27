@@ -136,70 +136,12 @@ type SenderSignedData struct {
 	// GasPrice     uint64      `json:"gasPrice"`
 }
 
-type TransactionEnvelope struct {
-	TransactionDigest *Digest `json:"transactionDigest"`
-
-	Data *SenderSignedData `json:"data"`
-
-	TxSignature *Base64Data `json:"txSignature"`
-
-	AuthSignInfo interface{} `json:"authSignInfo"`
-}
-
-type CertifiedTransaction = TransactionEnvelope
-
 type OwnedObjectRef struct {
 	Owner     *ObjectOwner `json:"owner"`
 	Reference *ObjectRef   `json:"reference"`
 }
 
 type Event interface{}
-
-type GasCostSummary struct {
-	ComputationCost uint64 `json:"computationCost"`
-	StorageCost     uint64 `json:"storageCost"`
-	StorageRebate   uint64 `json:"storageRebate"`
-}
-
-const (
-	TransactionStatusSuccess = "success"
-	TransactionStatusFailure = "failure"
-)
-
-type TransactionStatus struct {
-	Status string `json:"status"`
-	Error  string `json:"error,omitempty"`
-}
-
-type TransactionEffects struct {
-	Status TransactionStatus `json:"status"`
-
-	TransactionDigest *Base64Data     `json:"transactionDigest"`
-	GasUsed           *GasCostSummary `json:"gasUsed"`
-	GasObject         *OwnedObjectRef `json:"gasObject"`
-	Events            []Event         `json:"events,omitempty"`
-	Dependencies      []Digest        `json:"dependencies,omitempty"`
-
-	// SharedObjects []ObjectRef      `json:"sharedObjects"`
-	Created   []OwnedObjectRef `json:"created,omitempty"`
-	Mutated   []OwnedObjectRef `json:"mutated,omitempty"`
-	Unwrapped []OwnedObjectRef `json:"unwrapped,omitempty"`
-	Deleted   []ObjectRef      `json:"deleted,omitempty"`
-	Wrapped   []ObjectRef      `json:"wrapped,omitempty"`
-}
-
-func (te *TransactionEffects) GasFee() uint64 {
-	return te.GasUsed.StorageCost - te.GasUsed.StorageRebate + te.GasUsed.ComputationCost
-}
-
-type ParsedTransactionResponse interface{}
-
-type TransactionResponse struct {
-	Certificate *CertifiedTransaction     `json:"certificate"`
-	Effects     *TransactionEffects       `json:"effects"`
-	ParsedData  ParsedTransactionResponse `json:"parsed_data,omitempty"`
-	TimestampMs uint64                    `json:"timestamp_ms,omitempty"`
-}
 
 type ObjectOwner struct {
 	AddressOwner *Address `json:"AddressOwner,omitempty"`

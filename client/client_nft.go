@@ -7,7 +7,7 @@ import (
 )
 
 // Create an unsigned transaction to mint a nft at devnet
-func (c *Client) MintDevnetNFT(ctx context.Context, signer types.Address, nftName, nftDescription, nftUri string, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) MintDevnetNFT(ctx context.Context, signer types.Address, nftName, nftDescription, nftUri string, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	packageId, _ := types.NewAddressFromHex("0x2")
 	args := []any{
 		nftName, nftDescription, nftUri,

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_Call(t *testing.T) {
+func TestClient_SplitCoin(t *testing.T) {
 	account := M1Account(t)
 	client := DevnetClient(t)
 
@@ -17,25 +17,43 @@ func TestClient_Call(t *testing.T) {
 	coins, err := client.GetSuiCoinsOwnedByAddress(context.Background(), *signer)
 	require.Nil(t, err)
 
-	firstCoin := coins[0]
-	everyAmount := firstCoin.Balance / 3
-	lastAmount := everyAmount
-	if lastAmount > 30000 {
-		lastAmount = everyAmount - 30000
-	}
-	amounts := []uint64{everyAmount, everyAmount, lastAmount}
-	gasCoin := coins[1]
+	firstCoin, err := coins.PickCoinNoLess(100000)
+	require.Nil(t, err)
+	everyAmount := firstCoin.Balance / 2
+	amounts := []uint64{everyAmount, everyAmount}
 
-	txn, err := client.SplitCoin(context.Background(), *signer, firstCoin.Reference.ObjectId, amounts, gasCoin.Reference.ObjectId, 100000)
+	txn, err := client.SplitCoin(context.Background(), *signer, firstCoin.Reference.ObjectId, amounts, nil, 100000)
 	require.Nil(t, err)
 
-	t.Log(txn)
 	t.Log(txn.TxBytes.String())
 
 	signedTxn := txn.SignWith(account.PrivateKey)
 	resp, err := client.ExecuteTransaction(context.Background(), *signedTxn, types.TxnRequestTypeWaitForLocalExecution)
 	require.Nil(t, err)
-	t.Log(resp.TransactionDigest())
+	t.Log("hash =", resp.TransactionDigest())
+}
+
+func TestClient_SplitCoinEqual(t *testing.T) {
+	account := M1Account(t)
+	client := DevnetClient(t)
+
+	signer, err := types.NewAddressFromHex(account.Address)
+	require.Nil(t, err)
+	coins, err := client.GetSuiCoinsOwnedByAddress(context.Background(), *signer)
+	require.Nil(t, err)
+
+	firstCoin, err := coins.PickCoinNoLess(100000)
+	require.Nil(t, err)
+
+	txn, err := client.SplitCoinEqual(context.Background(), *signer, firstCoin.Reference.ObjectId, 2, nil, 100000)
+	require.Nil(t, err)
+
+	t.Log(txn.TxBytes.String())
+
+	signedTxn := txn.SignWith(account.PrivateKey)
+	resp, err := client.ExecuteTransaction(context.Background(), *signedTxn, types.TxnRequestTypeWaitForLocalExecution)
+	require.Nil(t, err)
+	t.Log("hash =", resp.TransactionDigest())
 }
 
 func TestTransaction(t *testing.T) {

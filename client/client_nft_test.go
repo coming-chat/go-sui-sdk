@@ -15,11 +15,7 @@ func TestMintNFT(t *testing.T) {
 
 	signer, err := types.NewAddressFromHex(account.Address)
 	require.Nil(t, err)
-	coins, err := client.GetSuiCoinsOwnedByAddress(context.Background(), *signer)
-	require.Nil(t, err)
 	gasBudget := uint64(100000)
-	gas, err := coins.PickGasCoin(gasBudget)
-	require.Nil(t, err)
 
 	var (
 		timeNow = time.Now().Format("06-01-02 15:04")
@@ -27,7 +23,7 @@ func TestMintNFT(t *testing.T) {
 		nftDesc = "This is a NFT created by ComingChat"
 		nftUrl  = "https://coming.chat/favicon.ico"
 	)
-	txnBytes, err := client.MintDevnetNFT(context.Background(), *signer, nftName, nftDesc, nftUrl, gas.Reference.ObjectId, gasBudget)
+	txnBytes, err := client.MintDevnetNFT(context.Background(), *signer, nftName, nftDesc, nftUrl, nil, gasBudget)
 	require.Nil(t, err)
 	t.Log(txnBytes.TxBytes)
 

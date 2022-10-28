@@ -23,9 +23,9 @@ func (cs Coins) TotalBalance() *big.Int {
 	return total
 }
 
-func (cs Coins) PickGasCoin(gasBudget uint64) (*Coin, error) {
+func (cs Coins) PickCoinNoLess(amount uint64) (*Coin, error) {
 	for _, coin := range cs {
-		if coin.Balance >= gasBudget {
+		if coin.Balance >= amount {
 			return &coin, nil
 		}
 	}

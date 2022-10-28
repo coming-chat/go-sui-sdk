@@ -61,24 +61,24 @@ type TransactionResponse struct {
 }
 
 type ExecuteTransactionEffects struct {
-	TransactionEffectsDigest *Digest `json:"transactionEffectsDigest"`
+	TransactionEffectsDigest Digest `json:"transactionEffectsDigest"`
 
-	Effects      *TransactionEffects `json:"effects"`
-	AuthSignInfo *AuthSignInfo       `json:"authSignInfo"`
+	Effects      TransactionEffects `json:"effects"`
+	AuthSignInfo *AuthSignInfo      `json:"authSignInfo"`
 }
 
 type ExecuteTransactionResponse struct {
 	ImmediateReturn *struct {
-		TxDigest *Digest `json:"tx_digest"`
+		TransactionDigest *Digest `json:"tx_digest"`
 	} `json:"ImmediateReturn,omitempty"`
 
 	TxCert *struct {
-		Certificate *CertifiedTransaction `json:"certificate"`
+		Certificate CertifiedTransaction `json:"certificate"`
 	} `json:"TxCert,omitempty"`
 
 	EffectsCert *struct {
-		Certificate *CertifiedTransaction      `json:"certificate"`
-		Effects     *ExecuteTransactionEffects `json:"effects"`
+		Certificate CertifiedTransaction      `json:"certificate"`
+		Effects     ExecuteTransactionEffects `json:"effects"`
 
 		ConfirmedLocalExecution bool `json:"confirmed_local_execution"`
 	} `json:"EffectsCert,omitempty"`
@@ -87,7 +87,7 @@ type ExecuteTransactionResponse struct {
 func (r *ExecuteTransactionResponse) TransactionDigest() *Digest {
 	switch {
 	case r.ImmediateReturn != nil:
-		return r.ImmediateReturn.TxDigest
+		return r.ImmediateReturn.TransactionDigest
 	case r.TxCert != nil:
 		return r.TxCert.Certificate.TransactionDigest
 	case r.EffectsCert != nil:

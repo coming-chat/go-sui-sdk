@@ -9,8 +9,15 @@ import (
 )
 
 const DevnetRpcUrl = "https://fullnode.devnet.sui.io"
+const TestnetRpcUrl = "https://fullnode.testnet.sui.io"
 
 var M1Mnemonic = os.Getenv("WalletSdkTestM1")
+
+func TestnetClient(t *testing.T) *Client {
+	c, err := Dial(TestnetRpcUrl)
+	require.Nil(t, err)
+	return c
+}
 
 func DevnetClient(t *testing.T) *Client {
 	c, err := Dial(DevnetRpcUrl)

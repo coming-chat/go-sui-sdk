@@ -101,10 +101,10 @@ func TestBatchCall_GetObject(t *testing.T) {
 }
 
 func TestBatchGetObjectsOwnedByAddress(t *testing.T) {
-	addr, err := types.NewAddressFromHex("0xbb8f7e72ae99d371020a1ccfe703bfb64a8a430f")
+	addr, err := types.NewAddressFromHex("0x6c5d2cd6e62734f61b4e318e58cbfd1c4b99dfaf")
 	require.NoError(t, err)
 
-	cli := DevnetClient(t)
+	cli := TestnetClient(t)
 	coins, err := cli.GetSuiCoinsOwnedByAddress(context.Background(), *addr)
 	require.NoError(t, err)
 

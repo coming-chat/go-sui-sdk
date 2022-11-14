@@ -11,11 +11,11 @@ import (
 
 func TestMintNFT(t *testing.T) {
 	account := M1Account(t)
-	client := DevnetClient(t)
+	client := TestnetClient(t)
 
 	signer, err := types.NewAddressFromHex(account.Address)
 	require.Nil(t, err)
-	gasBudget := uint64(100000)
+	gasBudget := uint64(12000)
 
 	var (
 		timeNow = time.Now().Format("06-01-02 15:04")
@@ -23,7 +23,7 @@ func TestMintNFT(t *testing.T) {
 		nftDesc = "This is a NFT created by ComingChat"
 		nftUrl  = "https://coming.chat/favicon.ico"
 	)
-	txnBytes, err := client.MintDevnetNFT(context.Background(), *signer, nftName, nftDesc, nftUrl, nil, gasBudget)
+	txnBytes, err := client.MintNFT(context.Background(), *signer, nftName, nftDesc, nftUrl, nil, gasBudget)
 	require.Nil(t, err)
 	t.Log(txnBytes.TxBytes)
 
@@ -35,12 +35,13 @@ func TestMintNFT(t *testing.T) {
 }
 
 func TestGetDevNFTs(t *testing.T) {
-	address, err := types.NewAddressFromHex("0xbb8f7e72ae99d371020a1ccfe703bfb64a8a430f")
+	account := M1Account(t)
+	address, err := types.NewAddressFromHex(account.Address)
 	require.Nil(t, err)
 
 	client := DevnetClient(t)
 
-	nfts, err := client.GetDevnetNFTOwnedByAddress(context.Background(), *address)
+	nfts, err := client.GetNFTsOwnedByAddress(context.Background(), *address)
 	require.Nil(t, err)
 	for _, nft := range nfts {
 		t.Log(nft.Details)

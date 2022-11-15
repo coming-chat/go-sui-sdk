@@ -174,3 +174,10 @@ func (c *Client) TransferSui(ctx context.Context, signer, recipient types.Addres
 	err := c.CallContext(ctx, &resp, "sui_transferSui", signer, suiObjID, gasBudget, recipient, amount)
 	return &resp, err
 }
+
+// Create an unsigned transaction to send all SUI coins to one recipient.
+func (c *Client) PayAllSui(ctx context.Context, signer, recipient types.Address, inputCoins []types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	err := c.CallContext(ctx, &resp, "sui_payAllSui", signer, inputCoins, recipient, gasBudget)
+	return &resp, err
+}

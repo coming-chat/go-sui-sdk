@@ -46,7 +46,7 @@ func (cs Coins) PickCoinNoLess(amount uint64) (*Coin, error) {
 }
 
 // PickSUICoinsWithGas pick coins, which sum >= amount, and pick a gas coin >= gasAmount which not in coins
-// if not satisfated, an
+// if not satisfated amount/gasAmount, an ErrCoinsNotMatchRequest error will return
 // if gasAmount == 0, a nil gasCoin will return
 // pickMethod, see PickSmaller|PickBigger|PickByOrder
 func (cs Coins) PickSUICoinsWithGas(amount uint64, gasAmount uint64, pickMethod int) (Coins, *Coin, error) {
@@ -87,6 +87,7 @@ func (cs Coins) PickSUICoinsWithGas(amount uint64, gasAmount uint64, pickMethod 
 
 // PickCoins pick coins, which sum >= amount,
 // pickMethod, see PickSmaller|PickBigger|PickByOrder
+// // if not satisfated amount, an ErrCoinsNotMatchRequest error will return
 func (cs Coins) PickCoins(amount uint64, pickMethod int) (Coins, error) {
 	var sortedCoins Coins
 	if pickMethod == PickByOrder {

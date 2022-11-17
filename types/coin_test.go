@@ -1,6 +1,7 @@
 package types
 
 import (
+	"math/big"
 	"reflect"
 	"testing"
 )
@@ -25,7 +26,7 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 		},
 	}
 	type args struct {
-		amount     uint64
+		amount     *big.Int
 		gasAmount  uint64
 		pickMethod int
 	}
@@ -41,7 +42,7 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 			name: "case success 1",
 			cs:   testCoins,
 			args: args{
-				amount:     0,
+				amount:     new(big.Int),
 				gasAmount:  0,
 				pickMethod: PickSmaller,
 			},
@@ -53,7 +54,7 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 			name: "case success 2",
 			cs:   testCoins,
 			args: args{
-				amount:     1,
+				amount:     big.NewInt(1),
 				gasAmount:  2,
 				pickMethod: PickSmaller,
 			},
@@ -65,7 +66,7 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 			name: "case success 3",
 			cs:   testCoins,
 			args: args{
-				amount:     4,
+				amount:     big.NewInt(4),
 				gasAmount:  2,
 				pickMethod: PickSmaller,
 			},
@@ -77,7 +78,7 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 			name: "case success 4",
 			cs:   testCoins,
 			args: args{
-				amount:     6,
+				amount:     big.NewInt(6),
 				gasAmount:  2,
 				pickMethod: PickSmaller,
 			},
@@ -89,7 +90,7 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 			name: "case error 1",
 			cs:   testCoins,
 			args: args{
-				amount:     6,
+				amount:     big.NewInt(6),
 				gasAmount:  6,
 				pickMethod: PickSmaller,
 			},
@@ -101,7 +102,7 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 			name: "case error 1",
 			cs:   testCoins,
 			args: args{
-				amount:     100,
+				amount:     big.NewInt(100),
 				gasAmount:  3,
 				pickMethod: PickSmaller,
 			},
@@ -113,7 +114,7 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 			name: "case bigger 1",
 			cs:   testCoins,
 			args: args{
-				amount:     3,
+				amount:     big.NewInt(3),
 				gasAmount:  3,
 				pickMethod: PickBigger,
 			},
@@ -125,7 +126,7 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 			name: "case order 1",
 			cs:   testCoins,
 			args: args{
-				amount:     3,
+				amount:     big.NewInt(3),
 				gasAmount:  3,
 				pickMethod: PickByOrder,
 			},
@@ -173,7 +174,7 @@ func TestCoins_PickCoins(t *testing.T) {
 		},
 	}
 	type args struct {
-		amount     uint64
+		amount     *big.Int
 		pickMethod int
 	}
 	tests := []struct {
@@ -186,49 +187,49 @@ func TestCoins_PickCoins(t *testing.T) {
 		{
 			name:    "smaller 1",
 			cs:      testCoins,
-			args:    args{amount: 2, pickMethod: PickSmaller},
+			args:    args{amount: big.NewInt(2), pickMethod: PickSmaller},
 			want:    Coins{{Balance: 1}, {Balance: 2}},
 			wantErr: false,
 		},
 		{
 			name:    "smaller 2",
 			cs:      testCoins,
-			args:    args{amount: 4, pickMethod: PickSmaller},
+			args:    args{amount: big.NewInt(4), pickMethod: PickSmaller},
 			want:    Coins{{Balance: 1}, {Balance: 2}, {Balance: 3}},
 			wantErr: false,
 		},
 		{
 			name:    "bigger 1",
 			cs:      testCoins,
-			args:    args{amount: 2, pickMethod: PickBigger},
+			args:    args{amount: big.NewInt(2), pickMethod: PickBigger},
 			want:    Coins{{Balance: 5}},
 			wantErr: false,
 		},
 		{
 			name:    "bigger 2",
 			cs:      testCoins,
-			args:    args{amount: 6, pickMethod: PickBigger},
+			args:    args{amount: big.NewInt(6), pickMethod: PickBigger},
 			want:    Coins{{Balance: 5}, {Balance: 4}},
 			wantErr: false,
 		},
 		{
 			name:    "pick by order 1",
 			cs:      testCoins,
-			args:    args{amount: 6, pickMethod: PickByOrder},
+			args:    args{amount: big.NewInt(6), pickMethod: PickByOrder},
 			want:    Coins{{Balance: 3}, {Balance: 5}},
 			wantErr: false,
 		},
 		{
 			name:    "pick by order 2",
 			cs:      testCoins,
-			args:    args{amount: 15, pickMethod: PickByOrder},
+			args:    args{amount: big.NewInt(15), pickMethod: PickByOrder},
 			want:    testCoins,
 			wantErr: false,
 		},
 		{
 			name:    "pick error",
 			cs:      testCoins,
-			args:    args{amount: 16, pickMethod: PickByOrder},
+			args:    args{amount: big.NewInt(16), pickMethod: PickByOrder},
 			want:    nil,
 			wantErr: true,
 		},

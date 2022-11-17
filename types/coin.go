@@ -49,13 +49,13 @@ func (cs Coins) PickCoinNoLess(amount uint64) (*Coin, error) {
 // if not satisfated amount/gasAmount, an ErrCoinsNotMatchRequest error will return
 // if gasAmount == 0, a nil gasCoin will return
 // pickMethod, see PickSmaller|PickBigger|PickByOrder
-func (cs Coins) PickSUICoinsWithGas(amount uint64, gasAmount uint64, pickMethod int) (Coins, *Coin, error) {
+func (cs Coins) PickSUICoinsWithGas(amount *big.Int, gasAmount uint64, pickMethod int) (Coins, *Coin, error) {
 	if gasAmount == 0 {
 		res, err := cs.PickCoins(amount, pickMethod)
 		return res, nil, err
 	}
 
-	if amount+gasAmount == 0 {
+	if amount.Cmp(big.NewInt(0)) == 0 && gasAmount == 0 {
 		return make(Coins, 0), nil, nil
 	} else if len(cs) == 0 {
 		return cs, nil, ErrCoinsNotMatchRequest
@@ -88,7 +88,7 @@ func (cs Coins) PickSUICoinsWithGas(amount uint64, gasAmount uint64, pickMethod 
 // PickCoins pick coins, which sum >= amount,
 // pickMethod, see PickSmaller|PickBigger|PickByOrder
 // // if not satisfated amount, an ErrCoinsNotMatchRequest error will return
-func (cs Coins) PickCoins(amount uint64, pickMethod int) (Coins, error) {
+func (cs Coins) PickCoins(amount *big.Int, pickMethod int) (Coins, error) {
 	var sortedCoins Coins
 	if pickMethod == PickByOrder {
 		sortedCoins = cs
@@ -105,11 +105,11 @@ func (cs Coins) PickCoins(amount uint64, pickMethod int) (Coins, error) {
 	}
 
 	result := make(Coins, 0)
-	var total uint64
+	total := big.NewInt(0)
 	for _, coin := range sortedCoins {
 		result = append(result, coin)
-		total += coin.Balance
-		if total >= amount {
+		total = new(big.Int).Add(total, new(big.Int).SetUint64(coin.Balance))
+		if total.Cmp(amount) >= 0 {
 			return result, nil
 		}
 	}

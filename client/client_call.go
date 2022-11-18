@@ -9,7 +9,11 @@ import (
 )
 
 func (c *Client) GetSuiCoinsOwnedByAddress(ctx context.Context, address types.Address) (types.Coins, error) {
-	coinType := "0x2::coin::Coin<0x2::sui::SUI>"
+	return c.GetCoinsOwnedByAddress(ctx, address, "0x2::sui::SUI")
+}
+
+func (c *Client) GetCoinsOwnedByAddress(ctx context.Context, address types.Address, coinType string) (types.Coins, error) {
+	coinType = "0x2::coin::Coin<" + coinType + ">"
 	coinObjects, err := c.BatchGetObjectsOwnedByAddress(ctx, address, coinType)
 	if err != nil {
 		return nil, err

@@ -12,7 +12,7 @@ func (c *Client) MintNFT(ctx context.Context, signer types.Address, nftName, nft
 	args := []any{
 		nftName, nftDescription, nftUri,
 	}
-	return c.MoveCall(ctx, signer, *packageId, "devnet_nft", "mint", args, gas, gasBudget)
+	return c.MoveCall(ctx, signer, *packageId, "devnet_nft", "mint", []string{}, args, gas, gasBudget)
 }
 
 func (c *Client) GetNFTsOwnedByAddress(ctx context.Context, address types.Address) ([]types.ObjectRead, error) {

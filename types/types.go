@@ -106,7 +106,7 @@ type MoveCall struct {
 	Package  ObjectRef     `json:"package"`
 	Module   string        `json:"module"`
 	Function string        `json:"function"`
-	TypeArgs []interface{} `json:"type_arguments"`
+	TypeArgs []interface{} `json:"typeArguments"`
 	Args     []interface{} `json:"arguments"`
 }
 type TransferSui struct {

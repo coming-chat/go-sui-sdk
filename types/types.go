@@ -147,6 +147,9 @@ type ObjectOwner struct {
 	AddressOwner *Address `json:"AddressOwner,omitempty"`
 	ObjectOwner  *Address `json:"ObjectOwner,omitempty"`
 	SingleOwner  *Address `json:"SingleOwner,omitempty"`
+	Shared       *struct {
+		InitialSharedVersion int64 `json:"initial_shared_version"`
+	} `json:"Shared,omitempty"`
 }
 
 type ObjectReadDetail struct {

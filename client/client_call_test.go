@@ -134,7 +134,7 @@ func TestClient_BatchGetObject(t *testing.T) {
 		objects []types.ObjectId
 	}
 	var (
-		o1, _ = types.NewHexData("0x354ff019a45f631d183aef6e511ae98debdf7e22")
+		o1, _ = types.NewHexData("0x582d1e989991cd4255ac3d2ba5ac7db15d3077ba")
 		o2, _ = types.NewHexData("0x5abee7585fcb043a30e827a5bad42132c7a243ca")
 		o3, _ = types.NewHexData("0x8b5bfe60fe69e40f1565802d41c3950955e8fead")
 	)

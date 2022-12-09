@@ -3,8 +3,8 @@ package types
 type AuthSignInfo interface{}
 
 type CertifiedTransaction struct {
-	TransactionDigest *Digest       `json:"transactionDigest"`
-	TxSignature       *Base64Data   `json:"txSignature"`
+	TransactionDigest string        `json:"transactionDigest"`
+	TxSignature       string        `json:"txSignature"`
 	AuthSignInfo      *AuthSignInfo `json:"authSignInfo"`
 
 	Data *SenderSignedData `json:"data"`
@@ -29,11 +29,11 @@ type TransactionStatus struct {
 type TransactionEffects struct {
 	Status TransactionStatus `json:"status"`
 
-	TransactionDigest *Base64Data     `json:"transactionDigest"`
+	TransactionDigest string          `json:"transactionDigest"`
 	GasUsed           *GasCostSummary `json:"gasUsed"`
 	GasObject         *OwnedObjectRef `json:"gasObject"`
 	Events            []Event         `json:"events,omitempty"`
-	Dependencies      []Digest        `json:"dependencies,omitempty"`
+	Dependencies      []string        `json:"dependencies,omitempty"`
 
 	// SharedObjects []ObjectRef      `json:"sharedObjects"`
 	Created   []OwnedObjectRef `json:"created,omitempty"`
@@ -69,7 +69,7 @@ type ExecuteTransactionEffects struct {
 
 type ExecuteTransactionResponse struct {
 	ImmediateReturn *struct {
-		TransactionDigest *Digest `json:"tx_digest"`
+		TransactionDigest string `json:"tx_digest"`
 	} `json:"ImmediateReturn,omitempty"`
 
 	TxCert *struct {
@@ -84,7 +84,7 @@ type ExecuteTransactionResponse struct {
 	} `json:"EffectsCert,omitempty"`
 }
 
-func (r *ExecuteTransactionResponse) TransactionDigest() *Digest {
+func (r *ExecuteTransactionResponse) TransactionDigest() string {
 	switch {
 	case r.ImmediateReturn != nil:
 		return r.ImmediateReturn.TransactionDigest
@@ -93,5 +93,5 @@ func (r *ExecuteTransactionResponse) TransactionDigest() *Digest {
 	case r.EffectsCert != nil:
 		return r.EffectsCert.Certificate.TransactionDigest
 	}
-	return nil
+	return ""
 }

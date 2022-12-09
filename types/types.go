@@ -60,7 +60,7 @@ type TransactionBytes struct {
 }
 
 type ObjectRef struct {
-	Digest   Digest   `json:"digest"`
+	Digest   string   `json:"digest"`
 	ObjectId ObjectId `json:"objectId"`
 	Version  int      `json:"version"`
 }
@@ -156,7 +156,7 @@ type ObjectReadDetail struct {
 	Data  map[string]interface{} `json:"data"`
 	Owner *ObjectOwner           `json:"owner"`
 
-	PreviousTransaction *Digest    `json:"previousTransaction"`
+	PreviousTransaction string     `json:"previousTransaction"`
 	StorageRebate       int        `json:"storageRebate"`
 	Reference           *ObjectRef `json:"reference"`
 }
@@ -177,11 +177,11 @@ type ObjectRead struct {
 type ObjectInfo struct {
 	ObjectId *ObjectId    `json:"objectId"`
 	Version  int          `json:"version"`
-	Digest   *Digest      `json:"digest"`
+	Digest   string       `json:"digest"`
 	Type     string       `json:"type"`
 	Owner    *ObjectOwner `json:"owner"`
 
-	PreviousTransaction *Digest `json:"previousTransaction"`
+	PreviousTransaction string `json:"previousTransaction"`
 }
 
 func (txn *TransactionBytes) SignWith(privateKey ed25519.PrivateKey) *SignedTransaction {

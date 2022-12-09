@@ -18,7 +18,7 @@ type Coin struct {
 	Balance             uint64       `json:"balance"`
 	Type                string       `json:"type"`
 	Owner               *ObjectOwner `json:"owner"`
-	PreviousTransaction *Digest      `json:"previousTransaction"`
+	PreviousTransaction string       `json:"previousTransaction"`
 	Reference           *ObjectRef   `json:"reference"`
 }
 

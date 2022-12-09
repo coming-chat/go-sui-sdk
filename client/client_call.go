@@ -129,24 +129,24 @@ func (c *Client) GetTotalTransactionNumber(ctx context.Context) (uint64, error) 
 	return resp, err
 }
 
-func (c *Client) GetTransactionsInRange(ctx context.Context, start, end uint64) ([]types.Digest, error) {
-	var resp []types.Digest
+func (c *Client) GetTransactionsInRange(ctx context.Context, start, end uint64) ([]string, error) {
+	var resp []string
 	err := c.CallContext(ctx, &resp, "sui_getTransactionsInRange", start, end)
 	return resp, err
 }
 
-func (c *Client) BatchGetTransaction(digests []types.Digest) (map[string]*types.TransactionResponse, error) {
+func (c *Client) BatchGetTransaction(digests []string) (map[string]*types.TransactionResponse, error) {
 	if len(digests) == 0 {
 		return map[string]*types.TransactionResponse{}, nil
 	}
 	var elems []BatchElem
 	results := make(map[string]*types.TransactionResponse)
 	for _, v := range digests {
-		results[v.String()] = new(types.TransactionResponse)
+		results[v] = new(types.TransactionResponse)
 		elems = append(elems, BatchElem{
 			Method: "sui_getTransaction",
 			Args:   []interface{}{v},
-			Result: results[v.String()],
+			Result: results[v],
 		})
 	}
 	if err := c.BatchCall(elems); err != nil {
@@ -175,7 +175,7 @@ func (c *Client) BatchGetObject(objects []types.ObjectId) (map[string]*types.Obj
 	return results, nil
 }
 
-func (c *Client) GetTransaction(ctx context.Context, digest types.Base64Data) (*types.TransactionResponse, error) {
+func (c *Client) GetTransaction(ctx context.Context, digest string) (*types.TransactionResponse, error) {
 	resp := types.TransactionResponse{}
 	err := c.CallContext(ctx, &resp, "sui_getTransaction", digest)
 	return &resp, err

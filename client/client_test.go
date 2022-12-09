@@ -57,13 +57,8 @@ func TestClient_SplitCoinEqual(t *testing.T) {
 }
 
 func TestTransaction(t *testing.T) {
-	digest := "gTYc+0O3nl1m2uCf36HEOWMFgEAe/eyyKBKDpJT6wV0="
-
-	dig, err := types.NewBase64Data(digest)
-	require.NoError(t, err)
-
 	cli := DevnetClient(t)
-	resp, err := cli.GetTransaction(context.Background(), *dig)
+	resp, err := cli.GetTransaction(context.Background(), "TkLw7eH9NtKh6pSb7evL8EcCf7RDMEsJ3VU7FqJRpf8")
 	require.NoError(t, err)
 
 	t.Log(resp)

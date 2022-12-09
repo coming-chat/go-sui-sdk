@@ -76,13 +76,8 @@ func TestClient_BatchGetTransaction(t *testing.T) {
 		client    *http.Client
 	}
 	type args struct {
-		digests []types.Digest
+		digests []string
 	}
-	var (
-		d1, _ = types.NewBase64Data("2Tpxt7+bP0XP1h0s4j0vWyYYFJQGusuctv5LEuUiSPY=")
-		d2, _ = types.NewBase64Data("JV657cXeBAmezgkjIMWASF5ugJR6OhYVfSJZumhUrlE=")
-		d3, _ = types.NewBase64Data("kkgD8Vu6g2YLEa0jG6Teh9xo3A78OocWkUb27InA968=")
-	)
 	tests := []struct {
 		name    string
 		fields  fields
@@ -98,9 +93,9 @@ func TestClient_BatchGetTransaction(t *testing.T) {
 				client:    client,
 			},
 			args: args{
-				digests: []types.Digest{*d1, *d2, *d3},
+				digests: []string{"TkLw7eH9NtKh6pSb7evL8EcCf7RDMEsJ3VU7FqJRpf8"},
 			},
-			want:    3,
+			want:    1,
 			wantErr: false,
 		},
 	}
@@ -134,9 +129,9 @@ func TestClient_BatchGetObject(t *testing.T) {
 		objects []types.ObjectId
 	}
 	var (
-		o1, _ = types.NewHexData("0x582d1e989991cd4255ac3d2ba5ac7db15d3077ba")
-		o2, _ = types.NewHexData("0x5abee7585fcb043a30e827a5bad42132c7a243ca")
-		o3, _ = types.NewHexData("0x8b5bfe60fe69e40f1565802d41c3950955e8fead")
+		o1, _ = types.NewHexData("0x523203b287a2c1df0a707a6b563aa7d29bd216d6")
+		o2, _ = types.NewHexData("0xb1e550000000000000000000000000000000008c")
+		o3, _ = types.NewHexData("0xb1e550000000000000000000000000000000005a")
 	)
 
 	tests := []struct {
@@ -174,6 +169,58 @@ func TestClient_BatchGetObject(t *testing.T) {
 			}
 			if len(got) != tt.want {
 				t.Errorf("BatchGetObject() got = %v, want %v", got, tt.want)
+			}
+			t.Logf("%+v", got)
+		})
+	}
+}
+
+func TestClient_GetObject(t *testing.T) {
+	type fields struct {
+		idCounter uint32
+		rpcUrl    string
+		client    *http.Client
+	}
+	type args struct {
+		ctx   context.Context
+		objID types.ObjectId
+	}
+	var (
+		o, _ = types.NewHexData("0xb1e55000000000000000000000000000000000ca")
+	)
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{
+			name: "test for devnet",
+			fields: fields{
+				idCounter: 1,
+				rpcUrl:    DevnetRpcUrl,
+				client:    client,
+			},
+			args: args{
+				ctx:   context.TODO(),
+				objID: *o,
+			},
+			want:    3,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Client{
+				idCounter: tt.fields.idCounter,
+				rpcUrl:    tt.fields.rpcUrl,
+				client:    tt.fields.client,
+			}
+			got, err := c.GetObject(tt.args.ctx, tt.args.objID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetObject() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 			t.Logf("%+v", got)
 		})

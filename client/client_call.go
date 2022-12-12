@@ -53,14 +53,20 @@ func (c *Client) GetCoinsOwnedByAddress(ctx context.Context, address types.Addre
 
 // @param filterType You can specify filtering out the specified resources, this will fetch all resources if it is not empty ""
 func (c *Client) BatchGetObjectsOwnedByAddress(ctx context.Context, address types.Address, filterType string) ([]types.ObjectRead, error) {
+	filterType = strings.TrimSpace(filterType)
+	return c.BatchGetFilteredObjectsOwnedByAddress(ctx, address, func(oi types.ObjectInfo) bool {
+		return filterType == "" || filterType == oi.Type
+	})
+}
+
+func (c *Client) BatchGetFilteredObjectsOwnedByAddress(ctx context.Context, address types.Address, filter func(types.ObjectInfo) bool) ([]types.ObjectRead, error) {
 	infos, err := c.GetObjectsOwnedByAddress(ctx, address)
 	if err != nil {
 		return nil, err
 	}
-	filterType = strings.TrimSpace(filterType)
 	elems := []BatchElem{}
 	for _, info := range infos {
-		if filterType != "" && filterType != info.Type {
+		if filter != nil && filter(info) == false {
 			// ignore objects if non-specified type
 			continue
 		}

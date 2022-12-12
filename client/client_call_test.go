@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/coming-chat/go-sui/types"
+	"github.com/stretchr/testify/require"
 )
 
 var client = &http.Client{
@@ -286,4 +287,19 @@ func TestClient_DryRunTransaction(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestClient_GetObjectsOwnedByAddress(t *testing.T) {
+	address := "0x6c5d2cd6e62734f61b4e318e58cbfd1c4b99dfaf"
+	cli := DevnetClient(t)
+
+	addr, err := types.NewAddressFromHex(address)
+	require.Nil(t, err)
+	objects, err := cli.GetObjectsOwnedByAddress(context.Background(), *addr)
+	require.Nil(t, err)
+	t.Log(objects)
+
+	objectsss, err := cli.BatchGetObjectsOwnedByAddress(context.Background(), *addr, "0xe6e1a26c0be45fc0ec73521c2d3ca268a843a89b::capy::Capy")
+	require.Nil(t, err)
+	t.Log(objectsss)
 }

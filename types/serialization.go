@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"strings"
+	// "github.com/btcsuite/btcutil/base58"
 )
 
 type BytesData interface {
@@ -102,3 +103,39 @@ func (h *Base64Data) UnmarshalJSON(data []byte) error {
 	}
 	return err
 }
+
+// type Base58Data struct {
+// 	data []byte
+// }
+
+// func NewBase58Data(str string) (*Base58Data, error) {
+// 	data := base58.Decode(str)
+// 	return &Base58Data{data}, nil
+// }
+
+// func (h Base58Data) Data() []byte {
+// 	return h.data
+// }
+// func (h Base58Data) Length() int {
+// 	return len(h.data)
+// }
+// func (h Base58Data) String() string {
+// 	return base58.Encode(h.data)
+// }
+
+// func (h Base58Data) MarshalJSON() ([]byte, error) {
+// 	return json.Marshal(h.String())
+// }
+
+// func (h *Base58Data) UnmarshalJSON(data []byte) error {
+// 	str := ""
+// 	err := json.Unmarshal(data, &str)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	tmp, err := NewBase58Data(str)
+// 	if err == nil {
+// 		h.data = tmp.data
+// 	}
+// 	return err
+// }

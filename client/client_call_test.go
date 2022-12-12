@@ -2,10 +2,11 @@ package client
 
 import (
 	"context"
-	"github.com/coming-chat/go-sui/types"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/coming-chat/go-sui/types"
 )
 
 var client = &http.Client{
@@ -223,6 +224,66 @@ func TestClient_GetObject(t *testing.T) {
 				return
 			}
 			t.Logf("%+v", got)
+		})
+	}
+}
+
+func TestClient_DryRunTransaction(t *testing.T) {
+	c, err := Dial(DevnetRpcUrl)
+	if err != nil {
+		t.Logf("%e", err)
+	}
+	type args struct {
+		ctx context.Context
+		tx  *types.TransactionBytes
+	}
+	signer, err := types.NewAddressFromHex("0x3503a04d1e0de4f58d10484122d6dc42abfbe291")
+	if err != nil {
+		t.Logf("%e", err)
+	}
+	coins, err := c.GetSuiCoinsOwnedByAddress(context.Background(), *signer)
+	if err != nil {
+		t.Logf("%e", err)
+	}
+	coin, err := coins.PickCoinNoLess(1000)
+	if err != nil {
+		t.Logf("%e", err)
+	}
+	typeArgs := []string{}
+	objectId, _ := types.NewHexData("0x00e2cd853b00a1531b5a5579156a174891543e50")
+	arguments := []any{
+		objectId,
+		[]byte("13e8531463853d9a3ff017d140be14a9357f6b1d::coins::BTC"),
+	}
+	packageId, err := types.NewHexData("0xe558bd8e7a6a88a405ffd93cc71ecf1ade45686c")
+	if err != nil {
+		t.Logf("%e", err)
+	}
+	tx, err := c.MoveCall(context.Background(), *signer, *packageId, "interfaces", "get_dola_token_liquidity", typeArgs, arguments, &coin.Reference.ObjectId, 1000)
+	if err != nil {
+		t.Logf("%e", err)
+	}
+	tests := []struct {
+		name string
+		args args
+		// want    *types.TransactionEffects
+		wantErr bool
+	}{
+		{
+			name: "dry run",
+			args: args{
+				ctx: context.Background(),
+				tx:  tx,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := c.DryRunTransaction(tt.args.ctx, tt.args.tx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.DryRunTransaction() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 		})
 	}
 }

@@ -1,8 +1,11 @@
 package types
 
 import (
+	"bytes"
 	"crypto/ed25519"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -144,12 +147,53 @@ type OwnedObjectRef struct {
 type Event interface{}
 
 type ObjectOwner struct {
+	*ObjectOwnerInternal
+	*string
+}
+
+type ObjectOwnerInternal struct {
 	AddressOwner *Address `json:"AddressOwner,omitempty"`
 	ObjectOwner  *Address `json:"ObjectOwner,omitempty"`
 	SingleOwner  *Address `json:"SingleOwner,omitempty"`
 	Shared       *struct {
 		InitialSharedVersion int64 `json:"initial_shared_version"`
 	} `json:"Shared,omitempty"`
+}
+
+func (o *ObjectOwner) MarshalJSON() ([]byte, error) {
+	if o.string != nil {
+		data, err := json.Marshal(o.string)
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
+	}
+	if o.ObjectOwnerInternal != nil {
+		data, err := json.Marshal(o.ObjectOwnerInternal)
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
+	}
+	return nil, errors.New("nil value")
+}
+
+func (o *ObjectOwner) UnmarshalJSON(data []byte) error {
+	if bytes.HasPrefix(data, []byte("\"")) {
+		stringData := string(data[1 : len(data)-1])
+		o.string = &stringData
+		return nil
+	}
+	if bytes.HasPrefix(data, []byte("{")) {
+		oOI := ObjectOwnerInternal{}
+		err := json.Unmarshal(data, &oOI)
+		if err != nil {
+			return err
+		}
+		o.ObjectOwnerInternal = &oOI
+		return nil
+	}
+	return errors.New("value not json")
 }
 
 type ObjectReadDetail struct {

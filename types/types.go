@@ -228,8 +228,14 @@ type ObjectInfo struct {
 	PreviousTransaction string `json:"previousTransaction"`
 }
 
+// See: sui/crates/sui-types/src/intent.rs
+// This is currently hardcoded with [IntentScope::TransactionData = 0, Version::V0 = 0, AppId::Sui = 0]
+var INTENT_BYTES = []byte{0, 0, 0}
+
 func (txn *TransactionBytes) SignWith(privateKey ed25519.PrivateKey) *SignedTransaction {
-	message := txn.TxBytes.Data()
+	signTx := bytes.NewBuffer(INTENT_BYTES)
+	signTx.Write(txn.TxBytes.Data())
+	message := signTx.Bytes()
 	signature := ed25519.Sign(privateKey, message)
 	sign := Bytes(signature).GetBase64Data()
 	publicKey := privateKey.Public().(ed25519.PublicKey)

@@ -2,7 +2,9 @@ package client
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
+	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/coming-chat/go-sui/types"
@@ -12,35 +14,35 @@ func (c *Client) GetSuiCoinsOwnedByAddress(ctx context.Context, address types.Ad
 	return c.GetCoinsOwnedByAddress(ctx, address, "0x2::sui::SUI")
 }
 
-func (c *Client) GetCoinsOwnedByAddress(ctx context.Context, address types.Address, coinType string) (types.Coins, error) {
+func (c *Client) GetCoinsOwnedByAddress(ctx context.Context, address types.Address, coinType string) (coins types.Coins, err error) {
+	defer func() {
+		errP := recover()
+		if errP != nil {
+			err = fmt.Errorf("decode rpc data err: %v", errP)
+			return
+		}
+	}()
 	coinType = "0x2::coin::Coin<" + coinType + ">"
 	coinObjects, err := c.BatchGetObjectsOwnedByAddress(ctx, address, coinType)
 	if err != nil {
 		return nil, err
 	}
 
-	type coinData struct {
-		Fields struct {
-			Balance uint64 `json:"balance"`
-		} `json:"fields"`
-	}
-	coins := types.Coins{}
 	for _, coin := range coinObjects {
 		if coin.Status != types.ObjectStatusExists {
 			continue
 		}
-		bytes, err := json.Marshal(coin.Details.Data)
-		if err != nil {
-			return nil, err
+		balanceString, ok := coin.Details.Data["fields"].(map[string]interface{})["balance"]
+		if !ok {
+			return nil, errors.New("this coin does not have balance field")
 		}
-		coindata := coinData{}
-		err = json.Unmarshal(bytes, &coindata)
+		balance, err := strconv.ParseUint(balanceString.(string), 10, 64)
 		if err != nil {
 			return nil, err
 		}
 
 		coins = append(coins, types.Coin{
-			Balance:             coindata.Fields.Balance,
+			Balance:             balance,
 			Type:                coinType,
 			Owner:               coin.Details.Owner,
 			PreviousTransaction: coin.Details.PreviousTransaction,

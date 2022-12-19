@@ -248,7 +248,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 	}
 	coin, err := coins.PickCoinNoLess(1000)
 	if err != nil {
-		t.Logf("%e", err)
+		t.Fatal(err)
 	}
 	typeArgs := []string{}
 	objectId, _ := types.NewHexData("0x00e2cd853b00a1531b5a5579156a174891543e50")
@@ -302,4 +302,54 @@ func TestClient_GetObjectsOwnedByAddress(t *testing.T) {
 	objectsss, err := cli.BatchGetObjectsOwnedByAddress(context.Background(), *addr, "0xe6e1a26c0be45fc0ec73521c2d3ca268a843a89b::capy::Capy")
 	require.Nil(t, err)
 	t.Log(objectsss)
+}
+
+func TestClient_GetSuiCoinsOwnedByAddress(t *testing.T) {
+	addr, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
+	if err != nil {
+		t.Error(err)
+	}
+	type fields struct {
+		idCounter uint32
+		rpcUrl    string
+		client    *http.Client
+	}
+	type args struct {
+		ctx     context.Context
+		address types.Address
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "case 1",
+			fields: fields{
+				idCounter: 1,
+				rpcUrl:    DevnetRpcUrl,
+				client:    client,
+			},
+			args: args{
+				ctx:     context.TODO(),
+				address: *addr,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Client{
+				idCounter: tt.fields.idCounter,
+				rpcUrl:    tt.fields.rpcUrl,
+				client:    tt.fields.client,
+			}
+			got, err := c.GetSuiCoinsOwnedByAddress(tt.args.ctx, tt.args.address)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetSuiCoinsOwnedByAddress() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			t.Logf("coin data: %v", got)
+		})
+	}
 }

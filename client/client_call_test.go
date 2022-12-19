@@ -2,7 +2,9 @@ package client
 
 import (
 	"context"
+	"github.com/coming-chat/go-sui/account"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
@@ -352,4 +354,60 @@ func TestClient_GetSuiCoinsOwnedByAddress(t *testing.T) {
 			t.Logf("coin data: %v", got)
 		})
 	}
+}
+
+func TestClient_CallDmens(t *testing.T) {
+	chatGPTSuiAccount, err := account.NewAccountWithMnemonic(os.Getenv("mnemonic"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	signer, err := types.NewAddressFromHex(chatGPTSuiAccount.Address)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rpc, err := Dial(DevnetRpcUrl)
+	if err != nil {
+		t.Fatal(err)
+	}
+	coins, err := rpc.GetSuiCoinsOwnedByAddress(context.Background(), *signer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	coin, err := coins.PickCoinNoLess(1000)
+	if err != nil {
+		t.Fatal(err)
+	}
+	typeArgs := []string{}
+	arguments := []any{
+		os.Getenv("dmensId"),
+		1,
+		3,
+		"test",
+		os.Getenv("relyId"),
+	}
+	packageId, err := types.NewHexData("0x8e27cccd2250bedd6a437efb3d5abcc3f1d60f04")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tx, err := rpc.MoveCall(
+		context.Background(),
+		*signer,
+		*packageId,
+		"dmens",
+		"post_with_ref",
+		typeArgs,
+		arguments,
+		&coin.Reference.ObjectId,
+		1000,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	signedTxn := tx.SignWith(chatGPTSuiAccount.PrivateKey)
+	result, err := rpc.ExecuteTransaction(context.Background(), *signedTxn, types.TxnRequestTypeWaitForLocalExecution)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(result)
 }

@@ -245,3 +245,9 @@ func (c *Client) PayAllSui(ctx context.Context, signer, recipient types.Address,
 	err := c.CallContext(ctx, &resp, "sui_payAllSui", signer, inputCoins, recipient, gasBudget)
 	return &resp, err
 }
+
+func (c *Client) GetCoinMetadata(ctx context.Context, coinType string) (*types.SuiCoinMetadata, error) {
+	resp := types.SuiCoinMetadata{}
+	err := c.CallContext(ctx, &resp, "sui_getCoinMetadata", coinType)
+	return &resp, err
+}

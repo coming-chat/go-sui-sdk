@@ -411,3 +411,12 @@ func TestClient_CallDmens(t *testing.T) {
 	}
 	t.Log(result)
 }
+
+func TestClient_GetCoinMetadata(t *testing.T) {
+	chain := DevnetClient(t)
+	metadata, err := chain.GetCoinMetadata(context.TODO(), "0x2d79a3c70aa3f3a3feabbf54b7b520f956c4ef8d::AAA::AAA")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("%+v", metadata)
+}

@@ -248,3 +248,12 @@ func (txn *TransactionBytes) SignWith(privateKey ed25519.PrivateKey) *SignedTran
 		PublicKey: &pub,
 	}
 }
+
+type SuiCoinMetadata struct {
+	Decimals    uint8    `json:"decimals"`
+	Description string   `json:"description"`
+	IconUrl     string   `json:"iconUrl,omitempty"`
+	Id          ObjectId `json:"id"`
+	Name        string   `json:"name"`
+	Symbol      string   `json:"symbol"`
+}

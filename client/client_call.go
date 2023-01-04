@@ -251,3 +251,15 @@ func (c *Client) GetCoinMetadata(ctx context.Context, coinType string) (*types.S
 	err := c.CallContext(ctx, &resp, "sui_getCoinMetadata", coinType)
 	return &resp, err
 }
+
+func (c *Client) Pay(ctx context.Context, signer types.Address, inputCoins []types.ObjectId, recipients []types.Address, amount []uint64, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	err := c.CallContext(ctx, &resp, "sui_pay", signer, inputCoins, recipients, amount, gas, gasBudget)
+	return &resp, err
+}
+
+func (c *Client) PaySui(ctx context.Context, signer types.Address, inputCoins []types.ObjectId, recipients []types.Address, amount []uint64, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	err := c.CallContext(ctx, &resp, "sui_paySui", signer, inputCoins, recipients, amount, gasBudget)
+	return &resp, err
+}

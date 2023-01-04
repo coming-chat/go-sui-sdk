@@ -420,3 +420,74 @@ func TestClient_GetCoinMetadata(t *testing.T) {
 	}
 	t.Logf("%+v", metadata)
 }
+
+func TestClient_Pay(t *testing.T) {
+	chain := DevnetClient(t)
+	signer, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
+	if err != nil {
+		t.Fatal(err)
+	}
+	recip1, err := types.NewAddressFromHex("0x0c61c2622b77e2a9a3c953690e915ab82d6370d9")
+	if err != nil {
+		t.Fatal(err)
+	}
+	recip2, err := types.NewAddressFromHex("0x52901c8d2e4cf5d1b01d3e72ad4e8a18f0453669")
+	if err != nil {
+		t.Fatal(err)
+	}
+	recipients := []types.Address{*recip1, *recip2}
+
+	coin1, err := types.NewHexData("0xc8cf8711bc6d83e2b41c06b03ed6afa6559edd71")
+	if err != nil {
+		t.Fatal(err)
+	}
+	coin2, err := types.NewHexData("0xd7f98990ef8250ce8d568c06f5f5421e46d8c21b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	inputCoins := []types.ObjectId{*coin1, *coin2}
+
+	gas, err := types.NewHexData("0x035e4a70c4bc06780dc8e75390531e3549c6cf98")
+	if err != nil {
+		t.Fatal(gas)
+	}
+	tx, err := chain.Pay(context.TODO(), *signer, inputCoins, recipients, []uint64{1000, 500}, *gas, 2000)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("%+v", tx)
+}
+
+func TestClient_PaySui(t *testing.T) {
+	chain := DevnetClient(t)
+	signer, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	recip1, err := types.NewAddressFromHex("0x0c61c2622b77e2a9a3c953690e915ab82d6370d9")
+	if err != nil {
+		t.Fatal(err)
+	}
+	recip2, err := types.NewAddressFromHex("0x52901c8d2e4cf5d1b01d3e72ad4e8a18f0453669")
+	if err != nil {
+		t.Fatal(err)
+	}
+	recipients := []types.Address{*recip1, *recip2}
+
+	coin1, err := types.NewHexData("0x309d81a0395d95e7b3c3ff08a02b3b7ddcd2d475")
+	if err != nil {
+		t.Fatal(err)
+	}
+	coin2, err := types.NewHexData("0x035e4a70c4bc06780dc8e75390531e3549c6cf98")
+	if err != nil {
+		t.Fatal(err)
+	}
+	inputCoins := []types.ObjectId{*coin1, *coin2}
+
+	tx, err := chain.PaySui(context.TODO(), *signer, inputCoins, recipients, []uint64{1000, 2000}, 1000)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("%+v", tx)
+}

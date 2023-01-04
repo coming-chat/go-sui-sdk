@@ -11,7 +11,7 @@ import (
 
 func TestMintNFT(t *testing.T) {
 	account := M1Account(t)
-	client := TestnetClient(t)
+	client := DevnetClient(t)
 
 	signer, err := types.NewAddressFromHex(account.Address)
 	require.Nil(t, err)

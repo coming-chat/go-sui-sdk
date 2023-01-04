@@ -10,6 +10,8 @@ jobs:
 
   TestAndBuild:
     runs-on: ubuntu-latest
+    env:
+      WalletSdkTestM1: $WALLETSDKTESTM1
     steps:
     - uses: actions/checkout@v3
 

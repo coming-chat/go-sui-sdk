@@ -11,7 +11,7 @@ jobs:
   TestAndBuild:
     runs-on: ubuntu-latest
     env:
-      WalletSdkTestM1: $WALLETSDKTESTM1
+      WalletSdkTestM1: ${{ secrets.WALLETSDKTESTM1 }}
     steps:
     - uses: actions/checkout@v3
 

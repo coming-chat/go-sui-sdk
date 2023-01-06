@@ -257,3 +257,9 @@ type SuiCoinMetadata struct {
 	Name        string   `json:"name"`
 	Symbol      string   `json:"symbol"`
 }
+
+type SuiCoinBalance struct {
+	CoinType        string `json:"coinType"`
+	CoinObjectCount int64  `json:"coinObjectCount"`
+	TotalBalance    int64  `json:"totalBalance"`
+}

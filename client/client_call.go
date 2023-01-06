@@ -263,3 +263,19 @@ func (c *Client) PaySui(ctx context.Context, signer types.Address, inputCoins []
 	err := c.CallContext(ctx, &resp, "sui_paySui", signer, inputCoins, recipients, amount, gasBudget)
 	return &resp, err
 }
+
+func (c *Client) GetAllBalances(ctx context.Context, address types.Address) ([]types.SuiCoinBalance, error) {
+	var resp []types.SuiCoinBalance
+	err := c.CallContext(ctx, &resp, "sui_getAllBalances", address)
+	return resp, err
+}
+
+func (c *Client) GetBalance(ctx context.Context, address types.Address, coinType string) (*types.SuiCoinBalance, error) {
+	resp := types.SuiCoinBalance{}
+	arg := []any{address}
+	if coinType != "" {
+		arg = append(arg, coinType)
+	}
+	err := c.CallContext(ctx, &resp, "sui_getBalance", arg...)
+	return &resp, err
+}

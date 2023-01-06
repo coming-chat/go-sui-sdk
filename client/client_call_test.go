@@ -433,3 +433,29 @@ func TestClient_PaySui(t *testing.T) {
 	}
 	t.Logf("%+v", tx)
 }
+
+func TestClient_GetAllBalances(t *testing.T) {
+	chain := DevnetClient(t)
+	address, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
+	if err != nil {
+		t.Fatal(err)
+	}
+	balances, err := chain.GetAllBalances(context.TODO(), *address)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("%+v", balances)
+}
+
+func TestClient_GetBalance(t *testing.T) {
+	chain := DevnetClient(t)
+	address, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
+	if err != nil {
+		t.Fatal(err)
+	}
+	balance, err := chain.GetBalance(context.TODO(), *address, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("%+v", balance)
+}

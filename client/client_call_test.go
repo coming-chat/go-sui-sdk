@@ -250,7 +250,6 @@ func TestClient_DryRunTransaction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	typeArgs := []string{}
 	objectId, _ := types.NewHexData("0x00e2cd853b00a1531b5a5579156a174891543e50")
 	arguments := []any{
 		objectId,
@@ -260,7 +259,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 	if err != nil {
 		t.Logf("%e", err)
 	}
-	tx, err := c.MoveCall(context.Background(), *signer, *packageId, "interfaces", "get_dola_token_liquidity", typeArgs, arguments, &coin.Reference.ObjectId, 1000)
+	tx, err := c.MoveCall(context.Background(), *signer, *packageId, "interfaces", "get_dola_token_liquidity", []string{}, arguments, &coin.Reference.ObjectId, 1000)
 	if err != nil {
 		t.Logf("%e", err)
 	}

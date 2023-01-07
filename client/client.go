@@ -59,7 +59,7 @@ func DialWithClient(rpcUrl string, c *http.Client) (client *Client, err error) {
 }
 
 // Call performs a JSON-RPC call with the given arguments and unmarshals into
-// result if no error occurred.
+// the result if no error occurred.
 //
 // The result must be a pointer so that package json can unmarshal into it. You
 // can also pass nil, in which case the result is ignored.

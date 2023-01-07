@@ -21,7 +21,7 @@ func NewResourceType(str string) (*ResourceType, error) {
 	if ltIdx != -1 {
 		gtIdx := strings.LastIndex(str, ">")
 		if gtIdx != len(str)-1 {
-			return nil, errors.New("Invalid type string literal.")
+			return nil, errors.New("invalid type string literal")
 		}
 		subType, err = NewResourceType(str[ltIdx+1 : gtIdx])
 		if err != nil {
@@ -32,7 +32,7 @@ func NewResourceType(str string) (*ResourceType, error) {
 
 	parts := strings.Split(str, "::")
 	if len(parts) != 3 {
-		return nil, errors.New("Invalid type string literal.")
+		return nil, errors.New("invalid type string literal")
 	}
 	addr, err := NewAddressFromHex(parts[0])
 	if err != nil {

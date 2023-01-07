@@ -38,21 +38,21 @@ func NewHexData(str string) (*HexData, error) {
 	return &HexData{data}, nil
 }
 
-func (h HexData) Data() []byte {
-	return h.data
+func (a *HexData) Data() []byte {
+	return a.data
 }
-func (h HexData) Length() int {
-	return len(h.data)
+func (a *HexData) Length() int {
+	return len(a.data)
 }
-func (h HexData) String() string {
-	return "0x" + hex.EncodeToString(h.data)
-}
-
-func (h HexData) MarshalJSON() ([]byte, error) {
-	return json.Marshal(h.String())
+func (a *HexData) String() string {
+	return "0x" + hex.EncodeToString(a.data)
 }
 
-func (h *HexData) UnmarshalJSON(data []byte) error {
+func (a *HexData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(a.String())
+}
+
+func (a *HexData) UnmarshalJSON(data []byte) error {
 	str := ""
 	err := json.Unmarshal(data, &str)
 	if err != nil {
@@ -60,7 +60,7 @@ func (h *HexData) UnmarshalJSON(data []byte) error {
 	}
 	tmp, err := NewHexData(str)
 	if err == nil {
-		h.data = tmp.data
+		a.data = tmp.data
 	}
 	return err
 }
@@ -77,17 +77,17 @@ func NewBase64Data(str string) (*Base64Data, error) {
 	return &Base64Data{data}, nil
 }
 
-func (h Base64Data) Data() []byte {
+func (h *Base64Data) Data() []byte {
 	return h.data
 }
-func (h Base64Data) Length() int {
+func (h *Base64Data) Length() int {
 	return len(h.data)
 }
-func (h Base64Data) String() string {
+func (h *Base64Data) String() string {
 	return base64.StdEncoding.EncodeToString(h.data)
 }
 
-func (h Base64Data) MarshalJSON() ([]byte, error) {
+func (h *Base64Data) MarshalJSON() ([]byte, error) {
 	return json.Marshal(h.String())
 }
 

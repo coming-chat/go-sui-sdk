@@ -42,7 +42,7 @@ func (cs Coins) PickCoinNoLess(amount uint64) (*Coin, error) {
 			return &coin, nil
 		}
 	}
-	return nil, errors.New("No coin is enough to cover the gas.")
+	return nil, errors.New("no coin is enough to cover the gas")
 }
 
 // PickSUICoinsWithGas pick coins, which sum >= amount, and pick a gas coin >= gasAmount which not in coins

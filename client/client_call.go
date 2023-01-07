@@ -53,7 +53,7 @@ func (c *Client) GetCoinsOwnedByAddress(ctx context.Context, address types.Addre
 	return coins, nil
 }
 
-// @param filterType You can specify filtering out the specified resources, this will fetch all resources if it is not empty ""
+// BatchGetObjectsOwnedByAddress @param filterType You can specify filtering out the specified resources, this will fetch all resources if it is not empty ""
 func (c *Client) BatchGetObjectsOwnedByAddress(ctx context.Context, address types.Address, filterType string) ([]types.ObjectRead, error) {
 	filterType = strings.TrimSpace(filterType)
 	return c.BatchGetFilteredObjectsOwnedByAddress(ctx, address, func(oi types.ObjectInfo) bool {
@@ -66,7 +66,7 @@ func (c *Client) BatchGetFilteredObjectsOwnedByAddress(ctx context.Context, addr
 	if err != nil {
 		return nil, err
 	}
-	elems := []BatchElem{}
+	var elems []BatchElem
 	for _, info := range infos {
 		if filter != nil && filter(info) == false {
 			// ignore objects if non-specified type
@@ -120,13 +120,13 @@ func (c *Client) GetObject(ctx context.Context, objID types.ObjectId) (*types.Ob
 }
 
 func (c *Client) GetObjectsOwnedByAddress(ctx context.Context, address types.Address) ([]types.ObjectInfo, error) {
-	resp := []types.ObjectInfo{}
+	var resp []types.ObjectInfo
 	err := c.CallContext(ctx, &resp, "sui_getObjectsOwnedByAddress", address)
 	return resp, err
 }
 
 func (c *Client) GetObjectsOwnedByObject(ctx context.Context, objID types.ObjectId) ([]types.ObjectInfo, error) {
-	resp := []types.ObjectInfo{}
+	var resp []types.ObjectInfo
 	err := c.CallContext(ctx, &resp, "sui_getObjectsOwnedByObject", objID)
 	return resp, err
 }
@@ -195,14 +195,14 @@ func (c *Client) GetTransaction(ctx context.Context, digest string) (*types.Tran
 	return &resp, err
 }
 
-// Create an unsigned transaction to merge multiple coins into one coin.
+// MergeCoins Create an unsigned transaction to merge multiple coins into one coin.
 func (c *Client) MergeCoins(ctx context.Context, signer types.Address, primaryCoin, coinToMerge types.ObjectId, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	err := c.CallContext(ctx, &resp, "sui_mergeCoins", signer, primaryCoin, coinToMerge, gas, gasBudget)
 	return &resp, err
 }
 
-// Create an unsigned transaction to execute a Move call on the network, by calling the specified function in the module of a given package.
+// MoveCall Create an unsigned transaction to execute a Move call on the network, by calling the specified function in the module of a given package.
 // TODO: not support param `typeArguments` yet.
 // So now only methods with `typeArguments` are supported
 func (c *Client) MoveCall(ctx context.Context, signer types.Address, packageId types.ObjectId, module, function string, typeArgs []string, arguments []any, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
@@ -211,35 +211,35 @@ func (c *Client) MoveCall(ctx context.Context, signer types.Address, packageId t
 	return &resp, err
 }
 
-// Create an unsigned transaction to split a coin object into multiple coins.
+// SplitCoin Create an unsigned transaction to split a coin object into multiple coins.
 func (c *Client) SplitCoin(ctx context.Context, signer types.Address, Coin types.ObjectId, splitAmounts []uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	err := c.CallContext(ctx, &resp, "sui_splitCoin", signer, Coin, splitAmounts, gas, gasBudget)
 	return &resp, err
 }
 
-// Create an unsigned transaction to split a coin object into multiple equal-size coins.
+// SplitCoinEqual Create an unsigned transaction to split a coin object into multiple equal-size coins.
 func (c *Client) SplitCoinEqual(ctx context.Context, signer types.Address, Coin types.ObjectId, splitCount uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	err := c.CallContext(ctx, &resp, "sui_splitCoinEqual", signer, Coin, splitCount, gas, gasBudget)
 	return &resp, err
 }
 
-// Create an unsigned transaction to transfer an object from one address to another. The object's type must allow public transfers
+// TransferObject Create an unsigned transaction to transfer an object from one address to another. The object's type must allow public transfers
 func (c *Client) TransferObject(ctx context.Context, signer, recipient types.Address, objID types.ObjectId, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	err := c.CallContext(ctx, &resp, "sui_transferObject", signer, objID, gas, gasBudget, recipient)
 	return &resp, err
 }
 
-// Create an unsigned transaction to send SUI coin object to a Sui address. The SUI object is also used as the gas object.
+// TransferSui Create an unsigned transaction to send SUI coin object to a Sui address. The SUI object is also used as the gas object.
 func (c *Client) TransferSui(ctx context.Context, signer, recipient types.Address, suiObjID types.ObjectId, amount, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	err := c.CallContext(ctx, &resp, "sui_transferSui", signer, suiObjID, gasBudget, recipient, amount)
 	return &resp, err
 }
 
-// Create an unsigned transaction to send all SUI coins to one recipient.
+// PayAllSui Create an unsigned transaction to send all SUI coins to one recipient.
 func (c *Client) PayAllSui(ctx context.Context, signer, recipient types.Address, inputCoins []types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	err := c.CallContext(ctx, &resp, "sui_payAllSui", signer, inputCoins, recipient, gasBudget)
@@ -279,3 +279,27 @@ func (c *Client) GetBalance(ctx context.Context, address types.Address, coinType
 	err := c.CallContext(ctx, &resp, "sui_getBalance", arg...)
 	return &resp, err
 }
+
+/*
+TODO
+sui_devInspectMoveCall
+sui_devInspectTransaction
+sui_executeTransactionSerializedSig
+sui_getAllCoins
+sui_getCoins
+sui_getCommitteeInfo
+sui_getDynamicFieldObject
+sui_getDynamicFields
+sui_getEvents
+sui_getMoveFunctionArgTypes
+sui_getNormalizedMoveFunction
+sui_getNormalizedMoveModule
+sui_getNormalizedMoveModulesByPackage
+sui_getNormalizedMoveStruct
+sui_getSuiSystemState
+sui_getTotalSupply
+sui_getTransactionAuthSigners
+sui_getTransactions
+sui_subscribeEvent
+sui_tryGetPastObject
+*/

@@ -12,10 +12,11 @@ import (
 
 type Address = HexData
 
+// NewAddressFromHex
 /**
  * Creates Address from a hex string.
  * @param addr Hex string can be with a prefix or without a prefix,
- *   e.g. '0x1aa' or '1aa'. Hex string will be left padded with 0s if too short.
+ * e.g. '0x1aa' or '1aa'. Hex string will be left padded with 0s if too short.
  */
 func NewAddressFromHex(addr string) (*Address, error) {
 	if strings.HasPrefix(addr, "0x") || strings.HasPrefix(addr, "0X") {
@@ -25,24 +26,24 @@ func NewAddressFromHex(addr string) (*Address, error) {
 		addr = "0" + addr
 	}
 
-	bytes, err := hex.DecodeString(addr)
+	data, err := hex.DecodeString(addr)
 	if err != nil {
 		return nil, err
 	}
 	const addressLength = 20
-	if len(bytes) > addressLength {
-		return nil, fmt.Errorf("Hex string is too long. Address's length is %v bytes.", addressLength)
+	if len(data) > addressLength {
+		return nil, fmt.Errorf("hex string is too long. Address's length is %v data", addressLength)
 	}
 
 	res := [addressLength]byte{}
-	copy(res[addressLength-len(bytes):], bytes[:])
+	copy(res[addressLength-len(data):], data[:])
 	return &Address{
 		data: res[:],
 	}, nil
 }
 
-// Returns the address with leading zeros trimmed, e.g. 0x2
-func (a Address) ShortString() string {
+// ShortString Returns the address with leading zeros trimmed, e.g. 0x2
+func (a *Address) ShortString() string {
 	return "0x" + strings.TrimLeft(hex.EncodeToString(a.data), "0")
 }
 
@@ -228,12 +229,12 @@ type ObjectInfo struct {
 	PreviousTransaction string `json:"previousTransaction"`
 }
 
-// See: sui/crates/sui-types/src/intent.rs
+// IntentBytes See: sui/crates/sui-types/src/intent.rs
 // This is currently hardcoded with [IntentScope::TransactionData = 0, Version::V0 = 0, AppId::Sui = 0]
-var INTENT_BYTES = []byte{0, 0, 0}
+var IntentBytes = []byte{0, 0, 0}
 
 func (txn *TransactionBytes) SignWith(privateKey ed25519.PrivateKey) *SignedTransaction {
-	signTx := bytes.NewBuffer(INTENT_BYTES)
+	signTx := bytes.NewBuffer(IntentBytes)
 	signTx.Write(txn.TxBytes.Data())
 	message := signTx.Bytes()
 	signature := ed25519.Sign(privateKey, message)

@@ -43,7 +43,7 @@ func NewAddressFromHex(addr string) (*Address, error) {
 }
 
 // ShortString Returns the address with leading zeros trimmed, e.g. 0x2
-func (a *Address) ShortString() string {
+func (a Address) ShortString() string {
 	return "0x" + strings.TrimLeft(hex.EncodeToString(a.data), "0")
 }
 
@@ -263,4 +263,14 @@ type SuiCoinBalance struct {
 	CoinType        string `json:"coinType"`
 	CoinObjectCount int64  `json:"coinObjectCount"`
 	TotalBalance    int64  `json:"totalBalance"`
+}
+
+type DevInspectResults struct {
+	Effects TransactionEffects `json:"effects"`
+	Results DevInspectResult   `json:"results"`
+}
+
+type DevInspectResult struct {
+	Err string `json:"Err,omitempty"`
+	Ok  any    `json:"Ok,omitempty"`
 }

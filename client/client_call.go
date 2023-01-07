@@ -280,9 +280,14 @@ func (c *Client) GetBalance(ctx context.Context, address types.Address, coinType
 	return &resp, err
 }
 
+func (c *Client) DevInspectMoveCall(ctx context.Context, signer types.Address, packageId types.ObjectId, module, function string, typeArgs []string, arguments []any) (*types.DevInspectResults, error) {
+	var resp types.DevInspectResults
+	err := c.CallContext(ctx, &resp, "sui_devInspectMoveCall", signer, packageId, module, function, typeArgs, arguments)
+	return &resp, err
+}
+
 /*
 TODO
-sui_devInspectMoveCall
 sui_devInspectTransaction
 sui_executeTransactionSerializedSig
 sui_getAllCoins
@@ -302,4 +307,5 @@ sui_getTransactionAuthSigners
 sui_getTransactions
 sui_subscribeEvent
 sui_tryGetPastObject
+sui_publish
 */

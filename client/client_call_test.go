@@ -458,3 +458,29 @@ func TestClient_GetBalance(t *testing.T) {
 	}
 	t.Logf("%+v", balance)
 }
+
+func TestClient_DevInspectMoveCall(t *testing.T) {
+	chain := DevnetClient(t)
+
+	signer, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
+	require.Nil(t, err)
+	packageId, err := types.NewHexData("0x2ac78d1e11aabe14a9b22a9d574ec10079bc10b0")
+	require.Nil(t, err)
+
+	devInspectResults, err := chain.DevInspectMoveCall(
+		context.TODO(),
+		*signer,
+		*packageId,
+		"dmens",
+		"post",
+		[]string{},
+		[]any{
+			"0x1a933e6c29a0113905449a5de595c214579adff7",
+			0,
+			0,
+			"hello",
+		},
+	)
+	require.Nil(t, err)
+	t.Logf("%T", devInspectResults)
+}

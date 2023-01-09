@@ -1,6 +1,8 @@
 package client
 
 import (
+	"context"
+	"github.com/coming-chat/go-sui/types"
 	"os"
 	"testing"
 
@@ -8,10 +10,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const DevnetRpcUrl = "https://fullnode.devnet.sui.io"
-const TestnetRpcUrl = "https://fullnode.testnet.sui.io"
+const (
+	DevNetRpcUrl  = "https://fullnode.devnet.sui.io"
+	TestnetRpcUrl = "https://fullnode.testnet.sui.io"
+)
 
-var M1Mnemonic = os.Getenv("WalletSdkTestM1")
+var (
+	Address, _ = types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
+	M1Mnemonic = os.Getenv("WalletSdkTestM1")
+)
 
 func TestnetClient(t *testing.T) *Client {
 	c, err := Dial(TestnetRpcUrl)

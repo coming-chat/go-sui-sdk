@@ -40,7 +40,7 @@ func TestClient_GetTransactionsInRange(t *testing.T) {
 			name: "test for devnet",
 			fields: fields{
 				idCounter: 0,
-				rpcUrl:    DevnetRpcUrl,
+				rpcUrl:    DevNetRpcUrl,
 				client:    client,
 			},
 			args: args{
@@ -91,7 +91,7 @@ func TestClient_BatchGetTransaction(t *testing.T) {
 			name: "test for devnet transaction",
 			fields: fields{
 				idCounter: 1,
-				rpcUrl:    DevnetRpcUrl,
+				rpcUrl:    DevNetRpcUrl,
 				client:    client,
 			},
 			args: args{
@@ -147,7 +147,7 @@ func TestClient_BatchGetObject(t *testing.T) {
 			name: "test for devnet",
 			fields: fields{
 				idCounter: 1,
-				rpcUrl:    DevnetRpcUrl,
+				rpcUrl:    DevNetRpcUrl,
 				client:    client,
 			},
 			args: args{
@@ -201,7 +201,7 @@ func TestClient_GetObject(t *testing.T) {
 			name: "test for devnet",
 			fields: fields{
 				idCounter: 1,
-				rpcUrl:    DevnetRpcUrl,
+				rpcUrl:    DevNetRpcUrl,
 				client:    client,
 			},
 			args: args{
@@ -230,7 +230,7 @@ func TestClient_GetObject(t *testing.T) {
 }
 
 func TestClient_DryRunTransaction(t *testing.T) {
-	c, err := Dial(DevnetRpcUrl)
+	c, err := Dial(DevNetRpcUrl)
 	if err != nil {
 		t.Logf("%e", err)
 	}
@@ -327,7 +327,7 @@ func TestClient_GetSuiCoinsOwnedByAddress(t *testing.T) {
 			name: "case 1",
 			fields: fields{
 				idCounter: 1,
-				rpcUrl:    DevnetRpcUrl,
+				rpcUrl:    DevNetRpcUrl,
 				client:    client,
 			},
 			args: args{

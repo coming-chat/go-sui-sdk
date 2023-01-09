@@ -270,6 +270,7 @@ func (c *Client) GetAllBalances(ctx context.Context, address types.Address) ([]t
 	return resp, err
 }
 
+// GetBalance to use default sui coin(0x2::sui::SUI) when coinType is nil
 func (c *Client) GetBalance(ctx context.Context, address types.Address, coinType *string) (*types.SuiCoinBalance, error) {
 	resp := types.SuiCoinBalance{}
 	return &resp, c.CallContext(ctx, &resp, "sui_getBalance", address, coinType)
@@ -287,6 +288,8 @@ func (c *Client) DevInspectTransaction(ctx context.Context, txByte types.Base64D
 	return &resp, err
 }
 
+// GetCoins to use default sui coin(0x2::sui::SUI) when coinType is nil
+// start with the first object when cursor is nil
 func (c *Client) GetCoins(ctx context.Context, address types.Address, coinType *string, cursor *types.ObjectId, limit uint) (*types.CoinPage, error) {
 	var resp types.CoinPage
 	return &resp, c.CallContext(ctx, &resp, "sui_getCoins", address, coinType, cursor, limit)

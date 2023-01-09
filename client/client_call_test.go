@@ -462,3 +462,42 @@ func TestBatchGetObjectsOwnedByAddress(t *testing.T) {
 
 	t.Logf("%#v", coins)
 }
+
+func TestClient_GetAllCoins(t *testing.T) {
+	chain := DevnetClient(t)
+	type args struct {
+		ctx     context.Context
+		address types.Address
+		cursor  *types.ObjectId
+		limit   uint
+	}
+	tests := []struct {
+		name    string
+		chain   *Client
+		args    args
+		want    *types.CoinPage
+		wantErr bool
+	}{
+		{
+			name:  "test case 1",
+			chain: chain,
+			args: args{
+				ctx:     context.TODO(),
+				address: *Address,
+				cursor:  nil,
+				limit:   3,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := chain.GetAllCoins(tt.args.ctx, tt.args.address, tt.args.cursor, tt.args.limit)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAllCoins() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			t.Logf("%#v", got)
+		})
+	}
+}

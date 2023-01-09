@@ -10,12 +10,7 @@ import (
 )
 
 func TestMintNFT(t *testing.T) {
-	account := M1Account(t)
-	client := DevnetClient(t)
-
-	signer, err := types.NewAddressFromHex(account.Address)
-	require.Nil(t, err)
-	gasBudget := uint64(12000)
+	cli := DevnetClient(t)
 
 	var (
 		timeNow = time.Now().Format("06-01-02 15:04")
@@ -23,26 +18,30 @@ func TestMintNFT(t *testing.T) {
 		nftDesc = "This is a NFT created by ComingChat"
 		nftUrl  = "https://coming.chat/favicon.ico"
 	)
-	txnBytes, err := client.MintNFT(context.Background(), *signer, nftName, nftDesc, nftUrl, nil, gasBudget)
-	require.Nil(t, err)
+	coins, err := cli.GetSuiCoinsOwnedByAddress(context.Background(), *Address)
+	require.NoError(t, err)
+
+	firstCoin, err := coins.PickCoinNoLess(12000)
+	require.NoError(t, err)
+
+	txnBytes, err := cli.MintNFT(context.Background(), *Address, nftName, nftDesc, nftUrl, &firstCoin.Reference.ObjectId, 12000)
+	require.NoError(t, err)
 	t.Log(txnBytes.TxBytes)
 
-	// sign & send
-	signedTxn := txnBytes.SignWith(account.PrivateKey)
-	response, err := client.ExecuteTransaction(context.Background(), *signedTxn, types.TxnRequestTypeWaitForLocalExecution)
-	require.Nil(t, err)
-	t.Log("hash: ", response.TransactionDigest())
+	response, err := cli.DevInspectTransaction(context.Background(), txnBytes.TxBytes)
+	require.NoError(t, err)
+	t.Logf("%#v", response)
 }
 
 func TestGetDevNFTs(t *testing.T) {
 	account := M1Account(t)
 	address, err := types.NewAddressFromHex(account.Address)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
-	client := DevnetClient(t)
+	cli := DevnetClient(t)
 
-	nfts, err := client.GetNFTsOwnedByAddress(context.Background(), *address)
-	require.Nil(t, err)
+	nfts, err := cli.GetNFTsOwnedByAddress(context.Background(), *address)
+	require.NoError(t, err)
 	for _, nft := range nfts {
 		t.Log(nft.Details)
 	}

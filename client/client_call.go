@@ -270,14 +270,9 @@ func (c *Client) GetAllBalances(ctx context.Context, address types.Address) ([]t
 	return resp, err
 }
 
-func (c *Client) GetBalance(ctx context.Context, address types.Address, coinType string) (*types.SuiCoinBalance, error) {
+func (c *Client) GetBalance(ctx context.Context, address types.Address, coinType *string) (*types.SuiCoinBalance, error) {
 	resp := types.SuiCoinBalance{}
-	arg := []any{address}
-	if coinType != "" {
-		arg = append(arg, coinType)
-	}
-	err := c.CallContext(ctx, &resp, "sui_getBalance", arg...)
-	return &resp, err
+	return &resp, c.CallContext(ctx, &resp, "sui_getBalance", address, coinType)
 }
 
 func (c *Client) DevInspectMoveCall(ctx context.Context, signer types.Address, packageId types.ObjectId, module, function string, typeArgs []string, arguments []any) (*types.DevInspectResults, error) {

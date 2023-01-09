@@ -133,3 +133,7 @@ type CoinObject struct {
 	Digest       string   `json:"digest"`
 	Balance      int64    `json:"balance"`
 }
+
+type Supply struct {
+	Value uint64 `json:"value"`
+}

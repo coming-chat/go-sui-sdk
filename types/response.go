@@ -61,7 +61,7 @@ type TransactionResponse struct {
 }
 
 type ExecuteTransactionEffects struct {
-	TransactionEffectsDigest Digest `json:"transactionEffectsDigest"`
+	TransactionEffectsDigest string `json:"transactionEffectsDigest"`
 
 	Effects      TransactionEffects `json:"effects"`
 	AuthSignInfo *AuthSignInfo      `json:"authSignInfo"`

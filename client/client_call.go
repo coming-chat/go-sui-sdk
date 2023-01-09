@@ -281,12 +281,21 @@ func (c *Client) DevInspectMoveCall(ctx context.Context, signer types.Address, p
 	return &resp, err
 }
 
+func (c *Client) DevInspectTransaction(ctx context.Context, txByte types.Base64Data) (*types.DevInspectResults, error) {
+	var resp types.DevInspectResults
+	err := c.CallContext(ctx, &resp, "sui_devInspectTransaction", txByte)
+	return &resp, err
+}
+
+func (c *Client) GetCoins(ctx context.Context, address types.Address, coinType *string, cursor *types.ObjectId, limit uint) (*types.CoinPage, error) {
+	var resp types.CoinPage
+	return &resp, c.CallContext(ctx, &resp, "sui_getCoins", address, coinType, cursor, limit)
+}
+
 /*
 TODO
-sui_devInspectTransaction
 sui_executeTransactionSerializedSig
 sui_getAllCoins
-sui_getCoins
 sui_getCommitteeInfo
 sui_getDynamicFieldObject
 sui_getDynamicFields

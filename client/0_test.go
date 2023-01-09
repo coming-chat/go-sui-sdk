@@ -27,8 +27,14 @@ func TestnetClient(t *testing.T) *Client {
 }
 
 func DevnetClient(t *testing.T) *Client {
-	c, err := Dial(DevnetRpcUrl)
+	c, err := Dial(DevNetRpcUrl)
+
+	coins, err := c.GetCoins(context.TODO(), *Address, nil, nil, 1)
 	require.Nil(t, err)
+	if len(coins.Data) == 0 {
+		_, err = FaucetFundAccount(Address.String(), DevNetFaucetUrl)
+		require.NoError(t, err)
+	}
 	return c
 }
 

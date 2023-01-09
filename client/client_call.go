@@ -295,10 +295,16 @@ func (c *Client) GetCoins(ctx context.Context, address types.Address, coinType *
 	return &resp, c.CallContext(ctx, &resp, "sui_getCoins", address, coinType, cursor, limit)
 }
 
+// GetAllCoins
+// start with the first object when cursor is nil
+func (c *Client) GetAllCoins(ctx context.Context, address types.Address, cursor *types.ObjectId, limit uint) (*types.CoinPage, error) {
+	var resp types.CoinPage
+	return &resp, c.CallContext(ctx, &resp, "sui_getAllCoins", address, cursor, limit)
+}
+
 /*
 TODO
 sui_executeTransactionSerializedSig
-sui_getAllCoins
 sui_getCommitteeInfo
 sui_getDynamicFieldObject
 sui_getDynamicFields

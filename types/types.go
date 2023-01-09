@@ -272,5 +272,5 @@ type DevInspectResults struct {
 
 type DevInspectResult struct {
 	Err string `json:"Err,omitempty"`
-	Ok  any    `json:"Ok,omitempty"`
+	Ok  any    `json:"Ok,omitempty"` //Result_of_Array_of_Tuple_of_uint_and_SuiExecutionResult_or_String
 }

@@ -480,3 +480,33 @@ func TestClient_DevInspectMoveCall(t *testing.T) {
 	require.Nil(t, err)
 	t.Logf("%T", devInspectResults)
 }
+
+func TestClient_DevInspectTransaction(t *testing.T) {
+	chain := DevnetClient(t)
+
+	signer, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
+	require.Nil(t, err)
+	coin, err := types.NewHexData("0x451d7adec18632a43c1d7948e504be0ee07ef1e9")
+	require.Nil(t, err)
+	txnBytes, err := chain.MintNFT(
+		context.TODO(),
+		*signer,
+		"ComingChat NFT",
+		"This is a NFT created by ComingChat",
+		"https://coming.chat/favicon.ico",
+		coin,
+		12000,
+	)
+	require.Nil(t, err)
+	devInspectResults, err := chain.DevInspectTransaction(context.TODO(), txnBytes.TxBytes)
+	require.Nil(t, err)
+	t.Logf("%#v", devInspectResults)
+}
+
+func TestClient_GetCoins(t *testing.T) {
+	chain := DevnetClient(t)
+	defaultCoinType := "0x2::sui::SUI"
+	coins, err := chain.GetCoins(context.TODO(), *Address, &defaultCoinType, nil, 1)
+	require.NoError(t, err)
+	t.Logf("%#v", coins)
+}

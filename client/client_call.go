@@ -302,6 +302,11 @@ func (c *Client) GetAllCoins(ctx context.Context, address types.Address, cursor 
 	return &resp, c.CallContext(ctx, &resp, "sui_getAllCoins", address, cursor, limit)
 }
 
+func (c *Client) GetTotalSupply(ctx context.Context, coinType string) (*types.Supply, error) {
+	var resp types.Supply
+	return &resp, c.CallContext(ctx, &resp, "sui_getTotalSupply", coinType)
+}
+
 /*
 TODO
 sui_executeTransactionSerializedSig
@@ -315,7 +320,6 @@ sui_getNormalizedMoveModule
 sui_getNormalizedMoveModulesByPackage
 sui_getNormalizedMoveStruct
 sui_getSuiSystemState
-sui_getTotalSupply
 sui_getTransactionAuthSigners
 sui_getTransactions
 sui_subscribeEvent

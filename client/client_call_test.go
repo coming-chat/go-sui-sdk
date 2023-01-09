@@ -501,3 +501,38 @@ func TestClient_GetAllCoins(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_GetTotalSupply(t *testing.T) {
+	chain := DevnetClient(t)
+	type args struct {
+		ctx      context.Context
+		coinType string
+	}
+	tests := []struct {
+		name    string
+		chain   *Client
+		args    args
+		want    uint64
+		wantErr bool
+	}{
+		{
+			name:  "test 1",
+			chain: chain,
+			args: args{
+				context.TODO(),
+				"0x2::sui::SUI",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.chain.GetTotalSupply(tt.args.ctx, tt.args.coinType)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetTotalSupply() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			t.Logf("%d", got)
+		})
+	}
+}

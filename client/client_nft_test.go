@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coming-chat/go-sui/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,29 +17,25 @@ func TestMintNFT(t *testing.T) {
 		nftDesc = "This is a NFT created by ComingChat"
 		nftUrl  = "https://coming.chat/favicon.ico"
 	)
-	coins, err := cli.GetSuiCoinsOwnedByAddress(context.Background(), *Address)
+	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
 
 	firstCoin, err := coins.PickCoinNoLess(12000)
 	require.NoError(t, err)
 
-	txnBytes, err := cli.MintNFT(context.Background(), *Address, nftName, nftDesc, nftUrl, &firstCoin.Reference.ObjectId, 12000)
+	txnBytes, err := cli.MintNFT(context.TODO(), *Address, nftName, nftDesc, nftUrl, &firstCoin.Reference.ObjectId, 12000)
 	require.NoError(t, err)
 	t.Log(txnBytes.TxBytes)
 
-	response, err := cli.DevInspectTransaction(context.Background(), txnBytes.TxBytes)
+	response, err := cli.DevInspectTransaction(context.TODO(), txnBytes.TxBytes)
 	require.NoError(t, err)
 	t.Logf("%#v", response)
 }
 
 func TestGetDevNFTs(t *testing.T) {
-	account := M1Account(t)
-	address, err := types.NewAddressFromHex(account.Address)
-	require.NoError(t, err)
-
 	cli := DevnetClient(t)
 
-	nfts, err := cli.GetNFTsOwnedByAddress(context.Background(), *address)
+	nfts, err := cli.GetNFTsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
 	for _, nft := range nfts {
 		t.Log(nft.Details)

@@ -249,28 +249,3 @@ func (txn *TransactionBytes) SignWith(privateKey ed25519.PrivateKey) *SignedTran
 		PublicKey: &pub,
 	}
 }
-
-type SuiCoinMetadata struct {
-	Decimals    uint8    `json:"decimals"`
-	Description string   `json:"description"`
-	IconUrl     string   `json:"iconUrl,omitempty"`
-	Id          ObjectId `json:"id"`
-	Name        string   `json:"name"`
-	Symbol      string   `json:"symbol"`
-}
-
-type SuiCoinBalance struct {
-	CoinType        string `json:"coinType"`
-	CoinObjectCount int64  `json:"coinObjectCount"`
-	TotalBalance    int64  `json:"totalBalance"`
-}
-
-type DevInspectResults struct {
-	Effects TransactionEffects `json:"effects"`
-	Results DevInspectResult   `json:"results"`
-}
-
-type DevInspectResult struct {
-	Err string `json:"Err,omitempty"`
-	Ok  any    `json:"Ok,omitempty"` //Result_of_Array_of_Tuple_of_uint_and_SuiExecutionResult_or_String
-}

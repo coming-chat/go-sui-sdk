@@ -161,7 +161,7 @@ type ObjectOwnerInternal struct {
 	} `json:"Shared,omitempty"`
 }
 
-func (o *ObjectOwner) MarshalJSON() ([]byte, error) {
+func (o ObjectOwner) MarshalJSON() ([]byte, error) {
 	if o.string != nil {
 		data, err := json.Marshal(o.string)
 		if err != nil {

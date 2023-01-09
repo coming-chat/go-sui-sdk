@@ -448,11 +448,7 @@ func TestClient_GetAllBalances(t *testing.T) {
 
 func TestClient_GetBalance(t *testing.T) {
 	chain := DevnetClient(t)
-	address, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
-	if err != nil {
-		t.Fatal(err)
-	}
-	balance, err := chain.GetBalance(context.TODO(), *address, "")
+	balance, err := chain.GetBalance(context.TODO(), *Address, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

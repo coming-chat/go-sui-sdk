@@ -79,8 +79,6 @@ const (
 type ExecuteTransactionRequestType string
 
 const (
-	TxnRequestTypeImmediateReturn       ExecuteTransactionRequestType = "ImmediateReturn"
-	TxnRequestTypeWaitForTxCert         ExecuteTransactionRequestType = "WaitForTxCert"
 	TxnRequestTypeWaitForEffectsCert    ExecuteTransactionRequestType = "WaitForEffectsCert"
 	TxnRequestTypeWaitForLocalExecution ExecuteTransactionRequestType = "WaitForLocalExecution"
 )

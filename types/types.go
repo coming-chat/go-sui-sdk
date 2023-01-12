@@ -10,6 +10,10 @@ import (
 	"strings"
 )
 
+const (
+	SuiCoinType = "0x2::sui::SUI"
+)
+
 type Address = HexData
 
 // NewAddressFromHex

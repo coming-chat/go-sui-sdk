@@ -11,7 +11,7 @@ import (
 )
 
 func (c *Client) GetSuiCoinsOwnedByAddress(ctx context.Context, address types.Address) (types.Coins, error) {
-	return c.GetCoinsOwnedByAddress(ctx, address, "0x2::sui::SUI")
+	return c.GetCoinsOwnedByAddress(ctx, address, types.SuiCoinType)
 }
 
 func (c *Client) GetCoinsOwnedByAddress(ctx context.Context, address types.Address, coinType string) (coins types.Coins, err error) {

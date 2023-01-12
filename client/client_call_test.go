@@ -212,7 +212,7 @@ func TestClient_GetObjectsOwnedByAddress(t *testing.T) {
 	require.NoError(t, err)
 	t.Log(objects)
 
-	filterObject, err := cli.BatchGetObjectsOwnedByAddress(context.TODO(), *Address, "0x2::sui::SUI")
+	filterObject, err := cli.BatchGetObjectsOwnedByAddress(context.TODO(), *Address, types.SuiCoinType)
 	require.NoError(t, err)
 	t.Log(filterObject)
 }
@@ -252,7 +252,7 @@ func TestClient_GetSuiCoinsOwnedByAddress(t *testing.T) {
 
 func TestClient_GetCoinMetadata(t *testing.T) {
 	chain := DevnetClient(t)
-	metadata, err := chain.GetCoinMetadata(context.TODO(), "0x2::sui::SUI")
+	metadata, err := chain.GetCoinMetadata(context.TODO(), types.SuiCoinType)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -363,7 +363,7 @@ func TestClient_DevInspectTransaction(t *testing.T) {
 
 func TestClient_GetCoins(t *testing.T) {
 	chain := DevnetClient(t)
-	defaultCoinType := "0x2::sui::SUI"
+	defaultCoinType := types.SuiCoinType
 	coins, err := chain.GetCoins(context.TODO(), *Address, &defaultCoinType, nil, 1)
 	require.NoError(t, err)
 	t.Logf("%#v", coins)
@@ -520,7 +520,7 @@ func TestClient_GetTotalSupply(t *testing.T) {
 			chain: chain,
 			args: args{
 				context.TODO(),
-				"0x2::sui::SUI",
+				types.SuiCoinType,
 			},
 			wantErr: false,
 		},

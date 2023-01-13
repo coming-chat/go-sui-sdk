@@ -169,9 +169,11 @@ func TestClient_GetObject(t *testing.T) {
 
 func TestClient_DryRunTransaction(t *testing.T) {
 	chain := DevnetClient(t)
-	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
+	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
-	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coins.Data[0].CoinObjectId, 1000, 1000)
+	coin, err := coins.PickCoinNoLess(2000)
+	require.NoError(t, err)
+	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coin.Reference.ObjectId, 1000, 1000)
 	require.NoError(t, err)
 	type args struct {
 		ctx context.Context
@@ -207,9 +209,11 @@ func TestClient_DryRunTransaction(t *testing.T) {
 
 func TestClient_ExecuteTransactionSerializedSig(t *testing.T) {
 	chain := DevnetClient(t)
-	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
+	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
-	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coins.Data[0].CoinObjectId, 1000, 1000)
+	coin, err := coins.PickCoinNoLess(2000)
+	require.NoError(t, err)
+	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coin.Reference.ObjectId, 1000, 1000)
 	require.NoError(t, err)
 	account := M1Account(t)
 	signedTx := tx.SignSerializedSigWith(account.PrivateKey)
@@ -292,9 +296,11 @@ func TestClient_PaySui(t *testing.T) {
 
 	recipients := []types.Address{*Address}
 
-	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
+	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
-	inputCoins := []types.ObjectId{coins.Data[0].CoinObjectId}
+	coin, err := coins.PickCoinNoLess(2000)
+	require.NoError(t, err)
+	inputCoins := []types.ObjectId{coin.Reference.ObjectId}
 
 	tx, err := chain.PaySui(context.TODO(), *Address, inputCoins, recipients, []uint64{1000}, 1000)
 	require.NoError(t, err)
@@ -350,7 +356,9 @@ func TestClient_DevInspectMoveCall(t *testing.T) {
 
 func TestClient_DevInspectTransaction(t *testing.T) {
 	chain := DevnetClient(t)
-	coin, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
+	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+	require.NoError(t, err)
+	coin, err := coins.PickCoinNoLess(12000)
 	require.NoError(t, err)
 	txnBytes, err := chain.MintNFT(
 		context.TODO(),
@@ -358,7 +366,7 @@ func TestClient_DevInspectTransaction(t *testing.T) {
 		"ComingChat NFT",
 		"This is a NFT created by ComingChat",
 		"https://coming.chat/favicon.ico",
-		&coin.Data[0].CoinObjectId,
+		&coin.Reference.ObjectId,
 		12000,
 	)
 	require.NoError(t, err)

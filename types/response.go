@@ -123,7 +123,7 @@ type DevInspectResult struct {
 
 type CoinPage struct {
 	Data       []CoinObject `json:"data"`
-	NextCursor string       `json:"nextCursor"`
+	NextCursor *ObjectId    `json:"nextCursor"`
 }
 
 type CoinObject struct {

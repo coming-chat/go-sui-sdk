@@ -15,11 +15,10 @@ const (
 )
 
 type Coin struct {
-	Balance             uint64       `json:"balance"`
-	Type                string       `json:"type"`
-	Owner               *ObjectOwner `json:"owner"`
-	PreviousTransaction string       `json:"previousTransaction"`
-	Reference           *ObjectRef   `json:"reference"`
+	Balance   uint64     `json:"balance"`
+	Type      string     `json:"type"`
+	Owner     *Address   `json:"owner"`
+	Reference *ObjectRef `json:"reference"`
 }
 
 type Coins []Coin

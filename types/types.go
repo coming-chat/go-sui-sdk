@@ -80,6 +80,13 @@ const (
 	SignatureSchemeSecp256k1 SignatureScheme = "Secp256k1"
 )
 
+type SignatureSchemeSerialized byte
+
+const (
+	SignatureSchemeSerializedEd25519   SignatureSchemeSerialized = 0
+	SignatureSchemeSerializedSecp256k1 SignatureSchemeSerialized = 1
+)
+
 type ExecuteTransactionRequestType string
 
 const (
@@ -99,6 +106,14 @@ type SignedTransaction struct {
 
 	// signer's public key
 	PublicKey *Base64Data `json:"pub_key"`
+}
+
+type SignedTransactionSerializedSig struct {
+	// transaction data bytes
+	TxBytes *Base64Data `json:"tx_bytes"`
+
+	// transaction signature
+	Signature *Base64Data `json:"signature"`
 }
 
 type TransferObject struct {
@@ -249,5 +264,22 @@ func (txn *TransactionBytes) SignWith(privateKey ed25519.PrivateKey) *SignedTran
 		SigScheme: SignatureSchemeEd25519,
 		Signature: &sign,
 		PublicKey: &pub,
+	}
+}
+
+func (txn *TransactionBytes) SignSerializedSigWith(privateKey ed25519.PrivateKey) *SignedTransactionSerializedSig {
+	signTx := bytes.NewBuffer(IntentBytes)
+	signTx.Write(txn.TxBytes.Data())
+	message := signTx.Bytes()
+	signatureData := bytes.NewBuffer([]byte{byte(SignatureSchemeSerializedEd25519)})
+	signatureData.Write(ed25519.Sign(privateKey, message))
+	signatureData.Write(privateKey.Public().(ed25519.PublicKey))
+	signature := Base64Data{
+		data: signatureData.Bytes(),
+	}
+
+	return &SignedTransactionSerializedSig{
+		TxBytes:   &txn.TxBytes,
+		Signature: &signature,
 	}
 }

@@ -70,7 +70,7 @@ type TransactionBytes struct {
 type ObjectRef struct {
 	Digest   string   `json:"digest"`
 	ObjectId ObjectId `json:"objectId"`
-	Version  int      `json:"version"`
+	Version  int64    `json:"version"`
 }
 
 type SignatureScheme string

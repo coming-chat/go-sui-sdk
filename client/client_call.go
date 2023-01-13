@@ -294,9 +294,14 @@ func (c *Client) GetTotalSupply(ctx context.Context, coinType string) (*types.Su
 	return &resp, c.CallContext(ctx, &resp, "sui_getTotalSupply", coinType)
 }
 
+func (c *Client) ExecuteTransactionSerializedSig(ctx context.Context, txn types.SignedTransactionSerializedSig, requestType types.ExecuteTransactionRequestType) (*types.ExecuteTransactionResponse, error) {
+	resp := types.ExecuteTransactionResponse{}
+	err := c.CallContext(ctx, &resp, "sui_executeTransactionSerializedSig", txn.TxBytes, txn.Signature, requestType)
+	return &resp, err
+}
+
 /*
 TODO
-sui_executeTransactionSerializedSig
 sui_getCommitteeInfo
 sui_getDynamicFieldObject
 sui_getDynamicFields

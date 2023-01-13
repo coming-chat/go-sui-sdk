@@ -205,6 +205,19 @@ func TestClient_DryRunTransaction(t *testing.T) {
 	}
 }
 
+func TestClient_ExecuteTransactionSerializedSig(t *testing.T) {
+	chain := DevnetClient(t)
+	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
+	require.NoError(t, err)
+	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coins.Data[0].CoinObjectId, 1000, 1000)
+	require.NoError(t, err)
+	account := M1Account(t)
+	signedTx := tx.SignSerializedSigWith(account.PrivateKey)
+	txResult, err := chain.ExecuteTransactionSerializedSig(context.TODO(), *signedTx, types.TxnRequestTypeWaitForEffectsCert)
+	require.NoError(t, err)
+	t.Logf("%#v", txResult)
+}
+
 func TestClient_GetObjectsOwnedByAddress(t *testing.T) {
 	cli := DevnetClient(t)
 
@@ -312,21 +325,20 @@ func TestClient_GetBalance(t *testing.T) {
 func TestClient_DevInspectMoveCall(t *testing.T) {
 	chain := DevnetClient(t)
 
-	packageId, err := types.NewHexData("0x2ac78d1e11aabe14a9b22a9d574ec10079bc10b0")
+	packageId, err := types.NewHexData("0xb08873e9b44960657723604e4f6bc70c2d1c2b50")
 	require.NoError(t, err)
 
 	devInspectResults, err := chain.DevInspectMoveCall(
 		context.TODO(),
 		*Address,
 		*packageId,
-		"dmens",
-		"post",
+		"profile",
+		"register",
 		[]string{},
 		[]any{
-			"0x1a933e6c29a0113905449a5de595c214579adff7",
-			0,
-			0,
-			"hello",
+			"0xae71509d1be0c751bbced577bd1598e617161c29",
+			"",
+			"",
 		},
 	)
 	require.NoError(t, err)
@@ -338,18 +350,15 @@ func TestClient_DevInspectMoveCall(t *testing.T) {
 
 func TestClient_DevInspectTransaction(t *testing.T) {
 	chain := DevnetClient(t)
-
-	signer, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
-	require.NoError(t, err)
-	coin, err := types.NewHexData("0x451d7adec18632a43c1d7948e504be0ee07ef1e9")
+	coin, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
 	require.NoError(t, err)
 	txnBytes, err := chain.MintNFT(
 		context.TODO(),
-		*signer,
+		*Address,
 		"ComingChat NFT",
 		"This is a NFT created by ComingChat",
 		"https://coming.chat/favicon.ico",
-		coin,
+		&coin.Data[0].CoinObjectId,
 		12000,
 	)
 	require.NoError(t, err)
@@ -405,7 +414,7 @@ func TestClient_SplitCoinEqual(t *testing.T) {
 	getCoins, err := cli.GetCoins(context.TODO(), *Address, nil, nil, 0)
 	require.NoError(t, err)
 
-	txn, err := cli.SplitCoinEqual(context.TODO(), *Address, firstCoin.Reference.ObjectId, 2, &getCoins.Data[len(getCoins.Data)-1].CoinObjectId, 10000)
+	txn, err := cli.SplitCoinEqual(context.TODO(), *Address, firstCoin.Reference.ObjectId, 2, &getCoins.Data[len(getCoins.Data)-1].CoinObjectId, 1000)
 	require.NoError(t, err)
 
 	t.Log(txn.TxBytes.String())

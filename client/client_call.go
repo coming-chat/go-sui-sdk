@@ -2,9 +2,7 @@ package client
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/coming-chat/go-sui/types"
@@ -22,34 +20,23 @@ func (c *Client) GetCoinsOwnedByAddress(ctx context.Context, address types.Addre
 			return
 		}
 	}()
-	coinType = "0x2::coin::Coin<" + coinType + ">"
-	coinObjects, err := c.BatchGetObjectsOwnedByAddress(ctx, address, coinType)
+	//TODO Get only 200 items for the time being, and then add parameters to get more.
+	coinObjects, err := c.GetCoins(ctx, address, &coinType, nil, 200)
 	if err != nil {
 		return nil, err
 	}
-
-	for _, coin := range coinObjects {
-		if coin.Status != types.ObjectStatusExists {
-			continue
-		}
-		balanceString, ok := coin.Details.Data["fields"].(map[string]interface{})["balance"]
-		if !ok {
-			return nil, errors.New("this coin does not have balance field")
-		}
-		balance, err := strconv.ParseUint(balanceString.(string), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
+	for _, coin := range coinObjects.Data {
 		coins = append(coins, types.Coin{
-			Balance:             balance,
-			Type:                coinType,
-			Owner:               coin.Details.Owner,
-			PreviousTransaction: coin.Details.PreviousTransaction,
-			Reference:           coin.Details.Reference,
+			Balance: uint64(coin.Balance),
+			Type:    coin.CoinType,
+			Owner:   &address,
+			Reference: &types.ObjectRef{
+				Digest:   coin.Digest,
+				Version:  coin.Version,
+				ObjectId: coin.CoinObjectId,
+			},
 		})
 	}
-
 	return coins, nil
 }
 

@@ -41,6 +41,9 @@ func (cs Coins) PickCoinNoLess(amount uint64) (*Coin, error) {
 			return &coin, nil
 		}
 	}
+	if len(cs) <= 3 {
+		return nil, errors.New("insufficient balance")
+	}
 	return nil, errors.New("no coin is enough to cover the gas")
 }
 

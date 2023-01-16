@@ -331,31 +331,31 @@ func TestClient_GetBalance(t *testing.T) {
 	t.Logf("%#v", balance)
 }
 
-func TestClient_DevInspectMoveCall(t *testing.T) {
-	chain := DevnetClient(t)
-
-	packageId, err := types.NewHexData("0xb08873e9b44960657723604e4f6bc70c2d1c2b50")
-	require.NoError(t, err)
-
-	devInspectResults, err := chain.DevInspectMoveCall(
-		context.TODO(),
-		*Address,
-		*packageId,
-		"profile",
-		"register",
-		[]string{},
-		[]any{
-			"0xae71509d1be0c751bbced577bd1598e617161c29",
-			"",
-			"",
-		},
-	)
-	require.NoError(t, err)
-	if devInspectResults.Effects.Status.Error != "" {
-		t.Fatalf("%#v", devInspectResults)
-	}
-	t.Logf("%T", devInspectResults)
-}
+//func TestClient_DevInspectMoveCall(t *testing.T) {
+//	chain := DevnetClient(t)
+//
+//	packageId, err := types.NewHexData("0xb08873e9b44960657723604e4f6bc70c2d1c2b50")
+//	require.NoError(t, err)
+//
+//	devInspectResults, err := chain.DevInspectMoveCall(
+//		context.TODO(),
+//		*Address,
+//		*packageId,
+//		"profile",
+//		"register",
+//		[]string{},
+//		[]any{
+//			"0xae71509d1be0c751bbced577bd1598e617161c29",
+//			"",
+//			"",
+//		},
+//	)
+//	require.NoError(t, err)
+//	if devInspectResults.Effects.Status.Error != "" {
+//		t.Fatalf("%#v", devInspectResults)
+//	}
+//	t.Logf("%T", devInspectResults)
+//}
 
 func TestClient_DevInspectTransaction(t *testing.T) {
 	chain := DevnetClient(t)

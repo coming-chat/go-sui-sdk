@@ -271,6 +271,11 @@ func (c *Client) ExecuteTransactionSerializedSig(ctx context.Context, txn types.
 	return &resp, c.CallContext(ctx, &resp, "sui_executeTransactionSerializedSig", txn.TxBytes, txn.Signature, requestType)
 }
 
+func (c *Client) Publish(ctx context.Context, address types.Address, compiledModules []*types.Base64Data, gas types.ObjectId, gasBudget uint) (*types.TransactionBytes, error) {
+	var resp types.TransactionBytes
+	return &resp, c.CallContext(ctx, &resp, "sui_publish", address, compiledModules, gas, gasBudget)
+}
+
 /*
 TODO
 sui_getCommitteeInfo
@@ -287,5 +292,4 @@ sui_getTransactionAuthSigners
 sui_getTransactions
 sui_subscribeEvent
 sui_tryGetPastObject
-sui_publish
 */

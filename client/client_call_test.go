@@ -207,20 +207,23 @@ func TestClient_DryRunTransaction(t *testing.T) {
 	}
 }
 
-func TestClient_ExecuteTransactionSerializedSig(t *testing.T) {
-	chain := DevnetClient(t)
-	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
-	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(2000)
-	require.NoError(t, err)
-	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coin.Reference.ObjectId, 1000, 1000)
-	require.NoError(t, err)
-	account := M1Account(t)
-	signedTx := tx.SignSerializedSigWith(account.PrivateKey)
-	txResult, err := chain.ExecuteTransactionSerializedSig(context.TODO(), *signedTx, types.TxnRequestTypeWaitForEffectsCert)
-	require.NoError(t, err)
-	t.Logf("%#v", txResult)
-}
+// TestClient_ExecuteTransactionSerializedSig
+// This test case could will effect the real coin in the test case of account
+// temporary disabled
+//func TestClient_ExecuteTransactionSerializedSig(t *testing.T) {
+//	chain := DevnetClient(t)
+//	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+//	require.NoError(t, err)
+//	coin, err := coins.PickCoinNoLess(2000)
+//	require.NoError(t, err)
+//	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coin.Reference.ObjectId, 1000, 1000)
+//	require.NoError(t, err)
+//	account := M1Account(t)
+//	signedTx := tx.SignSerializedSigWith(account.PrivateKey)
+//	txResult, err := chain.ExecuteTransactionSerializedSig(context.TODO(), *signedTx, types.TxnRequestTypeWaitForEffectsCert)
+//	require.NoError(t, err)
+//	t.Logf("%#v", txResult)
+//}
 
 func TestClient_GetObjectsOwnedByAddress(t *testing.T) {
 	cli := DevnetClient(t)

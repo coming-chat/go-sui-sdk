@@ -556,3 +556,59 @@ func TestClient_GetTotalSupply(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_Publish(t *testing.T) {
+	chain := DevnetClient(t)
+	dmens, err := types.NewBase64Data(DmensDmensB64)
+	require.NoError(t, err)
+	profile, err := types.NewBase64Data(DmensProfileB64)
+	require.NoError(t, err)
+	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+	require.NoError(t, err)
+	coin, err := coins.PickCoinNoLess(30000)
+	require.NoError(t, err)
+	type args struct {
+		ctx             context.Context
+		address         types.Address
+		compiledModules []*types.Base64Data
+		gas             types.ObjectId
+		gasBudget       uint
+	}
+	tests := []struct {
+		name    string
+		client  *Client
+		args    args
+		want    *types.TransactionBytes
+		wantErr bool
+	}{
+		{
+			name:   "test for dmens publish",
+			client: chain,
+			args: args{
+				ctx:             context.TODO(),
+				address:         *Address,
+				compiledModules: []*types.Base64Data{dmens, profile},
+				gas:             coin.Reference.ObjectId,
+				gasBudget:       30000,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.client.Publish(tt.args.ctx, tt.args.address, tt.args.compiledModules, tt.args.gas, tt.args.gasBudget)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Publish() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			t.Logf("%#v", got)
+
+			txResult, err := tt.client.DevInspectTransaction(context.TODO(), got.TxBytes)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Publish() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			t.Logf("%#v", txResult)
+		})
+	}
+}

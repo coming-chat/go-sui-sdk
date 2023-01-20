@@ -224,6 +224,21 @@ func TestClient_DryRunTransaction(t *testing.T) {
 //	require.NoError(t, err)
 //	t.Logf("%#v", txResult)
 //}
+//
+//func TestClient_ExecuteTransaction(t *testing.T) {
+//	chain := DevnetClient(t)
+//	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+//	require.NoError(t, err)
+//	coin, err := coins.PickCoinNoLess(2000)
+//	require.NoError(t, err)
+//	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coin.Reference.ObjectId, 1000, 1000)
+//	require.NoError(t, err)
+//	account := M1Account(t)
+//	signedTx := tx.SignWith(account.PrivateKey)
+//	txResult, err := chain.ExecuteTransaction(context.TODO(), *signedTx, types.TxnRequestTypeWaitForEffectsCert)
+//	require.NoError(t, err)
+//	t.Logf("%#v", txResult)
+//}
 
 func TestClient_GetObjectsOwnedByAddress(t *testing.T) {
 	cli := DevnetClient(t)

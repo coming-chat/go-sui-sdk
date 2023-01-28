@@ -134,6 +134,20 @@ type TransferSui struct {
 	Recipient Address `json:"recipient"`
 	Amount    uint64  `json:"amount"`
 }
+type Pay struct {
+	Coins      []ObjectRef `json:"coins"`
+	Recipients []Address   `json:"recipients"`
+	Amounts    []uint64    `json:"amounts"`
+}
+type PaySui struct {
+	Coins      []ObjectRef `json:"coins"`
+	Recipients []Address   `json:"recipients"`
+	Amounts    []uint64    `json:"amounts"`
+}
+type PayAllSui struct {
+	Coins     []ObjectRef `json:"coins"`
+	Recipient Address     `json:"recipient"`
+}
 type ChangeEpoch struct {
 	Epoch             interface{} `json:"epoch"`
 	StorageCharge     uint64      `json:"storage_charge"`
@@ -146,6 +160,9 @@ type SingleTransactionKind struct {
 	Call           *MoveCall       `json:"Call,omitempty"`
 	TransferSui    *TransferSui    `json:"TransferSui,omitempty"`
 	ChangeEpoch    *ChangeEpoch    `json:"ChangeEpoch,omitempty"`
+	PaySui         *PaySui         `json:"PaySui,omitempty"`
+	Pay            *Pay            `json:"Pay,omitempty"`
+	PayAllSui      *PayAllSui      `json:"PayAllSui,omitempty"`
 }
 
 type SenderSignedData struct {

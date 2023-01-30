@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -176,6 +177,50 @@ type ObjectOwnerInternal struct {
 	Shared       *struct {
 		InitialSharedVersion int64 `json:"initial_shared_version"`
 	} `json:"Shared,omitempty"`
+}
+
+type TransactionQuery struct {
+	All *string `json:"All"`
+	/// Query by move function.
+	MoveFunction *MoveFunction `json:"MoveFunction"`
+	/// Query by input object.
+	InputObject *ObjectId `json:"InputObject"`
+	/// Query by mutated object.
+	MutatedObject *ObjectId `json:"MutatedObject"`
+	/// Query by sender address.
+	FromAddress *Address `json:"FromAddress"`
+	/// Query by recipient address.
+	ToAddress *Address `json:"ToAddress"`
+}
+
+func (t TransactionQuery) MarshalJSON() ([]byte, error) {
+	tV := reflect.ValueOf(t)
+	for i := 0; i < tV.Type().NumField(); i++ {
+		tField := tV.Field(i)
+		if tField.Kind() != reflect.Pointer || tField.IsNil() {
+			continue
+		}
+		fieldV := reflect.Indirect(tField)
+		if fieldV.Kind() == reflect.String {
+			return []byte("\"All\""), nil
+		}
+		data, err := json.Marshal(fieldV.Interface())
+		if err != nil {
+			return nil, err
+		}
+		tag := tV.Type().Field(i).Tag.Get("json")
+		result := []byte("{\"" + tag + "\":")
+		result = append(result, data...)
+		result = append(result, []byte("}")...)
+		return result, nil
+	}
+	return nil, errors.New("all data is nil")
+}
+
+type MoveFunction struct {
+	Package  ObjectId `json:"package"`
+	Module   string   `json:"module,omitempty"`
+	Function string   `json:"function,omitempty"`
 }
 
 func (o ObjectOwner) MarshalJSON() ([]byte, error) {

@@ -627,3 +627,76 @@ func TestClient_Publish(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_GetTransactions(t *testing.T) {
+	chain := DevnetClient(t)
+	All := ""
+	inputObject, err := types.NewHexData("0x9836b5d5bdf944fa09792e2b7d97bbd061e0a550")
+	require.NoError(t, err)
+	fromAddress, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
+	require.NoError(t, err)
+	type args struct {
+		ctx              context.Context
+		transactionQuery types.TransactionQuery
+		cursor           *string
+		limit            uint
+		descendingOrder  bool
+	}
+	tests := []struct {
+		name    string
+		chain   *Client
+		args    args
+		want    *types.TransactionsPage
+		wantErr bool
+	}{
+		{
+			name:  "test 1",
+			chain: chain,
+			args: args{
+				ctx: context.TODO(),
+				transactionQuery: types.TransactionQuery{
+					All: &All,
+				},
+				cursor:          nil,
+				limit:           20,
+				descendingOrder: false,
+			},
+		},
+		{
+			name:  "test 1",
+			chain: chain,
+			args: args{
+				ctx: context.TODO(),
+				transactionQuery: types.TransactionQuery{
+					InputObject: inputObject,
+				},
+				cursor:          nil,
+				limit:           20,
+				descendingOrder: false,
+			},
+		},
+		{
+			name:  "test 1",
+			chain: chain,
+			args: args{
+				ctx: context.TODO(),
+				transactionQuery: types.TransactionQuery{
+					FromAddress: fromAddress,
+				},
+				cursor:          nil,
+				limit:           20,
+				descendingOrder: false,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.chain.GetTransactions(tt.args.ctx, tt.args.transactionQuery, tt.args.cursor, tt.args.limit, tt.args.descendingOrder)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetTransactions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			t.Logf("%#v", got)
+		})
+	}
+}

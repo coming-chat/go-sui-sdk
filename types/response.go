@@ -137,3 +137,8 @@ type CoinObject struct {
 type Supply struct {
 	Value uint64 `json:"value"`
 }
+
+type TransactionsPage struct {
+	Data       []string `json:"data"`
+	NextCursor string   `json:"nextCursor"`
+}

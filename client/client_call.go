@@ -276,6 +276,11 @@ func (c *Client) Publish(ctx context.Context, address types.Address, compiledMod
 	return &resp, c.CallContext(ctx, &resp, "sui_publish", address, compiledModules, gas, gasBudget)
 }
 
+func (c *Client) GetTransactions(ctx context.Context, transactionQuery types.TransactionQuery, cursor *string, limit uint, descendingOrder bool) (*types.TransactionsPage, error) {
+	var resp types.TransactionsPage
+	return &resp, c.CallContext(ctx, &resp, "sui_getTransactions", transactionQuery, cursor, limit, descendingOrder)
+}
+
 /*
 TODO
 sui_getCommitteeInfo
@@ -289,7 +294,6 @@ sui_getNormalizedMoveModulesByPackage
 sui_getNormalizedMoveStruct
 sui_getSuiSystemState
 sui_getTransactionAuthSigners
-sui_getTransactions
 sui_subscribeEvent
 sui_tryGetPastObject
 */

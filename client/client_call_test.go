@@ -208,7 +208,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 }
 
 // TestClient_ExecuteTransactionSerializedSig
-// This test case could will effect the real coin in the test case of account
+// This test case will affect the real coin in the test case of account
 // temporary disabled
 //func TestClient_ExecuteTransactionSerializedSig(t *testing.T) {
 //	chain := DevnetClient(t)
@@ -224,7 +224,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 //	require.NoError(t, err)
 //	t.Logf("%#v", txResult)
 //}
-//
+
 //func TestClient_ExecuteTransaction(t *testing.T) {
 //	chain := DevnetClient(t)
 //	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)

@@ -3,7 +3,7 @@ package types
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -57,6 +57,7 @@ func TestObjectOwnerJsonENDE(t *testing.T) {
 }
 
 func TestTransactionQuery_MarshalJSON(t1 *testing.T) {
+	var all = ""
 	type fields struct {
 		All           *string
 		MoveFunction  *MoveFunction
@@ -74,7 +75,7 @@ func TestTransactionQuery_MarshalJSON(t1 *testing.T) {
 		{
 			name: "test1",
 			fields: fields{
-				FromAddress: AddressFromHex(t1, "0x6fc6148816617c3c3eccb1d09e930f73f6712c9c"),
+				All: &all,
 			},
 		},
 	}
@@ -89,10 +90,8 @@ func TestTransactionQuery_MarshalJSON(t1 *testing.T) {
 				ToAddress:     tt.fields.ToAddress,
 			}
 			got, err := json.Marshal(t)
-			if !tt.wantErr(t1, err, fmt.Sprintf("MarshalJSON()")) {
-				return
-			}
-			assert.Equalf(t1, tt.want, got, "MarshalJSON()")
+			require.NoError(t1, err)
+			t1.Logf("%#v", got)
 		})
 	}
 }

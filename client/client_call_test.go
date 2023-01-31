@@ -234,7 +234,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 //	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coin.Reference.ObjectId, 1000, 1000)
 //	require.NoError(t, err)
 //	account := M1Account(t)
-//	signedTx := tx.SignWith(account.PrivateKey)
+//	signedTx := tx.SignSerializedSigWith(account.PrivateKey)
 //	txResult, err := chain.ExecuteTransaction(context.TODO(), *signedTx, types.TxnRequestTypeWaitForEffectsCert)
 //	require.NoError(t, err)
 //	t.Logf("%#v", txResult)

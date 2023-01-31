@@ -92,9 +92,9 @@ func (c *Client) DryRunTransaction(ctx context.Context, tx *types.TransactionByt
 	return &resp, c.CallContext(ctx, &resp, "sui_dryRunTransaction", tx.TxBytes)
 }
 
-func (c *Client) ExecuteTransaction(ctx context.Context, txn types.SignedTransaction, requestType types.ExecuteTransactionRequestType) (*types.ExecuteTransactionResponse, error) {
+func (c *Client) ExecuteTransaction(ctx context.Context, txn types.SignedTransactionSerializedSig, requestType types.ExecuteTransactionRequestType) (*types.ExecuteTransactionResponse, error) {
 	resp := types.ExecuteTransactionResponse{}
-	return &resp, c.CallContext(ctx, &resp, "sui_executeTransaction", txn.TxBytes, txn.SigScheme, txn.Signature, txn.PublicKey, requestType)
+	return &resp, c.CallContext(ctx, &resp, "sui_executeTransaction", txn.TxBytes, txn.Signature, requestType)
 }
 
 func (c *Client) GetObject(ctx context.Context, objID types.ObjectId) (*types.ObjectRead, error) {

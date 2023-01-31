@@ -99,6 +99,8 @@ const (
 	TxnRequestTypeWaitForLocalExecution ExecuteTransactionRequestType = "WaitForLocalExecution"
 )
 
+// SignedTransaction
+// Deprecated: replace with SignedTransactionSerializedSig
 type SignedTransaction struct {
 	// transaction data bytes
 	TxBytes *Base64Data `json:"tx_bytes"`
@@ -316,6 +318,8 @@ type ObjectInfo struct {
 // This is currently hardcoded with [IntentScope::TransactionData = 0, Version::V0 = 0, AppId::Sui = 0]
 var IntentBytes = []byte{0, 0, 0}
 
+// SignWith
+// Deprecated: replace with SignSerializedSigWith
 func (txn *TransactionBytes) SignWith(privateKey ed25519.PrivateKey) *SignedTransaction {
 	signTx := bytes.NewBuffer(IntentBytes)
 	signTx.Write(txn.TxBytes.Data())

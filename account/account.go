@@ -49,7 +49,8 @@ func NewAccountWithMnemonic(mnemonic string) (*Account, error) {
 	return NewAccount(key.Key), nil
 }
 
-// GetOldVersionPrivateKeyWithMnemonic Deprecated
+// GetOldVersionPrivateKeyWithMnemonic
+// Deprecated: sui change the plan, replace with NewAccountWithMnemonic
 func GetOldVersionPrivateKeyWithMnemonic(mnemonic string) ([]byte, error) {
 	seed, err := bip39.NewSeedWithErrorChecking(mnemonic, "")
 	if err != nil {

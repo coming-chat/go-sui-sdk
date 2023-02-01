@@ -72,10 +72,11 @@ type TransactionBytes struct {
 	TxBytes Base64Data `json:"txBytes"`
 }
 
+// ObjectRef for BCS, need to keep this order
 type ObjectRef struct {
-	Digest   string   `json:"digest"`
 	ObjectId ObjectId `json:"objectId"`
-	Version  int64    `json:"version"`
+	Version  uint64   `json:"version"`
+	Digest   Digest   `json:"digest"`
 }
 
 type SignatureScheme string

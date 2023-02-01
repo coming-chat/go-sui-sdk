@@ -12,7 +12,9 @@ import (
 )
 
 const (
-	SuiCoinType = "0x2::sui::SUI"
+	SuiCoinType   = "0x2::sui::SUI"
+	DevNetRpcUrl  = "https://fullnode.devnet.sui.io"
+	TestnetRpcUrl = "https://fullnode.testnet.sui.io"
 )
 
 type Address = HexData

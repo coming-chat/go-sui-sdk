@@ -54,10 +54,6 @@ func (a Address) ShortString() string {
 	return "0x" + strings.TrimLeft(hex.EncodeToString(a.data), "0")
 }
 
-func (a Address) MarshalBCS() ([]byte, error) {
-	return a.data, nil
-}
-
 type ObjectId = HexData
 type Digest = Base64Data
 

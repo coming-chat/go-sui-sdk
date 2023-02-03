@@ -2,7 +2,9 @@ package client
 
 import (
 	"context"
+	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/coming-chat/go-sui/types"
+	"github.com/fardream/go-bcs/bcs"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -374,21 +376,31 @@ func TestClient_GetBalance(t *testing.T) {
 
 func TestClient_DevInspectTransaction(t *testing.T) {
 	chain := DevnetClient(t)
-	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+	packageId, err := types.NewAddressFromHex("0x2")
 	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(12000)
 	require.NoError(t, err)
-	txnBytes, err := chain.MintNFT(
-		context.TODO(),
-		*Address,
+	arg := sui_types.MoveCallArg{
 		"ComingChat NFT",
 		"This is a NFT created by ComingChat",
 		"https://coming.chat/favicon.ico",
-		&coin.Reference.ObjectId,
-		12000,
-	)
+	}
+	args, err := arg.GetMoveCallArgs()
 	require.NoError(t, err)
-	devInspectResults, err := chain.DevInspectTransaction(context.TODO(), txnBytes.TxBytes)
+	tKind := sui_types.TransactionKind{
+		Single: &sui_types.SingleTransactionKind{
+			Call: &sui_types.MoveCall{
+				Package:       *packageId,
+				Module:        "devnet_nft",
+				Function:      "mint",
+				TypeArguments: []*sui_types.TypeTag{},
+				Arguments:     args,
+			},
+		},
+	}
+	txBytes, err := bcs.Marshal(tKind)
+	require.NoError(t, err)
+
+	devInspectResults, err := chain.DevInspectTransaction(context.TODO(), *Address, types.Bytes(txBytes).GetBase64Data(), nil, nil)
 	require.NoError(t, err)
 	if devInspectResults.Effects.Status.Error != "" {
 		t.Fatalf("%#v", devInspectResults)

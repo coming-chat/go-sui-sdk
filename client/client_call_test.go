@@ -324,9 +324,9 @@ func TestClient_PaySui(t *testing.T) {
 	require.NoError(t, err)
 	t.Logf("%#v", tx)
 
-	inspectResult, err := chain.DevInspectTransaction(context.TODO(), tx.TxBytes)
+	inspectResult, err := chain.DryRunTransaction(context.TODO(), tx)
 	require.NoError(t, err)
-	if inspectResult.Effects.Status.Error != "" {
+	if inspectResult.Status.Error != "" {
 		t.Fatalf("%#v", inspectResult)
 	}
 	t.Logf("%#v", inspectResult)
@@ -420,9 +420,9 @@ func TestClient_SplitCoin(t *testing.T) {
 
 	t.Log(txn.TxBytes.String())
 
-	inspectTxResult, err := cli.DevInspectTransaction(context.TODO(), txn.TxBytes)
+	inspectTxResult, err := cli.DryRunTransaction(context.TODO(), txn)
 	require.NoError(t, err)
-	if inspectTxResult.Effects.Status.Error != "" {
+	if inspectTxResult.Status.Error != "" {
 		t.Fatalf("%#v", inspectTxResult)
 	}
 	t.Logf("%#v", inspectTxResult)
@@ -445,10 +445,10 @@ func TestClient_SplitCoinEqual(t *testing.T) {
 
 	t.Log(txn.TxBytes.String())
 
-	inspectRes, err := cli.DevInspectTransaction(context.TODO(), txn.TxBytes)
+	inspectRes, err := cli.DryRunTransaction(context.TODO(), txn)
 	require.NoError(t, err)
 
-	if inspectRes.Effects.Status.Error != "" {
+	if inspectRes.Status.Error != "" {
 		t.Fatalf("%#v", inspectRes)
 	}
 	t.Logf("%#v", inspectRes)
@@ -617,7 +617,7 @@ func TestClient_Publish(t *testing.T) {
 			}
 			t.Logf("%#v", got)
 
-			txResult, err := tt.client.DevInspectTransaction(context.TODO(), got.TxBytes)
+			txResult, err := tt.client.DryRunTransaction(context.TODO(), got)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Publish() error = %v, wantErr %v", err, tt.wantErr)
 				return

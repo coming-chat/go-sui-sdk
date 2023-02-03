@@ -27,9 +27,9 @@ func TestMintNFT(t *testing.T) {
 	require.NoError(t, err)
 	t.Log(txnBytes.TxBytes)
 
-	response, err := cli.DevInspectTransaction(context.TODO(), txnBytes.TxBytes)
+	response, err := cli.DryRunTransaction(context.TODO(), txnBytes)
 	require.NoError(t, err)
-	if response.Effects.Status.Error != "" {
+	if response.Status.Error != "" {
 		t.Fatalf("%#v", response)
 	}
 	t.Logf("%#v", response)

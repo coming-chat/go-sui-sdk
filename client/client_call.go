@@ -237,9 +237,9 @@ func (c *Client) GetBalance(ctx context.Context, address types.Address, coinType
 	return &resp, c.CallContext(ctx, &resp, "sui_getBalance", address, coinType)
 }
 
-func (c *Client) DevInspectTransaction(ctx context.Context, txByte types.Base64Data) (*types.DevInspectResults, error) {
+func (c *Client) DevInspectTransaction(ctx context.Context, senderAddress types.Address, txByte types.Base64Data, gasPrice *uint64, epoch *uint64) (*types.DevInspectResults, error) {
 	var resp types.DevInspectResults
-	return &resp, c.CallContext(ctx, &resp, "sui_devInspectTransaction", txByte)
+	return &resp, c.CallContext(ctx, &resp, "sui_devInspectTransaction", senderAddress, txByte, gasPrice, epoch)
 }
 
 // GetCoins to use default sui coin(0x2::sui::SUI) when coinType is nil

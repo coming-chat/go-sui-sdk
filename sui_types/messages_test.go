@@ -65,14 +65,14 @@ func TestBCS_EncodeMoveCall(t *testing.T) {
 	require.NoError(t, err)
 	coin, err := coins.PickCoinNoLess(2000)
 	require.NoError(t, err)
-	packageId, err := types.NewHexData("0xc84f497dc6dbbfc9d4dc6dea62d22f90c320a8f3")
+	packageId, err := types.NewHexData("0xec1a4be985f62eabe14437e81171077930fab4a6")
 	require.NoError(t, err)
 	packageRead, err := chain.GetObject(context.TODO(), *packageId)
 	require.NoError(t, err)
-	globalProfile, err := types.NewHexData("0xce07c42b29205952c22b817c0baa2dad8391a688")
+	globalProfile, err := types.NewHexData("0x7eb175bd3f75b798a6642663195262966f7d7e4e")
 	require.NoError(t, err)
 	profile := "{\"name\":\"test\",\"bio\":\"Hello\",\"avatar\":\"\"}"
-	signature, err := hex.DecodeString("80c90affb399de8f7c372a6f3da435fa99a1cda259359ca75956874bbfa5f88a3b02b204a5b127c2f1e6ea94936865683a1ac9652e63d307bbac003a0724ce0e")
+	signature, err := hex.DecodeString("d485020c6ac369e6f2b28be2dcca24ebfd827c53893b6462e9e65cf16dba3cedf004e8740b8c8c3579a4391269b9e103bcfc39627c6af729abb7675bc8004301")
 	require.NoError(t, err)
 	profileBcsEn, err := bcs.Marshal([]byte(profile))
 	require.NoError(t, err)
@@ -82,7 +82,7 @@ func TestBCS_EncodeMoveCall(t *testing.T) {
 		Kind: TransactionKind{
 			Single: &SingleTransactionKind{
 				Call: &MoveCall{
-					Package:       *packageRead.Details.Reference,
+					Package:       packageRead.Details.Reference.ObjectId,
 					Module:        "profile",
 					Function:      "register",
 					TypeArguments: []*TypeTag{},
@@ -91,7 +91,7 @@ func TestBCS_EncodeMoveCall(t *testing.T) {
 							Object: &ObjectArg{
 								SharedObject: &SharedObject{
 									Id:                   *globalProfile,
-									InitialSharedVersion: 1181,
+									InitialSharedVersion: 31,
 								},
 							},
 						},

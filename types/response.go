@@ -129,8 +129,8 @@ type CoinPage struct {
 type CoinObject struct {
 	CoinType     string   `json:"coinType"`
 	CoinObjectId ObjectId `json:"coinObjectId"`
-	Version      int64    `json:"version"`
-	Digest       string   `json:"digest"`
+	Version      uint64   `json:"version"`
+	Digest       Digest   `json:"digest"`
 	Balance      int64    `json:"balance"`
 }
 

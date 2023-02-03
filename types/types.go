@@ -12,7 +12,9 @@ import (
 )
 
 const (
-	SuiCoinType = "0x2::sui::SUI"
+	SuiCoinType   = "0x2::sui::SUI"
+	DevNetRpcUrl  = "https://fullnode.devnet.sui.io"
+	TestnetRpcUrl = "https://fullnode.testnet.sui.io"
 )
 
 type Address = HexData
@@ -52,10 +54,6 @@ func (a Address) ShortString() string {
 	return "0x" + strings.TrimLeft(hex.EncodeToString(a.data), "0")
 }
 
-func (a Address) MarshalBCS() ([]byte, error) {
-	return a.data, nil
-}
-
 type ObjectId = HexData
 type Digest = Base64Data
 
@@ -72,10 +70,11 @@ type TransactionBytes struct {
 	TxBytes Base64Data `json:"txBytes"`
 }
 
+// ObjectRef for BCS, need to keep this order
 type ObjectRef struct {
-	Digest   string   `json:"digest"`
 	ObjectId ObjectId `json:"objectId"`
-	Version  int64    `json:"version"`
+	Version  uint64   `json:"version"`
+	Digest   Digest   `json:"digest"`
 }
 
 type SignatureScheme string

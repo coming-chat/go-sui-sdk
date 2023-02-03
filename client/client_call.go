@@ -237,11 +237,6 @@ func (c *Client) GetBalance(ctx context.Context, address types.Address, coinType
 	return &resp, c.CallContext(ctx, &resp, "sui_getBalance", address, coinType)
 }
 
-func (c *Client) DevInspectMoveCall(ctx context.Context, signer types.Address, packageId types.ObjectId, module, function string, typeArgs []string, arguments []any) (*types.DevInspectResults, error) {
-	var resp types.DevInspectResults
-	return &resp, c.CallContext(ctx, &resp, "sui_devInspectMoveCall", signer, packageId, module, function, typeArgs, arguments)
-}
-
 func (c *Client) DevInspectTransaction(ctx context.Context, txByte types.Base64Data) (*types.DevInspectResults, error) {
 	var resp types.DevInspectResults
 	return &resp, c.CallContext(ctx, &resp, "sui_devInspectTransaction", txByte)

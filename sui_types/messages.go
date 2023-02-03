@@ -43,7 +43,7 @@ type MoveModulePublish struct {
 }
 
 type MoveCall struct {
-	Package       types.ObjectRef
+	Package       types.ObjectId
 	Module        string
 	Function      string
 	TypeArguments []*TypeTag

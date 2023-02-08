@@ -2,11 +2,12 @@ package client
 
 import (
 	"context"
+	"testing"
+
 	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/coming-chat/go-sui/types"
 	"github.com/fardream/go-bcs/bcs"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestClient_GetTransactionsInRange(t *testing.T) {

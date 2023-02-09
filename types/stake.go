@@ -1,5 +1,10 @@
 package types
 
+import (
+	"math"
+	"math/big"
+)
+
 type Balance struct {
 	Value uint64 `json:"Value"`
 }
@@ -95,4 +100,28 @@ type SuiSystemState struct {
 	StakeSubsidy           interface{}  `json:"stake_subsidy"`            //: StakeSubsidy,
 	SafeMode               bool         `json:"safe_mode"`
 	EpochStartTimestampMs  uint64       `json:"epoch_start_timestamp_ms"`
+}
+
+func (v *Validator) CalculateAPY(epoch uint64) float64 {
+	p := v.DelegationStakingPool
+	if epoch < p.StartingEpoch {
+		return 0
+	}
+
+	numEpochsParticipated := epoch - p.StartingEpoch
+	pow1, _ := big.NewFloat(0).Quo(
+		big.NewFloat(float64(p.SuiBalance)),
+		big.NewFloat(float64(p.DelegationTokenSupply.Value)),
+	).Float64()
+	pow2, _ := big.NewFloat(0).Quo(
+		big.NewFloat(365.0),
+		big.NewFloat(float64(numEpochsParticipated)),
+	).Float64()
+
+	apy := math.Pow(pow1, pow2) - 1
+	if apy > 100000 {
+		return 0
+	} else {
+		return apy
+	}
 }

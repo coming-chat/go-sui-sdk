@@ -38,5 +38,8 @@ func TestGetSuiSystemState(t *testing.T) {
 
 	res, err := cli.GetSuiSystemState(context.Background())
 	require.Nil(t, err)
-	t.Log(res)
+
+	for _, v := range res.Validators.ActiveValidators {
+		t.Logf("%v, %v\n", string(v.Metadata.Name), v.CalculateAPY(res.Epoch))
+	}
 }

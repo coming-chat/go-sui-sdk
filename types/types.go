@@ -197,7 +197,7 @@ type ObjectOwnerInternal struct {
 	ObjectOwner  *Address `json:"ObjectOwner,omitempty"`
 	SingleOwner  *Address `json:"SingleOwner,omitempty"`
 	Shared       *struct {
-		InitialSharedVersion int64 `json:"initial_shared_version"`
+		InitialSharedVersion uint64 `json:"initial_shared_version"`
 	} `json:"Shared,omitempty"`
 }
 

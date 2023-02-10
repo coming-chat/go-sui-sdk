@@ -11,7 +11,7 @@ type Balance struct {
 
 type StakedSui struct {
 	Id struct {
-		Id string `json:"id"`
+		Id ObjectId `json:"id"`
 	} `json:"id"`
 	ValidatorAddress       Address `json:"validator_address"`
 	PoolStartingEpoch      uint64  `json:"pool_starting_epoch"`
@@ -22,11 +22,11 @@ type StakedSui struct {
 
 type ActiveFields struct {
 	Id struct {
-		Id string `json:"id"`
+		Id ObjectId `json:"id"`
 	} `json:"id"`
-	StakedSuiId        Address `json:"staked_sui_id"`
-	PrincipalSuiAmount uint64  `json:"principal_sui_amount"`
-	PoolTokens         Balance `json:"pool_tokens"`
+	StakedSuiId        ObjectId `json:"staked_sui_id"`
+	PrincipalSuiAmount uint64   `json:"principal_sui_amount"`
+	PoolTokens         Balance  `json:"pool_tokens"`
 }
 
 type ActiveDelegationStatus struct {

@@ -4,14 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/coming-chat/go-sui/types"
-	"github.com/fardream/go-bcs/bcs"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClient_GetTransactionsInRange(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	type args struct {
 		ctx   context.Context
 		start uint64
@@ -51,7 +49,7 @@ func TestClient_GetTransactionsInRange(t *testing.T) {
 }
 
 func TestClient_BatchGetTransaction(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
 	require.NoError(t, err)
 	object, err := chain.GetObject(context.TODO(), coins.Data[0].CoinObjectId)
@@ -95,7 +93,7 @@ func TestClient_BatchGetObject(t *testing.T) {
 	type args struct {
 		objects []types.ObjectId
 	}
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
 	require.NoError(t, err)
 
@@ -136,7 +134,7 @@ func TestClient_GetObject(t *testing.T) {
 		ctx   context.Context
 		objID types.ObjectId
 	}
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
 	require.NoError(t, err)
 
@@ -171,7 +169,7 @@ func TestClient_GetObject(t *testing.T) {
 }
 
 func TestClient_DryRunTransaction(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
 	coin, err := coins.PickCoinNoLess(2000)
@@ -214,7 +212,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 // This test case will affect the real coin in the test case of account
 // temporary disabled
 //func TestClient_ExecuteTransactionSerializedSig(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := TestnetClient(t)
 //	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 //	require.NoError(t, err)
 //	coin, err := coins.PickCoinNoLess(2000)
@@ -229,7 +227,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 //}
 
 //func TestClient_ExecuteTransaction(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := TestnetClient(t)
 //	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 //	require.NoError(t, err)
 //	coin, err := coins.PickCoinNoLess(2000)
@@ -244,7 +242,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 //}
 
 func TestClient_GetObjectsOwnedByAddress(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := TestnetClient(t)
 
 	objects, err := cli.GetObjectsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
@@ -256,7 +254,7 @@ func TestClient_GetObjectsOwnedByAddress(t *testing.T) {
 }
 
 func TestClient_GetSuiCoinsOwnedByAddress(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	type args struct {
 		ctx     context.Context
 		address types.Address
@@ -289,7 +287,7 @@ func TestClient_GetSuiCoinsOwnedByAddress(t *testing.T) {
 }
 
 func TestClient_GetCoinMetadata(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	metadata, err := chain.GetCoinMetadata(context.TODO(), types.SuiCoinType)
 	if err != nil {
 		t.Fatal(err)
@@ -299,7 +297,7 @@ func TestClient_GetCoinMetadata(t *testing.T) {
 
 // TestClient_Pay need another coin type(not default sui coin)
 //func TestClient_Pay(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := TestnetClient(t)
 //	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
 //	require.NoError(t, err)
 //	inputCoins := []types.ObjectId{coins.Data[0].CoinObjectId}
@@ -313,7 +311,7 @@ func TestClient_GetCoinMetadata(t *testing.T) {
 //}
 
 func TestClient_PaySui(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 
 	recipients := []types.Address{*Address}
 
@@ -336,21 +334,21 @@ func TestClient_PaySui(t *testing.T) {
 }
 
 func TestClient_GetAllBalances(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	balances, err := chain.GetAllBalances(context.TODO(), *Address)
 	require.NoError(t, err)
 	t.Logf("%#v", balances)
 }
 
 func TestClient_GetBalance(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	balance, err := chain.GetBalance(context.TODO(), *Address, nil)
 	require.NoError(t, err)
 	t.Logf("%#v", balance)
 }
 
 //func TestClient_DevInspectMoveCall(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := TestnetClient(t)
 //
 //	packageId, err := types.NewHexData("0xb08873e9b44960657723604e4f6bc70c2d1c2b50")
 //	require.NoError(t, err)
@@ -375,42 +373,59 @@ func TestClient_GetBalance(t *testing.T) {
 //	t.Logf("%T", devInspectResults)
 //}
 
-func TestClient_DevInspectTransaction(t *testing.T) {
-	chain := DevnetClient(t)
-	packageId, err := types.NewAddressFromHex("0x2")
-	require.NoError(t, err)
-	require.NoError(t, err)
-	arg := sui_types.MoveCallArg{
-		"ComingChat NFT",
-		"This is a NFT created by ComingChat",
-		"https://coming.chat/favicon.ico",
-	}
-	args, err := arg.GetMoveCallArgs()
-	require.NoError(t, err)
-	tKind := sui_types.TransactionKind{
-		Single: &sui_types.SingleTransactionKind{
-			Call: &sui_types.MoveCall{
-				Package:       *packageId,
-				Module:        "devnet_nft",
-				Function:      "mint",
-				TypeArguments: []*sui_types.TypeTag{},
-				Arguments:     args,
-			},
-		},
-	}
-	txBytes, err := bcs.Marshal(tKind)
-	require.NoError(t, err)
-
-	devInspectResults, err := chain.DevInspectTransaction(context.TODO(), *Address, types.Bytes(txBytes).GetBase64Data(), nil, nil)
-	require.NoError(t, err)
-	if devInspectResults.Effects.Status.Error != "" {
-		t.Fatalf("%#v", devInspectResults)
-	}
-	t.Logf("%#v", devInspectResults)
-}
+//TestClient_DevInspectTransaction test still has devInspectMoveCall
+//func TestClient_DevInspectTransaction(t *testing.T) {
+//	chain := TestnetClient(t)
+//	objectId, err := types.NewHexData("0x0000000000000000000000000000000000000002")
+//	require.NoError(t, err)
+//	object, err := chain.GetObject(context.TODO(), *objectId)
+//	require.NoError(t, err)
+//	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+//	require.NoError(t, err)
+//	coin, err := coins.PickCoinNoLess(1000)
+//	require.NoError(t, err)
+//	state, err := chain.GetSuiSystemState(context.TODO())
+//	require.NoError(t, err)
+//	arg := sui_types.MoveCallArg{
+//		"ComingChat NFT",
+//		"This is a NFT created by ComingChat",
+//		"https://coming.chat/favicon.ico",
+//	}
+//	args, err := arg.GetMoveCallArgs()
+//	require.NoError(t, err)
+//	tData := sui_types.TransactionData{
+//		Kind: sui_types.TransactionKind{
+//			Single: &sui_types.SingleTransactionKind{
+//				Call: &sui_types.MoveCall{
+//					Package:       *object.Details.Reference,
+//					Module:        "devnet_nft",
+//					Function:      "mint",
+//					TypeArguments: []*sui_types.TypeTag{},
+//					Arguments:     args,
+//				},
+//			},
+//		},
+//		Sender:     *Address,
+//		GasBudget:  1000,
+//		GasPrice:   state.ReferenceGasPrice,
+//		GasPayment: *coin.Reference,
+//	}
+//	txBytes, err := bcs.Marshal(tData)
+//	require.NoError(t, err)
+//	correct, err := chain.MintNFT(context.TODO(), *Address, "ComingChat NFT", "This is a NFT created by ComingChat", "https://coming.chat/favicon.ico", &coin.Reference.ObjectId, 1000)
+//	require.NoError(t, err)
+//	t.Logf("%x", correct.TxBytes.Data())
+//	t.Logf("%x", txBytes)
+//	devInspectResults, err := chain.DevInspectTransaction(context.TODO(), *Address, correct.TxBytes, nil, nil)
+//	require.NoError(t, err)
+//	if devInspectResults.Effects.Status.Error != "" {
+//		t.Fatalf("%#v", devInspectResults)
+//	}
+//	t.Logf("%#v", devInspectResults)
+//}
 
 func TestClient_GetCoins(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	defaultCoinType := types.SuiCoinType
 	coins, err := chain.GetCoins(context.TODO(), *Address, &defaultCoinType, nil, 1)
 	require.NoError(t, err)
@@ -418,7 +433,7 @@ func TestClient_GetCoins(t *testing.T) {
 }
 
 func TestClient_SplitCoin(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := TestnetClient(t)
 
 	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
@@ -442,7 +457,7 @@ func TestClient_SplitCoin(t *testing.T) {
 }
 
 func TestClient_SplitCoinEqual(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := TestnetClient(t)
 
 	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
@@ -468,7 +483,7 @@ func TestClient_SplitCoinEqual(t *testing.T) {
 }
 
 func TestGetTransaction(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := TestnetClient(t)
 	transactions, err := cli.GetTransactionsInRange(context.TODO(), 0, 1)
 	require.NoError(t, err)
 	require.NotEmpty(t, transactions)
@@ -479,7 +494,7 @@ func TestGetTransaction(t *testing.T) {
 }
 
 func TestBatchCall_GetObject(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := TestnetClient(t)
 	coins, err := cli.GetCoins(context.TODO(), *Address, nil, nil, 3)
 	require.NoError(t, err)
 	var objKeys []string
@@ -504,7 +519,7 @@ func TestBatchCall_GetObject(t *testing.T) {
 }
 
 func TestBatchGetObjectsOwnedByAddress(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := TestnetClient(t)
 	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
 
@@ -512,7 +527,7 @@ func TestBatchGetObjectsOwnedByAddress(t *testing.T) {
 }
 
 func TestClient_GetAllCoins(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	type args struct {
 		ctx     context.Context
 		address types.Address
@@ -551,7 +566,7 @@ func TestClient_GetAllCoins(t *testing.T) {
 }
 
 func TestClient_GetTotalSupply(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	type args struct {
 		ctx      context.Context
 		coinType string
@@ -586,7 +601,7 @@ func TestClient_GetTotalSupply(t *testing.T) {
 }
 
 func TestClient_Publish(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	dmens, err := types.NewBase64Data(DmensDmensB64)
 	require.NoError(t, err)
 	profile, err := types.NewBase64Data(DmensProfileB64)
@@ -642,7 +657,7 @@ func TestClient_Publish(t *testing.T) {
 }
 
 func TestClient_GetTransactions(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := TestnetClient(t)
 	All := ""
 	inputObject, err := types.NewHexData("0x9836b5d5bdf944fa09792e2b7d97bbd061e0a550")
 	require.NoError(t, err)

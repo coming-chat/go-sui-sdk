@@ -9,7 +9,7 @@ import (
 )
 
 func TestMintNFT(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := TestnetClient(t)
 
 	var (
 		timeNow = time.Now().Format("06-01-02 15:04")
@@ -36,7 +36,7 @@ func TestMintNFT(t *testing.T) {
 }
 
 func TestGetDevNFTs(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := TestnetClient(t)
 
 	nfts, err := cli.GetNFTsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)

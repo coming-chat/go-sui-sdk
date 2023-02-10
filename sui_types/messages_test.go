@@ -59,24 +59,34 @@ func Test_BCSEncodeTransactionData(t *testing.T) {
 }
 
 func TestBCS_EncodeMoveCall(t *testing.T) {
-	chain, err := client.Dial(types.DevNetRpcUrl)
+	chain, err := client.Dial(types.TestnetRpcUrl)
 	require.NoError(t, err)
 	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
 	coin, err := coins.PickCoinNoLess(2000)
 	require.NoError(t, err)
-	packageId, err := types.NewHexData("0xec1a4be985f62eabe14437e81171077930fab4a6")
+	packageId, err := types.NewHexData("0x20145a5630cd30756acc0b22f500410066f748e5")
 	require.NoError(t, err)
 	packageRead, err := chain.GetObject(context.TODO(), *packageId)
 	require.NoError(t, err)
-	globalProfile, err := types.NewHexData("0x7eb175bd3f75b798a6642663195262966f7d7e4e")
+	globalProfile, err := types.NewHexData("0x6d36f1275c1ec0f459fa3919c9baadaada39b068")
+	require.NoError(t, err)
+	globalProfileObject, err := chain.GetObject(context.TODO(), *globalProfile)
 	require.NoError(t, err)
 	profile := "{\"name\":\"test\",\"bio\":\"Hello\",\"avatar\":\"\"}"
 	signature, err := hex.DecodeString("d485020c6ac369e6f2b28be2dcca24ebfd827c53893b6462e9e65cf16dba3cedf004e8740b8c8c3579a4391269b9e103bcfc39627c6af729abb7675bc8004301")
 	require.NoError(t, err)
-	profileBcsEn, err := bcs.Marshal([]byte(profile))
+	args := MoveCallArg{
+		&SharedObject{
+			Id:                   *globalProfile,
+			InitialSharedVersion: globalProfileObject.Details.Owner.Shared.InitialSharedVersion,
+		},
+		[]byte(profile),
+		signature,
+	}
+	callArgs, err := args.GetMoveCallArgs()
 	require.NoError(t, err)
-	signatureBcsEn, err := bcs.Marshal(signature)
+	state, err := chain.GetSuiSystemState(context.TODO())
 	require.NoError(t, err)
 	tx := TransactionData{
 		Kind: TransactionKind{
@@ -86,28 +96,13 @@ func TestBCS_EncodeMoveCall(t *testing.T) {
 					Module:        "profile",
 					Function:      "register",
 					TypeArguments: []*TypeTag{},
-					Arguments: []*CallArg{
-						{
-							Object: &ObjectArg{
-								SharedObject: &SharedObject{
-									Id:                   *globalProfile,
-									InitialSharedVersion: 31,
-								},
-							},
-						},
-						{
-							Pure: &profileBcsEn,
-						},
-						{
-							Pure: &signatureBcsEn,
-						},
-					},
+					Arguments:     callArgs,
 				},
 			},
 		},
 		Sender:     *Address,
 		GasPayment: *coin.Reference,
-		GasPrice:   uint64(1),
+		GasPrice:   state.ReferenceGasPrice,
 		GasBudget:  uint64(2000),
 	}
 	encodeTx, err := bcs.Marshal(tx)

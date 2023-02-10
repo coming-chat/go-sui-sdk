@@ -82,7 +82,7 @@ func TestBCS_EncodeMoveCall(t *testing.T) {
 		Kind: TransactionKind{
 			Single: &SingleTransactionKind{
 				Call: &MoveCall{
-					Package:       packageRead.Details.Reference.ObjectId,
+					Package:       *packageRead.Details.Reference,
 					Module:        "profile",
 					Function:      "register",
 					TypeArguments: []*TypeTag{},

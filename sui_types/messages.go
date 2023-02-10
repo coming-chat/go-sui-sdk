@@ -43,7 +43,8 @@ type MoveModulePublish struct {
 }
 
 type MoveCall struct {
-	Package       types.ObjectId
+	// if you use this in devnet change to types.ObjectId (according to https://github.com/MystenLabs/sui/blame/5d3ff6b3adf299e72364bb4669cffe076f32d456/crates/sui-types/src/messages.rs#LL107C20-L107C20)
+	Package       types.ObjectRef //equal to https://github.com/MystenLabs/sui/blame/92b4c0671b746a14cac658e2283c0ce01c6a98f3/crates/sui-types/src/messages.rs#L104
 	Module        string
 	Function      string
 	TypeArguments []*TypeTag

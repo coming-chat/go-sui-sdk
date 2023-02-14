@@ -15,9 +15,16 @@ func TestGetDelegatedStakes(t *testing.T) {
 	acc := M1Account(t)
 	addr, _ := types.NewAddressFromHex(acc.Address)
 
-	res, err := cli.GetDelegatedStakes(context.Background(), *addr)
+	stakes, err := cli.GetDelegatedStakes(context.Background(), *addr)
 	require.Nil(t, err)
-	t.Log(res)
+
+	systemState, err := cli.GetSuiSystemState(context.Background())
+	require.Nil(t, err)
+
+	for _, stake := range stakes {
+		earn, validator := stake.CalculateEarnAmount(systemState.Validators.ActiveValidators)
+		t.Logf("earned amount %10v at %v", earn, string(validator.Metadata.Name))
+	}
 }
 
 func TestGetValidators(t *testing.T) {
@@ -77,6 +84,8 @@ func TestRequestAddDelegation(t *testing.T) {
 	resp, err := cli.ExecuteTransactionSerializedSig(context.Background(), *signedTxn, types.TxnRequestTypeWaitForLocalExecution)
 	require.Nil(t, err)
 	t.Log(resp)
+
+	// result: https://explorer.sui.io/transaction/EcH9dK1wSLzgv15CNNHr2KvDEpARUW5mSeug3LHeFqGB?network=testnet
 }
 
 func TestRequestSwitchDelegation(t *testing.T) {
@@ -110,9 +119,11 @@ func TestRequestSwitchDelegation(t *testing.T) {
 	resp, err := cli.ExecuteTransactionSerializedSig(context.Background(), *signedTxn, types.TxnRequestTypeWaitForLocalExecution)
 	require.Nil(t, err)
 	t.Log(resp)
+
+	// result: https://explorer.sui.io/transaction/AV5fTh8RwV4nMUunJkWuN5C7HgfosR8MHHAaKWTcT768?network=testnet
 }
 
-func TestXxx(t *testing.T) {
+func TestRequestWithdrawDelegation(t *testing.T) {
 	cli := TestnetClient(t)
 
 	acc := M1Account(t)
@@ -140,4 +151,6 @@ func TestXxx(t *testing.T) {
 	resp, err := cli.ExecuteTransactionSerializedSig(context.Background(), *signedTxn, types.TxnRequestTypeWaitForLocalExecution)
 	require.Nil(t, err)
 	t.Log(resp)
+
+	// result: https://explorer.sui.io/transaction/DVpYBQ8Djg7jtHhcAwy8hgeWCjRpTaTYkNzpNigco5HP?network=testnet
 }

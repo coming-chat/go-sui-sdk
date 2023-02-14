@@ -1,6 +1,8 @@
 package types
 
 import (
+	"bytes"
+	"encoding/json"
 	"math"
 	"math/big"
 )
@@ -124,4 +126,38 @@ func (v *Validator) CalculateAPY(epoch uint64) float64 {
 	} else {
 		return apy
 	}
+}
+
+func (d *DelegatedStake) CalculateEarnAmount(activeValidators []Validator) (earn uint64, validator *Validator) {
+	for i, v := range activeValidators {
+		if bytes.Compare(v.DelegationStakingPool.ValidatorAddress.data, d.StakedSui.ValidatorAddress.data) == 0 {
+			validator = &activeValidators[i]
+			break
+		}
+	}
+	if validator == nil {
+		return
+	}
+
+	statusBytes, err := json.Marshal(d.DelegationStatus)
+	if err != nil {
+		return
+	}
+	var status ActiveDelegationStatus
+	err = json.Unmarshal(statusBytes, &status)
+	if err != nil {
+		return
+	}
+
+	poolTokens := status.Active.PoolTokens.Value
+	principal := status.Active.PrincipalSuiAmount
+	delegationTokenSupply := validator.DelegationStakingPool.DelegationTokenSupply.Value
+	suiBalance := validator.DelegationStakingPool.SuiBalance
+
+	// currentSuiWorth = ┗ poolTokens * suiBalance / delegationTokenSupply ┛  (round down)
+	currentSuiWorth := big.NewInt(0).Mul(big.NewInt(int64(poolTokens)), big.NewInt(int64(suiBalance)))
+	currentSuiWorth = currentSuiWorth.Quo(currentSuiWorth, big.NewInt(int64(delegationTokenSupply))) // Quo implements truncated division.
+
+	earnInt := big.NewInt(0).Sub(currentSuiWorth, big.NewInt(int64(principal)))
+	return earnInt.Uint64(), validator
 }

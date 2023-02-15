@@ -293,9 +293,17 @@ type ObjectReadDetail struct {
 type ObjectStatus string
 
 const (
+	// ObjectStatusExists ObjectStatusNotExists ObjectStatusDeleted
+	// status for sui_getObject
 	ObjectStatusExists    ObjectStatus = "Exists"
 	ObjectStatusNotExists ObjectStatus = "NotExists"
 	ObjectStatusDeleted   ObjectStatus = "Deleted"
+	// ObjectDeleted VersionFound VersionTooHigh VersionNotFound
+	//status for sui_tryGetPastObject
+	ObjectDeleted   ObjectStatus = "ObjectDeleted"
+	VersionFound    ObjectStatus = "VersionFound"
+	VersionTooHigh  ObjectStatus = "VersionTooHigh"
+	VersionNotFound ObjectStatus = "VersionNotFound"
 )
 
 type ObjectRead struct {

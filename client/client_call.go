@@ -276,6 +276,11 @@ func (c *Client) GetTransactions(ctx context.Context, transactionQuery types.Tra
 	return &resp, c.CallContext(ctx, &resp, "sui_getTransactions", transactionQuery, cursor, limit, descendingOrder)
 }
 
+func (c *Client) TryGetPastObject(ctx context.Context, objectId types.ObjectId, version uint64) (*types.ObjectRead, error) {
+	resp := types.ObjectRead{}
+	return &resp, c.CallContext(ctx, &resp, "sui_tryGetPastObject", objectId, version)
+}
+
 /*
 TODO
 sui_getCommitteeInfo
@@ -287,8 +292,6 @@ sui_getNormalizedMoveFunction
 sui_getNormalizedMoveModule
 sui_getNormalizedMoveModulesByPackage
 sui_getNormalizedMoveStruct
-sui_getSuiSystemState
 sui_getTransactionAuthSigners
 sui_subscribeEvent
-sui_tryGetPastObject
 */

@@ -765,3 +765,10 @@ func TestClient_TryGetPastObject(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_GetReferenceGasPrice(t *testing.T) {
+	cli := TestnetClient(t)
+	gasPrice, err := cli.GetReferenceGasPrice(context.Background())
+	require.Nil(t, err)
+	t.Logf("current gas price = %v", gasPrice)
+}

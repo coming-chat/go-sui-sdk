@@ -281,6 +281,11 @@ func (c *Client) TryGetPastObject(ctx context.Context, objectId types.ObjectId, 
 	return &resp, c.CallContext(ctx, &resp, "sui_tryGetPastObject", objectId, version)
 }
 
+func (c *Client) GetReferenceGasPrice(ctx context.Context) (uint64, error) {
+	resp := uint64(0)
+	return resp, c.CallContext(ctx, &resp, "sui_getReferenceGasPrice")
+}
+
 /*
 TODO
 sui_getCommitteeInfo

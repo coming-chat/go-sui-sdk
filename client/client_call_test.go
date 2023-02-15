@@ -750,3 +750,61 @@ func TestClient_TryGetPastObject(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_GetEvents(t *testing.T) {
+	fromAddress, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
+	require.NoError(t, err)
+	chain := TestnetClient(t)
+	type args struct {
+		ctx             context.Context
+		eventQuery      types.EventQuery
+		cursor          *types.EventID
+		limit           uint
+		descendingOrder bool
+	}
+	all := "All"
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "all",
+			args: args{
+				ctx: context.Background(),
+				eventQuery: types.EventQuery{
+					All: &all,
+				},
+				cursor:          nil,
+				limit:           10,
+				descendingOrder: false,
+			},
+			wantErr: false,
+		},
+		{
+			name: "from address",
+			args: args{
+				ctx: context.Background(),
+				eventQuery: types.EventQuery{
+					Sender: fromAddress,
+				},
+				cursor:          nil,
+				limit:           10,
+				descendingOrder: false,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			es, err := chain.GetEvents(tt.args.ctx, tt.args.eventQuery, tt.args.cursor, tt.args.limit, tt.args.descendingOrder)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.GetEvents() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if len(es.Data) == 0 {
+				t.Errorf("no events")
+			}
+		})
+	}
+}

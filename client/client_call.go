@@ -281,12 +281,16 @@ func (c *Client) TryGetPastObject(ctx context.Context, objectId types.ObjectId, 
 	return &resp, c.CallContext(ctx, &resp, "sui_tryGetPastObject", objectId, version)
 }
 
+func (c *Client) GetEvents(ctx context.Context, eventQuery types.EventQuery, cursor *types.EventID, limit uint, descendingOrder bool) (*types.EventPage, error) {
+	resp := types.EventPage{}
+	return &resp, c.CallContext(ctx, &resp, "sui_getEvents", eventQuery, cursor, limit, descendingOrder)
+}
+
 /*
 TODO
 sui_getCommitteeInfo
 sui_getDynamicFieldObject
 sui_getDynamicFields
-sui_getEvents
 sui_getMoveFunctionArgTypes
 sui_getNormalizedMoveFunction
 sui_getNormalizedMoveModule

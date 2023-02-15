@@ -124,3 +124,13 @@ type TransactionsPage struct {
 	Data       []string `json:"data"`
 	NextCursor string   `json:"nextCursor"`
 }
+
+type EventPage struct {
+	Data       []Event `json:"data"`
+	NextCursor EventID `json:"nextCursor"`
+}
+
+type EventID struct {
+	TxDigest Digest `json:"txDigest"`
+	EventSeq int64  `json:"eventSeq"`
+}

@@ -713,3 +713,40 @@ func TestClient_GetTransactions(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_TryGetPastObject(t *testing.T) {
+	objectId, err := types.NewHexData("0xd797f6aef2b54d3b3951bb546cfa96431cffc72f")
+	require.NoError(t, err)
+	type args struct {
+		ctx      context.Context
+		objectId types.ObjectId
+		version  uint64
+	}
+	tests := []struct {
+		name    string
+		chain   *Client
+		args    args
+		want    *types.ObjectRead
+		wantErr bool
+	}{
+		{
+			name:  "test for testnet",
+			chain: TestnetClient(t),
+			args: args{
+				ctx:      context.TODO(),
+				objectId: *objectId,
+				version:  5531883,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.chain.TryGetPastObject(tt.args.ctx, tt.args.objectId, tt.args.version)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("TryGetPastObject() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			t.Logf("%#v", got)
+		})
+	}
+}

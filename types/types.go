@@ -216,7 +216,42 @@ type TransactionQuery struct {
 }
 
 func (t TransactionQuery) MarshalJSON() ([]byte, error) {
-	tV := reflect.ValueOf(t)
+	return marshalQuery(t)
+}
+
+type TimeRange struct {
+	StartTime uint64 `json:"startTime"` // left endpoint of time interval, milliseconds since epoch, inclusive
+	EndTime   uint64 `json:"endTime"`   // right endpoint of time interval, milliseconds since epoch, exclusive
+}
+
+type EventQuery struct {
+	// Return all events.
+	All *string `json:"All"`
+	// Return events emitted by the given transaction.
+	Transaction *Digest `json:"Transaction"`
+	// Return events emitted in a specified Move module
+	MoveModule *MoveModule `json:"MoveModule"`
+	// Return events with the given move event struct name
+	MoveEvent *string `json:"MoveEvent"` // e.g. `0x2::devnet_nft::MintNFTEvent`
+	// MoveEvent/Publish/CoinBalanceChange/EpochChange/Checkpoint
+	// TransferObject/MutateObject/DeleteObject/NewObject
+	EventType *string `json:"EventType"`
+	// Query by sender address.
+	Sender *Address `json:"Sender"`
+	// Query by recipient address
+	Recipient *ObjectOwnerInternal `json:"Recipient"`
+	// Return events associated with the given object
+	Object *ObjectId `json:"Object"`
+	// Return events emitted in [start_time, end_time] interval
+	TimeRange *TimeRange `json:"TimeRange"`
+}
+
+func (q EventQuery) MarshalJSON() ([]byte, error) {
+	return marshalQuery(q)
+}
+
+func marshalQuery(q any) ([]byte, error) {
+	tV := reflect.ValueOf(q)
 	for i := 0; i < tV.Type().NumField(); i++ {
 		tField := tV.Field(i)
 		if tField.Kind() != reflect.Pointer || tField.IsNil() {
@@ -243,6 +278,11 @@ type MoveFunction struct {
 	Package  ObjectId `json:"package"`
 	Module   string   `json:"module,omitempty"`
 	Function string   `json:"function,omitempty"`
+}
+
+type MoveModule struct {
+	Package ObjectId `json:"package"`
+	Module  string   `json:"module"`
 }
 
 func (o ObjectOwner) MarshalJSON() ([]byte, error) {

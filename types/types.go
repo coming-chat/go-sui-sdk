@@ -258,14 +258,14 @@ func marshalQuery(q any) ([]byte, error) {
 			continue
 		}
 		fieldV := reflect.Indirect(tField)
-		if fieldV.Kind() == reflect.String {
+		tag := tV.Type().Field(i).Tag.Get("json")
+		if fieldV.Kind() == reflect.String && tag == "All" {
 			return []byte("\"All\""), nil
 		}
 		data, err := json.Marshal(fieldV.Interface())
 		if err != nil {
 			return nil, err
 		}
-		tag := tV.Type().Field(i).Tag.Get("json")
 		result := []byte("{\"" + tag + "\":")
 		result = append(result, data...)
 		result = append(result, []byte("}")...)

@@ -19,7 +19,7 @@ var (
 )
 
 func Test_BCSEncodeTransactionData(t *testing.T) {
-	chain, err := client.Dial(types.DevNetRpcUrl)
+	chain, err := client.Dial(types.TestnetRpcUrl)
 	require.NoError(t, err)
 	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
@@ -33,6 +33,8 @@ func Test_BCSEncodeTransactionData(t *testing.T) {
 		coinRef = append(coinRef, v.Reference)
 		coinId = append(coinId, v.Reference.ObjectId)
 	}
+	price, err := chain.GetReferenceGasPrice(context.TODO())
+	require.NoError(t, err)
 	tx := TransactionData{
 		Kind: TransactionKind{
 			Single: &SingleTransactionKind{
@@ -44,7 +46,7 @@ func Test_BCSEncodeTransactionData(t *testing.T) {
 		},
 		Sender:     *Address,
 		GasPayment: *coin.Reference,
-		GasPrice:   uint64(1),
+		GasPrice:   price,
 		GasBudget:  uint64(1000),
 	}
 	encodeTx, err := bcs.Marshal(tx)

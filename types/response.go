@@ -68,32 +68,14 @@ type ExecuteTransactionEffects struct {
 }
 
 type ExecuteTransactionResponse struct {
-	ImmediateReturn *struct {
-		TransactionDigest string `json:"tx_digest"`
-	} `json:"ImmediateReturn,omitempty"`
+	Certificate CertifiedTransaction      `json:"certificate"`
+	Effects     ExecuteTransactionEffects `json:"effects"`
 
-	TxCert *struct {
-		Certificate CertifiedTransaction `json:"certificate"`
-	} `json:"TxCert,omitempty"`
-
-	EffectsCert *struct {
-		Certificate CertifiedTransaction      `json:"certificate"`
-		Effects     ExecuteTransactionEffects `json:"effects"`
-
-		ConfirmedLocalExecution bool `json:"confirmed_local_execution"`
-	} `json:"EffectsCert,omitempty"`
+	ConfirmedLocalExecution bool `json:"confirmed_local_execution"`
 }
 
 func (r *ExecuteTransactionResponse) TransactionDigest() string {
-	switch {
-	case r.ImmediateReturn != nil:
-		return r.ImmediateReturn.TransactionDigest
-	case r.TxCert != nil:
-		return r.TxCert.Certificate.TransactionDigest
-	case r.EffectsCert != nil:
-		return r.EffectsCert.Certificate.TransactionDigest
-	}
-	return ""
+	return r.Certificate.TransactionDigest
 }
 
 type SuiCoinMetadata struct {

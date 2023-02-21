@@ -130,7 +130,7 @@ type ModulePublish struct {
 	Modules [][]byte `json:"modules"`
 }
 type MoveCall struct {
-	Package  ObjectRef     `json:"package"`
+	Package  ObjectId      `json:"package"`
 	Module   string        `json:"module"`
 	Function string        `json:"function"`
 	TypeArgs []interface{} `json:"typeArguments"`

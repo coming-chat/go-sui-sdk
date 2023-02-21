@@ -131,6 +131,6 @@ type EventPage struct {
 }
 
 type EventID struct {
-	TxDigest Digest `json:"txDigest"`
+	TxDigest string `json:"txDigest"`
 	EventSeq int64  `json:"eventSeq"`
 }

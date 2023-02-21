@@ -228,7 +228,7 @@ type EventQuery struct {
 	// Return all events.
 	All *string `json:"All"`
 	// Return events emitted by the given transaction.
-	Transaction *Digest `json:"Transaction"`
+	Transaction *string `json:"Transaction"`
 	// Return events emitted in a specified Move module
 	MoveModule *MoveModule `json:"MoveModule"`
 	// Return events with the given move event struct name

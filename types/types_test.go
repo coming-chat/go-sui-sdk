@@ -3,10 +3,10 @@ package types
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewAddressFromHex(t *testing.T) {
@@ -92,6 +92,42 @@ func TestTransactionQuery_MarshalJSON(t1 *testing.T) {
 			got, err := json.Marshal(t)
 			require.NoError(t1, err)
 			t1.Logf("%#v", got)
+		})
+	}
+}
+
+func TestIsSameStringAddress(t *testing.T) {
+	type args struct {
+		addr1 string
+		addr2 string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "same address",
+			args: args{
+				"0x00000123",
+				"0x00000000000123",
+			},
+			want: true,
+		},
+		{
+			name: "not same address",
+			args: args{
+				"0x123f",
+				"0x00000000123",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsSameStringAddress(tt.args.addr1, tt.args.addr2); got != tt.want {
+				t.Errorf("IsSameStringAddress() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

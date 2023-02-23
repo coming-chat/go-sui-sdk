@@ -400,3 +400,14 @@ func (txn *TransactionBytes) SignSerializedSigWith(privateKey ed25519.PrivateKey
 		Signature: &signature,
 	}
 }
+
+func IsSameStringAddress(addr1, addr2 string) bool {
+	if strings.HasPrefix(addr1, "0x") {
+		addr1 = addr1[2:]
+	}
+	if strings.HasPrefix(addr2, "0x") {
+		addr2 = addr2[2:]
+	}
+	addr1 = strings.TrimLeft(addr1, "0")
+	return strings.TrimLeft(addr1, "0") == strings.TrimLeft(addr2, "0")
+}

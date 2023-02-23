@@ -41,22 +41,22 @@ type DelegatedStake struct {
 }
 
 type ValidatorMetadata struct {
-	SuiAddress              Address `json:"sui_address"`
-	PubkeyBytes             []byte  `json:"pubkey_bytes"`
-	NetworkPubkeyBytes      []byte  `json:"network_pubkey_bytes"`
-	WorkerPubkeyBytes       []byte  `json:"worker_pubkey_bytes"`
-	ProofOfPossessionBytes  []byte  `json:"proof_of_possession_bytes"`
-	Name                    []byte  `json:"name"`
-	Description             []byte  `json:"description"`
-	ImageUrl                []byte  `json:"image_url"`
-	ProjectUrl              []byte  `json:"project_url"`
-	NetAddress              []byte  `json:"net_address"`
-	ConsensusAddress        []byte  `json:"consensus_address"`
-	WorkerAddress           []byte  `json:"worker_address"`
-	NextEpochStake          uint64  `json:"next_epoch_stake"`
-	NextEpochDelegation     uint64  `json:"next_epoch_delegation"`
-	NextEpochGasPrice       uint64  `json:"next_epoch_gas_price"`
-	NextEpochCommissionRate uint64  `json:"next_epoch_commission_rate"`
+	SuiAddress              string `json:"sui_address"`
+	PubkeyBytes             []byte `json:"pubkey_bytes"`
+	NetworkPubkeyBytes      []byte `json:"network_pubkey_bytes"`
+	WorkerPubkeyBytes       []byte `json:"worker_pubkey_bytes"`
+	ProofOfPossessionBytes  []byte `json:"proof_of_possession_bytes"`
+	Name                    string `json:"name"`
+	Description             string `json:"description"`
+	ImageUrl                string `json:"image_url"`
+	ProjectUrl              string `json:"project_url"`
+	NetAddress              []byte `json:"net_address"`
+	ConsensusAddress        []byte `json:"consensus_address"`
+	WorkerAddress           []byte `json:"worker_address"`
+	NextEpochStake          uint64 `json:"next_epoch_stake"`
+	NextEpochDelegation     uint64 `json:"next_epoch_delegation"`
+	NextEpochGasPrice       uint64 `json:"next_epoch_gas_price"`
+	NextEpochCommissionRate uint64 `json:"next_epoch_commission_rate"`
 }
 
 type StakingPool struct {
@@ -111,6 +111,9 @@ func (v *Validator) CalculateAPY(epoch uint64) float64 {
 	}
 
 	numEpochsParticipated := epoch - p.StartingEpoch
+	if p.DelegationTokenSupply.Value == 0 || numEpochsParticipated == 0 {
+		return 0
+	}
 	pow1, _ := big.NewFloat(0).Quo(
 		big.NewFloat(float64(p.SuiBalance)),
 		big.NewFloat(float64(p.DelegationTokenSupply.Value)),

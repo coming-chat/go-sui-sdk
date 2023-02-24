@@ -7,6 +7,7 @@ import (
 )
 
 var ErrCoinsNotMatchRequest error
+var ErrCoinsNeedMoreObject error
 
 const (
 	PickSmaller = iota // pick smaller coins to match amount
@@ -25,6 +26,7 @@ type Coins []Coin
 
 func init() {
 	ErrCoinsNotMatchRequest = errors.New("coins not match request")
+	ErrCoinsNeedMoreObject = errors.New("you should get more SUI coins and try again")
 }
 
 func (cs Coins) TotalBalance() *big.Int {
@@ -48,7 +50,7 @@ func (cs Coins) PickCoinNoLess(amount uint64) (*Coin, error) {
 }
 
 // PickSUICoinsWithGas pick coins, which sum >= amount, and pick a gas coin >= gasAmount which not in coins
-// if not satisfated amount/gasAmount, an ErrCoinsNotMatchRequest error will return
+// if not satisfated amount/gasAmount, an ErrCoinsNotMatchRequest/ErrCoinsNeedMoreObject error will return
 // if gasAmount == 0, a nil gasCoin will return
 // pickMethod, see PickSmaller|PickBigger|PickByOrder
 func (cs Coins) PickSUICoinsWithGas(amount *big.Int, gasAmount uint64, pickMethod int) (Coins, *Coin, error) {
@@ -60,7 +62,7 @@ func (cs Coins) PickSUICoinsWithGas(amount *big.Int, gasAmount uint64, pickMetho
 	if amount.Cmp(big.NewInt(0)) == 0 && gasAmount == 0 {
 		return make(Coins, 0), nil, nil
 	} else if len(cs) == 0 {
-		return cs, nil, ErrCoinsNotMatchRequest
+		return cs, nil, ErrCoinsNeedMoreObject
 	}
 
 	// find smallest to match gasAmount
@@ -89,7 +91,7 @@ func (cs Coins) PickSUICoinsWithGas(amount *big.Int, gasAmount uint64, pickMetho
 
 // PickCoins pick coins, which sum >= amount,
 // pickMethod, see PickSmaller|PickBigger|PickByOrder
-// // if not satisfated amount, an ErrCoinsNotMatchRequest error will return
+// if not satisfated amount, an ErrCoinsNeedMoreObject error will return
 func (cs Coins) PickCoins(amount *big.Int, pickMethod int) (Coins, error) {
 	var sortedCoins Coins
 	if pickMethod == PickByOrder {
@@ -116,5 +118,5 @@ func (cs Coins) PickCoins(amount *big.Int, pickMethod int) (Coins, error) {
 		}
 	}
 
-	return nil, ErrCoinsNotMatchRequest
+	return nil, ErrCoinsNeedMoreObject
 }

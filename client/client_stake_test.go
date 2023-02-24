@@ -76,6 +76,18 @@ func TestRequestAddDelegation(t *testing.T) {
 		requestAddDelegation(t, coins, amount, validatorAddress, gasId)
 		// ✅ https://explorer.sui.io/transaction/F3VXATTbZU2VtrJv7V95FRkAQ4KAwBqr3mZHmcPRs3fC?network=testnet
 	}
+
+	if false {
+		onlyOneCoin := "0x1179965d09c9d8b547e4c746c200022173336569" // 0.01
+		coins := []string{
+			onlyOneCoin,
+		}
+		amount := uint64(5000000) //0.005
+		validatorAddress := "0xfb2bbe688390e83170aff94b96d317397940ad33"
+		gasId := onlyOneCoin
+		requestAddDelegation(t, coins, amount, validatorAddress, gasId)
+		// Error: "Mutable object 0x1179....36569 cannot appear in more than one single transactions in a batch"
+	}
 }
 
 func TestRequestSwitchDelegation(t *testing.T) {

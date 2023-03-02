@@ -3,7 +3,6 @@ package sui_types
 import (
 	"bytes"
 	"context"
-	"encoding/hex"
 	"github.com/coming-chat/go-sui/client"
 	"github.com/coming-chat/go-sui/types"
 	"github.com/fardream/go-bcs/bcs"
@@ -19,7 +18,7 @@ var (
 )
 
 func Test_BCSEncodeTransactionData(t *testing.T) {
-	chain, err := client.Dial(types.TestnetRpcUrl)
+	chain, err := client.Dial(types.DevNetRpcUrl)
 	require.NoError(t, err)
 	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
@@ -44,10 +43,13 @@ func Test_BCSEncodeTransactionData(t *testing.T) {
 				},
 			},
 		},
-		Sender:     *Address,
-		GasPayment: *coin.Reference,
-		GasPrice:   price,
-		GasBudget:  uint64(1000),
+		Sender: *Address,
+		GasData: GasData{
+			Payment: *coin.Reference,
+			Owner:   *Address,
+			Price:   price,
+			Budget:  uint64(1000),
+		},
 	}
 	encodeTx, err := bcs.Marshal(tx)
 
@@ -60,65 +62,66 @@ func Test_BCSEncodeTransactionData(t *testing.T) {
 	}
 }
 
-func TestBCS_EncodeMoveCall(t *testing.T) {
-	chain, err := client.Dial(types.DevNetRpcUrl)
-	require.NoError(t, err)
-	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
-	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(2000)
-	require.NoError(t, err)
-	packageId, err := types.NewHexData("0xec1a4be985f62eabe14437e81171077930fab4a6")
-	require.NoError(t, err)
-	packageRead, err := chain.GetObject(context.TODO(), *packageId)
-	require.NoError(t, err)
-	globalProfile, err := types.NewHexData("0x7eb175bd3f75b798a6642663195262966f7d7e4e")
-	require.NoError(t, err)
-	profile := "{\"name\":\"test\",\"bio\":\"Hello\",\"avatar\":\"\"}"
-	signature, err := hex.DecodeString("d485020c6ac369e6f2b28be2dcca24ebfd827c53893b6462e9e65cf16dba3cedf004e8740b8c8c3579a4391269b9e103bcfc39627c6af729abb7675bc8004301")
-	require.NoError(t, err)
-	profileBcsEn, err := bcs.Marshal([]byte(profile))
-	require.NoError(t, err)
-	signatureBcsEn, err := bcs.Marshal(signature)
-	require.NoError(t, err)
-	tx := TransactionData{
-		Kind: TransactionKind{
-			Single: &SingleTransactionKind{
-				Call: &MoveCall{
-					Package:       packageRead.Details.Reference.ObjectId,
-					Module:        "profile",
-					Function:      "register",
-					TypeArguments: []*TypeTag{},
-					Arguments: []*CallArg{
-						{
-							Object: &ObjectArg{
-								SharedObject: &SharedObject{
-									Id:                   *globalProfile,
-									InitialSharedVersion: 31,
-								},
-							},
-						},
-						{
-							Pure: &profileBcsEn,
-						},
-						{
-							Pure: &signatureBcsEn,
-						},
-					},
-				},
-			},
-		},
-		Sender:     *Address,
-		GasPayment: *coin.Reference,
-		GasPrice:   uint64(1),
-		GasBudget:  uint64(2000),
-	}
-	encodeTx, err := bcs.Marshal(tx)
-	require.NoError(t, err)
-	currentTxEncode, err := chain.MoveCall(context.TODO(), *Address, *packageId, "profile", "register", []string{}, []any{globalProfile, profile, "0xd485020c6ac369e6f2b28be2dcca24ebfd827c53893b6462e9e65cf16dba3cedf004e8740b8c8c3579a4391269b9e103bcfc39627c6af729abb7675bc8004301"}, &coin.Reference.ObjectId, 2000)
-	require.NoError(t, err)
-	t.Logf("%x", encodeTx)
-	t.Logf("%x", currentTxEncode.TxBytes.Data())
-	if !bytes.Equal(encodeTx, currentTxEncode.TxBytes.Data()) {
-		t.Fatal("encode failed")
-	}
-}
+// This test case needs dmens contract
+//func TestBCS_EncodeMoveCall(t *testing.T) {
+//	chain, err := client.Dial(types.DevNetRpcUrl)
+//	require.NoError(t, err)
+//	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+//	require.NoError(t, err)
+//	coin, err := coins.PickCoinNoLess(2000)
+//	require.NoError(t, err)
+//	packageId, err := types.NewHexData("0xec1a4be985f62eabe14437e81171077930fab4a6")
+//	require.NoError(t, err)
+//	packageRead, err := chain.GetObject(context.TODO(), *packageId)
+//	require.NoError(t, err)
+//	globalProfile, err := types.NewHexData("0x7eb175bd3f75b798a6642663195262966f7d7e4e")
+//	require.NoError(t, err)
+//	profile := "{\"name\":\"test\",\"bio\":\"Hello\",\"avatar\":\"\"}"
+//	signature, err := hex.DecodeString("d485020c6ac369e6f2b28be2dcca24ebfd827c53893b6462e9e65cf16dba3cedf004e8740b8c8c3579a4391269b9e103bcfc39627c6af729abb7675bc8004301")
+//	require.NoError(t, err)
+//	profileBcsEn, err := bcs.Marshal([]byte(profile))
+//	require.NoError(t, err)
+//	signatureBcsEn, err := bcs.Marshal(signature)
+//	require.NoError(t, err)
+//	tx := TransactionData{
+//		Kind: TransactionKind{
+//			Single: &SingleTransactionKind{
+//				Call: &MoveCall{
+//					Package:       packageRead.Details.Reference.ObjectId,
+//					Module:        "profile",
+//					Function:      "register",
+//					TypeArguments: []*TypeTag{},
+//					Arguments: []*CallArg{
+//						{
+//							Object: &ObjectArg{
+//								SharedObject: &SharedObject{
+//									Id:                   *globalProfile,
+//									InitialSharedVersion: 31,
+//								},
+//							},
+//						},
+//						{
+//							Pure: &profileBcsEn,
+//						},
+//						{
+//							Pure: &signatureBcsEn,
+//						},
+//					},
+//				},
+//			},
+//		},
+//		Sender:     *Address,
+//		GasPayment: *coin.Reference,
+//		GasPrice:   uint64(1),
+//		GasBudget:  uint64(2000),
+//	}
+//	encodeTx, err := bcs.Marshal(tx)
+//	require.NoError(t, err)
+//	currentTxEncode, err := chain.MoveCall(context.TODO(), *Address, *packageId, "profile", "register", []string{}, []any{globalProfile, profile, "0xd485020c6ac369e6f2b28be2dcca24ebfd827c53893b6462e9e65cf16dba3cedf004e8740b8c8c3579a4391269b9e103bcfc39627c6af729abb7675bc8004301"}, &coin.Reference.ObjectId, 2000)
+//	require.NoError(t, err)
+//	t.Logf("%x", encodeTx)
+//	t.Logf("%x", currentTxEncode.TxBytes.Data())
+//	if !bytes.Equal(encodeTx, currentTxEncode.TxBytes.Data()) {
+//		t.Fatal("encode failed")
+//	}
+//}

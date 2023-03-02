@@ -715,8 +715,12 @@ func TestClient_GetTransactions(t *testing.T) {
 }
 
 func TestClient_TryGetPastObject(t *testing.T) {
-	objectId, err := types.NewHexData("0xd797f6aef2b54d3b3951bb546cfa96431cffc72f")
+	chain := DevnetClient(t)
+	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
+	coin, err := coins.PickCoinNoLess(1000)
+	require.NoError(t, err)
+
 	type args struct {
 		ctx      context.Context
 		objectId types.ObjectId
@@ -730,12 +734,12 @@ func TestClient_TryGetPastObject(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:  "test for testnet",
-			chain: TestnetClient(t),
+			name:  "test for devnet",
+			chain: chain,
 			args: args{
 				ctx:      context.TODO(),
-				objectId: *objectId,
-				version:  5531883,
+				objectId: coin.Reference.ObjectId,
+				version:  coin.Reference.Version,
 			},
 		},
 	}
@@ -752,9 +756,7 @@ func TestClient_TryGetPastObject(t *testing.T) {
 }
 
 func TestClient_GetEvents(t *testing.T) {
-	fromAddress, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
-	require.NoError(t, err)
-	chain := TestnetClient(t)
+	chain := DevnetClient(t)
 	type args struct {
 		ctx             context.Context
 		eventQuery      types.EventQuery
@@ -786,7 +788,7 @@ func TestClient_GetEvents(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				eventQuery: types.EventQuery{
-					Sender: fromAddress,
+					Sender: Address,
 				},
 				cursor:          nil,
 				limit:           10,
@@ -810,7 +812,7 @@ func TestClient_GetEvents(t *testing.T) {
 }
 
 func TestClient_GetReferenceGasPrice(t *testing.T) {
-	cli := TestnetClient(t)
+	cli := DevnetClient(t)
 	gasPrice, err := cli.GetReferenceGasPrice(context.Background())
 	require.Nil(t, err)
 	t.Logf("current gas price = %v", gasPrice)

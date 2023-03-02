@@ -11,7 +11,7 @@ import (
 )
 
 func TestGetDelegatedStakes(t *testing.T) {
-	cli := TestnetClient(t)
+	cli := DevnetClient(t)
 
 	acc := M1Account(t)
 	addr, _ := types.NewAddressFromHex(acc.Address)
@@ -29,7 +29,7 @@ func TestGetDelegatedStakes(t *testing.T) {
 }
 
 func TestGetValidators(t *testing.T) {
-	cli := TestnetClient(t)
+	cli := DevnetClient(t)
 
 	res, err := cli.GetValidators(context.Background())
 	require.Nil(t, err)
@@ -42,7 +42,7 @@ func TestGetValidators(t *testing.T) {
 }
 
 func TestGetSuiSystemState(t *testing.T) {
-	cli := TestnetClient(t)
+	cli := DevnetClient(t)
 
 	res, err := cli.GetSuiSystemState(context.Background())
 	require.Nil(t, err)
@@ -112,7 +112,7 @@ func TestRequestWithdrawDelegation(t *testing.T) {
 }
 
 func requestAddDelegation(t *testing.T, coinIds []string, amount uint64, validatorAddress string, gasId string) {
-	cli := TestnetClient(t)
+	cli := DevnetClient(t)
 	acc := M1Account(t)
 	addr, _ := types.NewAddressFromHex(acc.Address)
 
@@ -137,7 +137,7 @@ func requestAddDelegation(t *testing.T, coinIds []string, amount uint64, validat
 }
 
 func requestSwitchDelegation(t *testing.T, delegationId, stakedId, validator, gasId string) {
-	cli := TestnetClient(t)
+	cli := DevnetClient(t)
 	acc := M1Account(t)
 	addr, _ := types.NewAddressFromHex(acc.Address)
 
@@ -162,7 +162,7 @@ func requestSwitchDelegation(t *testing.T, delegationId, stakedId, validator, ga
 }
 
 func requestWithdrawDelegation(t *testing.T, delegationId, stakedId, gasId string) {
-	cli := TestnetClient(t)
+	cli := DevnetClient(t)
 	acc := M1Account(t)
 	addr, _ := types.NewAddressFromHex(acc.Address)
 

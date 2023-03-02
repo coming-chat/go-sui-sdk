@@ -3,11 +3,16 @@ package sui_types
 import "github.com/coming-chat/go-sui/types"
 
 type TransactionData struct {
-	Kind       TransactionKind
-	Sender     types.Address
-	GasPayment types.ObjectRef
-	GasPrice   uint64
-	GasBudget  uint64
+	Kind    TransactionKind
+	Sender  types.Address
+	GasData GasData
+}
+
+type GasData struct {
+	Payment types.ObjectRef
+	Owner   types.Address
+	Price   uint64
+	Budget  uint64
 }
 
 type TransactionKind struct {

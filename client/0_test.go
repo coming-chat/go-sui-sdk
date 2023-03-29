@@ -1,10 +1,10 @@
 package client
 
 import (
-	"context"
-	"github.com/coming-chat/go-sui/types"
 	"os"
 	"testing"
+
+	"github.com/coming-chat/go-sui/types"
 
 	"github.com/coming-chat/go-sui/account"
 	"github.com/stretchr/testify/require"
@@ -17,7 +17,7 @@ const (
 )
 
 var (
-	Address, _ = types.NewAddressFromHex("0xb08ae4d187ca0057baa1666fe43fb9d7f3693a9a")
+	Address, _ = types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
 	M1Mnemonic = os.Getenv("WalletSdkTestM1")
 )
 
@@ -29,13 +29,14 @@ func TestnetClient(t *testing.T) *Client {
 
 func DevnetClient(t *testing.T) *Client {
 	c, err := Dial(types.DevNetRpcUrl)
-
-	coins, err := c.GetCoins(context.TODO(), *Address, nil, nil, 1)
 	require.NoError(t, err)
-	if len(coins.Data) == 0 {
-		_, err = FaucetFundAccount(Address.String(), DevNetFaucetUrl)
-		require.NoError(t, err)
-	}
+
+	// coins, err := c.GetCoins(context.TODO(), *Address, nil, nil, 1)
+	// require.NoError(t, err)
+	// if len(coins.Data) == 0 {
+	// 	_, err = FaucetFundAccount(Address.String(), DevNetFaucetUrl)
+	// 	require.NoError(t, err)
+	// }
 	return c
 }
 

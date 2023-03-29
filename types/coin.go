@@ -6,6 +6,39 @@ import (
 	"sort"
 )
 
+// type LockedBalance struct {
+// 	EpochId int64 `json:"epochId"`
+// 	Number  int64 `json:"number"`
+// }
+
+type CoinStruct struct {
+	CoinType     string            `json:"coinType"`
+	CoinObjectId ObjectId          `json:"coinObjectId"`
+	Version      uint64            `json:"version"`
+	Digest       TransactionDigest `json:"digest"`
+	Balance      int64             `json:"balance"`
+
+	LockedUntilEpoch    *int              `json:"lockedUntilEpoch"`
+	PreviousTransaction TransactionDigest `json:"previousTransaction"`
+}
+
+type PaginatedCoins struct {
+	Data        []CoinStruct `json:"data"`
+	NextCursor  *ObjectId    `json:"nextCursor,omitempty"`
+	HasNextPage bool         `json:"hasNextPage"`
+}
+
+type CoinBalance struct {
+	CoinType        string      `json:"coinType"`
+	CoinObjectCount uint64      `json:"coinObjectCount"`
+	TotalBalance    uint64      `json:"totalBalance"`
+	LockedBalance   interface{} `json:"lockedBalance"`
+}
+
+type CoinSupply struct {
+	Value uint64 `json:"value"`
+}
+
 var ErrCoinsNotMatchRequest error
 var ErrCoinsNeedMoreObject error
 
@@ -15,11 +48,25 @@ const (
 	PickByOrder        // pick coins by coins order to match amount
 )
 
-type Coin struct {
-	Balance   uint64     `json:"balance"`
-	Type      string     `json:"type"`
-	Owner     *Address   `json:"owner"`
-	Reference *ObjectRef `json:"reference"`
+// type Coin struct {
+// 	Balance   uint64     `json:"balance"`
+// 	Type      string     `json:"type"`
+// 	Owner     *Address   `json:"owner"`
+// 	Reference *ObjectRef `json:"reference"`
+// }
+
+type Coin = CoinStruct
+
+func (c *Coin) Reference() *ObjectRef {
+	digest, _ := NewBase64Data(c.Digest)
+	if digest == nil {
+		return nil
+	}
+	return &ObjectRef{
+		Digest:   *digest,
+		Version:  c.Version,
+		ObjectId: c.CoinObjectId,
+	}
 }
 
 type Coins []Coin
@@ -32,14 +79,14 @@ func init() {
 func (cs Coins) TotalBalance() *big.Int {
 	total := big.NewInt(0)
 	for _, coin := range cs {
-		total = total.Add(total, big.NewInt(0).SetUint64(coin.Balance))
+		total = total.Add(total, big.NewInt(coin.Balance))
 	}
 	return total
 }
 
 func (cs Coins) PickCoinNoLess(amount uint64) (*Coin, error) {
 	for _, coin := range cs {
-		if coin.Balance >= amount {
+		if uint64(coin.Balance) >= amount {
 			return &coin, nil
 		}
 	}
@@ -69,7 +116,7 @@ func (cs Coins) PickSUICoinsWithGas(amount *big.Int, gasAmount uint64, pickMetho
 	var gasCoin *Coin
 	var selectIndex int
 	for i := range cs {
-		if cs[i].Balance < gasAmount {
+		if uint64(cs[i].Balance) < gasAmount {
 			continue
 		}
 
@@ -112,7 +159,7 @@ func (cs Coins) PickCoins(amount *big.Int, pickMethod int) (Coins, error) {
 	total := big.NewInt(0)
 	for _, coin := range sortedCoins {
 		result = append(result, coin)
-		total = new(big.Int).Add(total, new(big.Int).SetUint64(coin.Balance))
+		total = new(big.Int).Add(total, big.NewInt(coin.Balance))
 		if total.Cmp(amount) >= 0 {
 			return result, nil
 		}

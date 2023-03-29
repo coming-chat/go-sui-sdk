@@ -3,13 +3,14 @@ package sui_types
 import (
 	"bytes"
 	"context"
+	"math/big"
+	"os"
+	"testing"
+
 	"github.com/coming-chat/go-sui/client"
 	"github.com/coming-chat/go-sui/types"
 	"github.com/fardream/go-bcs/bcs"
 	"github.com/stretchr/testify/require"
-	"math/big"
-	"os"
-	"testing"
 )
 
 var (
@@ -25,12 +26,12 @@ func Test_BCSEncodeTransactionData(t *testing.T) {
 	transferCoins, coin, err := coins.PickSUICoinsWithGas(big.NewInt(1000), 1000, types.PickByOrder)
 	require.NoError(t, err)
 	var (
-		coinRef = []*types.ObjectRef{coin.Reference}
-		coinId  = []types.ObjectId{coin.Reference.ObjectId}
+		coinRef = []*types.ObjectRef{coin.Reference()}
+		coinId  = []types.ObjectId{coin.CoinObjectId}
 	)
 	for _, v := range transferCoins {
-		coinRef = append(coinRef, v.Reference)
-		coinId = append(coinId, v.Reference.ObjectId)
+		coinRef = append(coinRef, v.Reference())
+		coinId = append(coinId, v.CoinObjectId)
 	}
 	price, err := chain.GetReferenceGasPrice(context.TODO())
 	require.NoError(t, err)
@@ -45,7 +46,7 @@ func Test_BCSEncodeTransactionData(t *testing.T) {
 		},
 		Sender: *Address,
 		GasData: GasData{
-			Payment: *coin.Reference,
+			Payment: *coin.Reference(),
 			Owner:   *Address,
 			Price:   price,
 			Budget:  uint64(1000),

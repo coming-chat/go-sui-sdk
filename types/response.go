@@ -87,12 +87,6 @@ type SuiCoinMetadata struct {
 	Symbol      string   `json:"symbol"`
 }
 
-type SuiCoinBalance struct {
-	CoinType        string `json:"coinType"`
-	CoinObjectCount int64  `json:"coinObjectCount"`
-	TotalBalance    int64  `json:"totalBalance"`
-}
-
 type DevInspectResults struct {
 	Effects TransactionEffects `json:"effects"`
 	Results DevInspectResult   `json:"results"`
@@ -101,19 +95,6 @@ type DevInspectResults struct {
 type DevInspectResult struct {
 	Err string `json:"Err,omitempty"`
 	Ok  any    `json:"Ok,omitempty"` //Result_of_Array_of_Tuple_of_uint_and_SuiExecutionResult_or_String
-}
-
-type CoinPage struct {
-	Data       []CoinObject `json:"data"`
-	NextCursor *ObjectId    `json:"nextCursor"`
-}
-
-type CoinObject struct {
-	CoinType     string   `json:"coinType"`
-	CoinObjectId ObjectId `json:"coinObjectId"`
-	Version      uint64   `json:"version"`
-	Digest       Digest   `json:"digest"`
-	Balance      int64    `json:"balance"`
 }
 
 type Supply struct {

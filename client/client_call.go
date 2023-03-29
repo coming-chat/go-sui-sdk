@@ -2,43 +2,90 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/coming-chat/go-sui/types"
 )
 
-func (c *Client) GetSuiCoinsOwnedByAddress(ctx context.Context, address types.Address) (types.Coins, error) {
-	return c.GetCoinsOwnedByAddress(ctx, address, types.SuiCoinType)
+// GetBalance to use default sui coin(0x2::sui::SUI) when coinType is empty
+func (c *Client) GetBalance(ctx context.Context, owner types.Address, coinType string) (*types.CoinBalance, error) {
+	resp := types.CoinBalance{}
+	if coinType == "" {
+		return &resp, c.CallContext(ctx, &resp, "suix_getBalance", owner)
+	} else {
+		return &resp, c.CallContext(ctx, &resp, "suix_getBalance", owner, coinType)
+	}
 }
 
-func (c *Client) GetCoinsOwnedByAddress(ctx context.Context, address types.Address, coinType string) (coins types.Coins, err error) {
-	defer func() {
-		errP := recover()
-		if errP != nil {
-			err = fmt.Errorf("decode rpc data err: %v", errP)
-			return
-		}
-	}()
-	//TODO Get only 200 items for the time being, and then add parameters to get more.
-	coinObjects, err := c.GetCoins(ctx, address, &coinType, nil, 200)
+func (c *Client) GetAllBalances(ctx context.Context, owner types.Address) ([]types.CoinBalance, error) {
+	var resp []types.CoinBalance
+	return resp, c.CallContext(ctx, &resp, "suix_getAllBalances", owner)
+}
+
+func (c *Client) GetSuiCoinsOwnedByAddress(ctx context.Context, address types.Address) (types.Coins, error) {
+	cointype := types.SuiCoinType
+	page, err := c.GetCoins(ctx, address, &cointype, nil, 200)
 	if err != nil {
 		return nil, err
 	}
-	for _, coin := range coinObjects.Data {
-		coins = append(coins, types.Coin{
-			Balance: uint64(coin.Balance),
-			Type:    coin.CoinType,
-			Owner:   &address,
-			Reference: &types.ObjectRef{
-				Digest:   coin.Digest,
-				Version:  coin.Version,
-				ObjectId: coin.CoinObjectId,
-			},
-		})
-	}
-	return coins, nil
+	return page.Data, nil
 }
+
+// GetCoins to use default sui coin(0x2::sui::SUI) when coinType is nil
+// start with the first object when cursor is nil
+func (c *Client) GetCoins(ctx context.Context, owner types.Address, coinType *string, cursor *types.ObjectId, limit uint) (*types.PaginatedCoins, error) {
+	var resp types.PaginatedCoins
+	return &resp, c.CallContext(ctx, &resp, "suix_getCoins", owner, coinType, cursor, limit)
+}
+
+// GetAllCoins
+// start with the first object when cursor is nil
+func (c *Client) GetAllCoins(ctx context.Context, owner types.Address, cursor *types.ObjectId, limit uint) (*types.PaginatedCoins, error) {
+	var resp types.PaginatedCoins
+	return &resp, c.CallContext(ctx, &resp, "suix_getAllCoins", owner, cursor, limit)
+}
+
+// GetAllCoins
+// start with the first object when cursor is nil
+func (c *Client) GetCoinMetadata(ctx context.Context, coinType string) (*types.SuiCoinMetadata, error) {
+	var resp types.SuiCoinMetadata
+	return &resp, c.CallContext(ctx, &resp, "suix_getCoinMetadata", coinType)
+}
+
+func (c *Client) GetObject(ctx context.Context, objID types.ObjectId, options *types.SuiObjectDataOptions) (*types.SuiObjectResponse, error) {
+	var resp types.SuiObjectResponse
+	return &resp, c.CallContext(ctx, &resp, "sui_getObject", objID, options)
+}
+
+func (c *Client) MultiGetObjects(ctx context.Context, objIDs []types.ObjectId, options *types.SuiObjectDataOptions) ([]types.SuiObjectResponse, error) {
+	var resp []types.SuiObjectResponse
+	return resp, c.CallContext(ctx, &resp, "sui_multiGetObjects", objIDs, options)
+}
+
+// address : <SuiAddress> - the owner's Sui address
+// query : <ObjectResponseQuery> - the objects query criteria.
+// cursor : <CheckpointedObjectID> - An optional paging cursor. If provided, the query will start from the next item after the specified cursor. Default to start from the first item if not specified.
+// limit : <uint> - Max number of items returned per page, default to [QUERY_MAX_RESULT_LIMIT_OBJECTS] if is 0
+func (c *Client) GetOwnedObjects(ctx context.Context, address types.Address, query *types.SuiObjectResponseQuery, cursor *types.CheckpointedObjectId, limit uint) (*types.PaginatedObjectsResponse, error) {
+	var resp types.PaginatedObjectsResponse
+	if limit > 0 {
+		return &resp, c.CallContext(ctx, &resp, "suix_getOwnedObjects", address, query, cursor, limit)
+	} else {
+		return &resp, c.CallContext(ctx, &resp, "suix_getOwnedObjects", address, query, cursor)
+	}
+}
+
+func (c *Client) GetTotalSupply(ctx context.Context, coinType string) (*types.CoinSupply, error) {
+	var resp types.CoinSupply
+	return &resp, c.CallContext(ctx, &resp, "suix_getTotalSupply", coinType)
+}
+
+func (c *Client) GetTotalTransactionBlocks(ctx context.Context) (string, error) {
+	var resp string
+	return resp, c.CallContext(ctx, &resp, "sui_getTotalTransactionBlocks")
+}
+
+// MARK - Unmigrated
 
 // BatchGetObjectsOwnedByAddress @param filterType You can specify filtering out the specified resources, this will fetch all resources if it is not empty ""
 func (c *Client) BatchGetObjectsOwnedByAddress(ctx context.Context, address types.Address, filterType string) ([]types.ObjectRead, error) {
@@ -97,14 +144,9 @@ func (c *Client) ExecuteTransaction(ctx context.Context, txn types.SignedTransac
 	return &resp, c.CallContext(ctx, &resp, "sui_executeTransaction", txn.TxBytes, txn.Signature, requestType)
 }
 
-func (c *Client) GetObject(ctx context.Context, objID types.ObjectId) (*types.ObjectRead, error) {
-	resp := types.ObjectRead{}
-	return &resp, c.CallContext(ctx, &resp, "sui_getObject", objID)
-}
-
 func (c *Client) GetObjectsOwnedByAddress(ctx context.Context, address types.Address) ([]types.ObjectInfo, error) {
 	var resp []types.ObjectInfo
-	return resp, c.CallContext(ctx, &resp, "sui_getObjectsOwnedByAddress", address)
+	return resp, c.CallContext(ctx, &resp, "suix_getOwnedObjects", address)
 }
 
 func (c *Client) GetObjectsOwnedByObject(ctx context.Context, objID types.ObjectId) ([]types.ObjectInfo, error) {
@@ -211,11 +253,6 @@ func (c *Client) PayAllSui(ctx context.Context, signer, recipient types.Address,
 
 }
 
-func (c *Client) GetCoinMetadata(ctx context.Context, coinType string) (*types.SuiCoinMetadata, error) {
-	resp := types.SuiCoinMetadata{}
-	return &resp, c.CallContext(ctx, &resp, "sui_getCoinMetadata", coinType)
-}
-
 func (c *Client) Pay(ctx context.Context, signer types.Address, inputCoins []types.ObjectId, recipients []types.Address, amount []uint64, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, "sui_pay", signer, inputCoins, recipients, amount, gas, gasBudget)
@@ -226,39 +263,9 @@ func (c *Client) PaySui(ctx context.Context, signer types.Address, inputCoins []
 	return &resp, c.CallContext(ctx, &resp, "sui_paySui", signer, inputCoins, recipients, amount, gasBudget)
 }
 
-func (c *Client) GetAllBalances(ctx context.Context, address types.Address) ([]types.SuiCoinBalance, error) {
-	var resp []types.SuiCoinBalance
-	return resp, c.CallContext(ctx, &resp, "sui_getAllBalances", address)
-}
-
-// GetBalance to use default sui coin(0x2::sui::SUI) when coinType is nil
-func (c *Client) GetBalance(ctx context.Context, address types.Address, coinType *string) (*types.SuiCoinBalance, error) {
-	resp := types.SuiCoinBalance{}
-	return &resp, c.CallContext(ctx, &resp, "sui_getBalance", address, coinType)
-}
-
 func (c *Client) DevInspectTransaction(ctx context.Context, senderAddress types.Address, txByte types.Base64Data, gasPrice *uint64, epoch *uint64) (*types.DevInspectResults, error) {
 	var resp types.DevInspectResults
 	return &resp, c.CallContext(ctx, &resp, "sui_devInspectTransaction", senderAddress, txByte, gasPrice, epoch)
-}
-
-// GetCoins to use default sui coin(0x2::sui::SUI) when coinType is nil
-// start with the first object when cursor is nil
-func (c *Client) GetCoins(ctx context.Context, address types.Address, coinType *string, cursor *types.ObjectId, limit uint) (*types.CoinPage, error) {
-	var resp types.CoinPage
-	return &resp, c.CallContext(ctx, &resp, "sui_getCoins", address, coinType, cursor, limit)
-}
-
-// GetAllCoins
-// start with the first object when cursor is nil
-func (c *Client) GetAllCoins(ctx context.Context, address types.Address, cursor *types.ObjectId, limit uint) (*types.CoinPage, error) {
-	var resp types.CoinPage
-	return &resp, c.CallContext(ctx, &resp, "sui_getAllCoins", address, cursor, limit)
-}
-
-func (c *Client) GetTotalSupply(ctx context.Context, coinType string) (*types.Supply, error) {
-	var resp types.Supply
-	return &resp, c.CallContext(ctx, &resp, "sui_getTotalSupply", coinType)
 }
 
 func (c *Client) ExecuteTransactionSerializedSig(ctx context.Context, txn types.SignedTransactionSerializedSig, requestType types.ExecuteTransactionRequestType) (*types.ExecuteTransactionResponse, error) {

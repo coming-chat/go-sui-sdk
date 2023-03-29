@@ -37,7 +37,7 @@ func NewAddressFromHex(addr string) (*Address, error) {
 	if err != nil {
 		return nil, err
 	}
-	const addressLength = 20
+	const addressLength = 32
 	if len(data) > addressLength {
 		return nil, fmt.Errorf("hex string is too long. Address's length is %v data", addressLength)
 	}

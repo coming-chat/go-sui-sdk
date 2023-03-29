@@ -23,7 +23,7 @@ func TestMintNFT(t *testing.T) {
 	firstCoin, err := coins.PickCoinNoLess(12000)
 	require.NoError(t, err)
 
-	txnBytes, err := cli.MintNFT(context.TODO(), *Address, nftName, nftDesc, nftUrl, &firstCoin.Reference.ObjectId, 12000)
+	txnBytes, err := cli.MintNFT(context.TODO(), *Address, nftName, nftDesc, nftUrl, &firstCoin.CoinObjectId, 12000)
 	require.NoError(t, err)
 	t.Log(txnBytes.TxBytes)
 

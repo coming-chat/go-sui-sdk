@@ -180,26 +180,7 @@ type SenderSignedData struct {
 	// GasPrice     uint64      `json:"gasPrice"`
 }
 
-type OwnedObjectRef struct {
-	Owner     *ObjectOwner `json:"owner"`
-	Reference *ObjectRef   `json:"reference"`
-}
-
 type Event interface{}
-
-type ObjectOwner struct {
-	*ObjectOwnerInternal
-	*string
-}
-
-type ObjectOwnerInternal struct {
-	AddressOwner *Address `json:"AddressOwner,omitempty"`
-	ObjectOwner  *Address `json:"ObjectOwner,omitempty"`
-	SingleOwner  *Address `json:"SingleOwner,omitempty"`
-	Shared       *struct {
-		InitialSharedVersion uint64 `json:"initial_shared_version"`
-	} `json:"Shared,omitempty"`
-}
 
 type TransactionQuery struct {
 	All *string `json:"All"`

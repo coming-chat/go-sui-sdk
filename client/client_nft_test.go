@@ -41,6 +41,6 @@ func TestGetDevNFTs(t *testing.T) {
 	nfts, err := cli.GetNFTsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
 	for _, nft := range nfts {
-		t.Log(nft.Details)
+		t.Log(nft.Data)
 	}
 }

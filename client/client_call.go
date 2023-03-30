@@ -85,49 +85,55 @@ func (c *Client) GetTotalTransactionBlocks(ctx context.Context) (string, error) 
 	return resp, c.CallContext(ctx, &resp, "sui_getTotalTransactionBlocks")
 }
 
-// MARK - Unmigrated
-
 // BatchGetObjectsOwnedByAddress @param filterType You can specify filtering out the specified resources, this will fetch all resources if it is not empty ""
-func (c *Client) BatchGetObjectsOwnedByAddress(ctx context.Context, address types.Address, filterType string) ([]types.ObjectRead, error) {
+func (c *Client) BatchGetObjectsOwnedByAddress(ctx context.Context, address types.Address, options types.SuiObjectDataOptions, filterType string) ([]types.SuiObjectResponse, error) {
 	filterType = strings.TrimSpace(filterType)
-	return c.BatchGetFilteredObjectsOwnedByAddress(ctx, address, func(oi types.ObjectInfo) bool {
-		return filterType == "" || filterType == oi.Type
+	return c.BatchGetFilteredObjectsOwnedByAddress(ctx, address, options, func(sod *types.SuiObjectData) bool {
+		return filterType == "" || filterType == *sod.Type
 	})
 }
 
-func (c *Client) BatchGetFilteredObjectsOwnedByAddress(ctx context.Context, address types.Address, filter func(types.ObjectInfo) bool) ([]types.ObjectRead, error) {
-	infos, err := c.GetObjectsOwnedByAddress(ctx, address)
+func (c *Client) BatchGetFilteredObjectsOwnedByAddress(ctx context.Context, address types.Address, options types.SuiObjectDataOptions, filter func(*types.SuiObjectData) bool) ([]types.SuiObjectResponse, error) {
+	query := types.SuiObjectResponseQuery{
+		Options: &types.SuiObjectDataOptions{
+			ShowType: true,
+		},
+	}
+	filteringObjs, err := c.GetOwnedObjects(ctx, address, &query, nil, 0)
 	if err != nil {
 		return nil, err
 	}
-	var elems []BatchElem
-	for _, info := range infos {
-		if filter != nil && filter(info) == false {
-			// ignore objects if non-specified type
-			continue
+	objIds := make([]types.ObjectId, 0)
+	for _, obj := range filteringObjs.Data {
+		if obj.Data == nil {
+			continue // error obj
 		}
-		elems = append(elems, BatchElem{
-			Method: "sui_getObject",
-			Args:   []interface{}{info.ObjectId},
-			Result: &types.ObjectRead{},
-		})
-	}
-	if len(elems) == 0 {
-		return []types.ObjectRead{}, nil
-	}
-	err = c.BatchCallContext(ctx, elems)
-	if err != nil {
-		return nil, err
-	}
-	objects := make([]types.ObjectRead, len(elems))
-	for i, ele := range elems {
-		if ele.Error != nil {
-			return nil, ele.Error
+		if filter != nil && filter(obj.Data) == false {
+			continue // ignore objects if non-specified type
 		}
-		objects[i] = *ele.Result.(*types.ObjectRead)
+		objIds = append(objIds, obj.Data.ObjectId)
 	}
-	return objects, nil
+
+	return c.MultiGetObjects(ctx, objIds, &options)
 }
+
+func (c *Client) GetTransactionBlock(ctx context.Context, digest types.TransactionDigest, options types.SuiTransactionBlockResponseOptions) (*types.SuiTransactionBlockResponse, error) {
+	resp := types.SuiTransactionBlockResponse{}
+	return &resp, c.CallContext(ctx, &resp, "sui_getTransactionBlock", digest, options)
+}
+
+func (c *Client) GetReferenceGasPrice(ctx context.Context) (string, error) {
+	var resp string
+	return resp, c.CallContext(ctx, &resp, "suix_getReferenceGasPrice")
+}
+
+// TODO
+func (c *Client) DevInspectTransactionBlock(ctx context.Context, senderAddress types.Address, txByte types.Base64Data, gasPrice *uint64, epoch *uint64) (*types.DevInspectResults, error) {
+	var resp types.DevInspectResults
+	return &resp, c.CallContext(ctx, &resp, "sui_devInspectTransactionBlock", senderAddress, txByte, gasPrice, epoch)
+}
+
+// MARK - Unmigrated
 
 func (c *Client) BatchTransaction(ctx context.Context, signer types.Address, txnParams []map[string]interface{}, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
@@ -142,31 +148,6 @@ func (c *Client) DryRunTransaction(ctx context.Context, tx *types.TransactionByt
 func (c *Client) ExecuteTransaction(ctx context.Context, txn types.SignedTransactionSerializedSig, requestType types.ExecuteTransactionRequestType) (*types.ExecuteTransactionResponse, error) {
 	resp := types.ExecuteTransactionResponse{}
 	return &resp, c.CallContext(ctx, &resp, "sui_executeTransaction", txn.TxBytes, txn.Signature, requestType)
-}
-
-func (c *Client) GetObjectsOwnedByAddress(ctx context.Context, address types.Address) ([]types.ObjectInfo, error) {
-	var resp []types.ObjectInfo
-	return resp, c.CallContext(ctx, &resp, "suix_getOwnedObjects", address)
-}
-
-func (c *Client) GetObjectsOwnedByObject(ctx context.Context, objID types.ObjectId) ([]types.ObjectInfo, error) {
-	var resp []types.ObjectInfo
-	return resp, c.CallContext(ctx, &resp, "sui_getObjectsOwnedByObject", objID)
-}
-
-func (c *Client) GetRawObject(ctx context.Context, objID types.ObjectId) (*types.ObjectRead, error) {
-	resp := types.ObjectRead{}
-	return &resp, c.CallContext(ctx, &resp, "sui_getRawObject", objID)
-}
-
-func (c *Client) GetTotalTransactionNumber(ctx context.Context) (uint64, error) {
-	resp := uint64(0)
-	return resp, c.CallContext(ctx, &resp, "sui_getTotalTransactionNumber")
-}
-
-func (c *Client) GetTransactionsInRange(ctx context.Context, start, end uint64) ([]string, error) {
-	var resp []string
-	return resp, c.CallContext(ctx, &resp, "sui_getTransactionsInRange", start, end)
 }
 
 func (c *Client) BatchGetTransaction(digests []string) (map[string]*types.TransactionResponse, error) {
@@ -184,28 +165,6 @@ func (c *Client) BatchGetTransaction(digests []string) (map[string]*types.Transa
 		})
 	}
 	return results, c.BatchCall(elems)
-}
-
-func (c *Client) BatchGetObject(objects []types.ObjectId) (map[string]*types.ObjectRead, error) {
-	if len(objects) == 0 {
-		return map[string]*types.ObjectRead{}, nil
-	}
-	var elems []BatchElem
-	results := make(map[string]*types.ObjectRead)
-	for _, v := range objects {
-		results[v.String()] = new(types.ObjectRead)
-		elems = append(elems, BatchElem{
-			Method: "sui_getObject",
-			Args:   []interface{}{v},
-			Result: results[v.String()],
-		})
-	}
-	return results, c.BatchCall(elems)
-}
-
-func (c *Client) GetTransaction(ctx context.Context, digest string) (*types.TransactionResponse, error) {
-	resp := types.TransactionResponse{}
-	return &resp, c.CallContext(ctx, &resp, "sui_getTransaction", digest)
 }
 
 // MergeCoins Create an unsigned transaction to merge multiple coins into one coin.
@@ -263,11 +222,6 @@ func (c *Client) PaySui(ctx context.Context, signer types.Address, inputCoins []
 	return &resp, c.CallContext(ctx, &resp, "sui_paySui", signer, inputCoins, recipients, amount, gasBudget)
 }
 
-func (c *Client) DevInspectTransaction(ctx context.Context, senderAddress types.Address, txByte types.Base64Data, gasPrice *uint64, epoch *uint64) (*types.DevInspectResults, error) {
-	var resp types.DevInspectResults
-	return &resp, c.CallContext(ctx, &resp, "sui_devInspectTransaction", senderAddress, txByte, gasPrice, epoch)
-}
-
 func (c *Client) ExecuteTransactionSerializedSig(ctx context.Context, txn types.SignedTransactionSerializedSig, requestType types.ExecuteTransactionRequestType) (*types.ExecuteTransactionResponse, error) {
 	resp := types.ExecuteTransactionResponse{}
 	return &resp, c.CallContext(ctx, &resp, "sui_executeTransactionSerializedSig", txn.TxBytes, txn.Signature, requestType)
@@ -278,11 +232,6 @@ func (c *Client) Publish(ctx context.Context, address types.Address, compiledMod
 	return &resp, c.CallContext(ctx, &resp, "sui_publish", address, compiledModules, gas, gasBudget)
 }
 
-func (c *Client) GetTransactions(ctx context.Context, transactionQuery types.TransactionQuery, cursor *string, limit uint, descendingOrder bool) (*types.TransactionsPage, error) {
-	var resp types.TransactionsPage
-	return &resp, c.CallContext(ctx, &resp, "sui_getTransactions", transactionQuery, cursor, limit, descendingOrder)
-}
-
 func (c *Client) TryGetPastObject(ctx context.Context, objectId types.ObjectId, version uint64) (*types.ObjectRead, error) {
 	resp := types.ObjectRead{}
 	return &resp, c.CallContext(ctx, &resp, "sui_tryGetPastObject", objectId, version)
@@ -291,11 +240,6 @@ func (c *Client) TryGetPastObject(ctx context.Context, objectId types.ObjectId, 
 func (c *Client) GetEvents(ctx context.Context, eventQuery types.EventQuery, cursor *types.EventID, limit uint, descendingOrder bool) (*types.EventPage, error) {
 	resp := types.EventPage{}
 	return &resp, c.CallContext(ctx, &resp, "sui_getEvents", eventQuery, cursor, limit, descendingOrder)
-}
-
-func (c *Client) GetReferenceGasPrice(ctx context.Context) (uint64, error) {
-	resp := uint64(0)
-	return resp, c.CallContext(ctx, &resp, "sui_getReferenceGasPrice")
 }
 
 /*

@@ -5,6 +5,7 @@ import (
 	"context"
 	"math/big"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/coming-chat/go-sui/client"
@@ -35,6 +36,8 @@ func Test_BCSEncodeTransactionData(t *testing.T) {
 	}
 	price, err := chain.GetReferenceGasPrice(context.TODO())
 	require.NoError(t, err)
+	priceInt, err := strconv.ParseUint(price, 10, 64)
+	require.NoError(t, err)
 	tx := TransactionData{
 		Kind: TransactionKind{
 			Single: &SingleTransactionKind{
@@ -48,7 +51,7 @@ func Test_BCSEncodeTransactionData(t *testing.T) {
 		GasData: GasData{
 			Payment: *coin.Reference(),
 			Owner:   *Address,
-			Price:   price,
+			Price:   priceInt,
 			Budget:  uint64(1000),
 		},
 	}

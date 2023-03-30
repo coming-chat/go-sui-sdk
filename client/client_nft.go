@@ -16,6 +16,10 @@ func (c *Client) MintNFT(ctx context.Context, signer types.Address, nftName, nft
 	return c.MoveCall(ctx, signer, *packageId, "devnet_nft", "mint", []string{}, args, gas, gasBudget)
 }
 
-func (c *Client) GetNFTsOwnedByAddress(ctx context.Context, address types.Address) ([]types.ObjectRead, error) {
-	return c.BatchGetObjectsOwnedByAddress(ctx, address, "0x2::devnet_nft::DevNetNFT")
+func (c *Client) GetNFTsOwnedByAddress(ctx context.Context, address types.Address) ([]types.SuiObjectResponse, error) {
+	return c.BatchGetObjectsOwnedByAddress(ctx, address, types.SuiObjectDataOptions{
+		ShowType:    true,
+		ShowContent: true,
+		ShowOwner:   true,
+	}, "0x2::devnet_nft::DevNetNFT")
 }

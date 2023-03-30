@@ -189,7 +189,7 @@ func simulateAndSendTxn(t *testing.T, cli *Client, txn *types.TransactionBytes, 
 	require.Nil(t, err)
 	t.Log(simulate)
 
-	require.Equal(t, simulate.Status.Status, types.TransactionStatusSuccess)
+	require.Equal(t, simulate.Status.Status, types.ExecutionStatusSuccess)
 
 	signedTxn := txn.SignSerializedSigWith(acc.PrivateKey)
 	resp, err := cli.ExecuteTransactionSerializedSig(context.Background(), *signedTxn, types.TxnRequestTypeWaitForLocalExecution)

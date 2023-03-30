@@ -2,6 +2,23 @@ package types
 
 type ObjectDigest = string
 
+type SuiObjectRef struct {
+	/** Base64 string representing the object digest */
+	Digest TransactionDigest `json:"digest"`
+	/** Hex code as string representing the object id */
+	ObjectId string `json:"objectId"`
+	/** Object version */
+	Version int64 `json:"version"`
+}
+
+type SuiGasData struct {
+	Payment []SuiObjectRef `json:"payment"`
+	/** Gas Object's owner */
+	Owner  string `json:"owner"`
+	Price  int64  `json:"price"`
+	Budget int64  `json:"budget"`
+}
+
 type SuiParsedData interface{}
 type SuiRawData interface{}
 
@@ -86,9 +103,9 @@ type PaginatedObjectsResponse struct {
 }
 
 type SuiObjectDataFilter struct {
-	Package    *ObjectId
-	MoveModule *MoveModule
-	StructType string
+	Package    *ObjectId   `json:"Package,omitempty"`
+	MoveModule *MoveModule `json:"MoveModule,omitempty"`
+	StructType string      `json:"StructType,omitempty"`
 }
 
 type SuiObjectResponseQuery struct {

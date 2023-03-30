@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/coming-chat/go-sui/sui_types"
@@ -9,46 +10,6 @@ import (
 	"github.com/fardream/go-bcs/bcs"
 	"github.com/stretchr/testify/require"
 )
-
-func TestClient_GetTransactionsInRange(t *testing.T) {
-	chain := DevnetClient(t)
-	type args struct {
-		ctx   context.Context
-		start uint64
-		end   uint64
-	}
-	tests := []struct {
-		name    string
-		chain   *Client
-		args    args
-		want    int
-		wantErr bool
-	}{
-		{
-			name:  "test for devnet",
-			chain: chain,
-			args: args{
-				ctx:   context.TODO(),
-				start: 0,
-				end:   10,
-			},
-			want:    10,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.GetTransactionsInRange(tt.args.ctx, tt.args.start, tt.args.end)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetTransactionsInRange() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(got) != tt.want {
-				t.Errorf("GetTransactionsInRange() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestClient_BatchGetTransaction(t *testing.T) {
 	chain := DevnetClient(t)
@@ -85,46 +46,6 @@ func TestClient_BatchGetTransaction(t *testing.T) {
 			}
 			if len(got) != tt.want {
 				t.Errorf("BatchGetTransaction() got = %v, want %v", got, tt.want)
-			}
-			t.Logf("%+v", got)
-		})
-	}
-}
-
-func TestClient_BatchGetObject(t *testing.T) {
-	type args struct {
-		objects []types.ObjectId
-	}
-	chain := DevnetClient(t)
-	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
-	require.NoError(t, err)
-
-	tests := []struct {
-		name    string
-		chain   *Client
-		args    args
-		want    int
-		wantErr bool
-	}{
-		{
-			name:  "test for devnet",
-			chain: chain,
-			args: args{
-				objects: []types.ObjectId{coins.Data[0].CoinObjectId},
-			},
-			want:    1,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.BatchGetObject(tt.args.objects)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("BatchGetObject() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(got) != tt.want {
-				t.Errorf("BatchGetObject() got = %v, want %v", got, tt.want)
 			}
 			t.Logf("%+v", got)
 		})
@@ -204,14 +125,15 @@ func TestClient_DryRunTransaction(t *testing.T) {
 //	t.Logf("%#v", txResult)
 //}
 
-func TestClient_GetObjectsOwnedByAddress(t *testing.T) {
+func TestClient_BatchGetObjectsOwnedByAddress(t *testing.T) {
 	cli := DevnetClient(t)
 
-	objects, err := cli.GetObjectsOwnedByAddress(context.TODO(), *Address)
-	require.NoError(t, err)
-	t.Log(objects)
-
-	filterObject, err := cli.BatchGetObjectsOwnedByAddress(context.TODO(), *Address, types.SuiCoinType)
+	options := types.SuiObjectDataOptions{
+		ShowType:    true,
+		ShowContent: true,
+	}
+	coinType := fmt.Sprintf("0x2::coin::Coin<%v>", types.SuiCoinType)
+	filterObject, err := cli.BatchGetObjectsOwnedByAddress(context.TODO(), *Address, options, coinType)
 	require.NoError(t, err)
 	t.Log(filterObject)
 }
@@ -465,14 +387,13 @@ func TestClient_SplitCoinEqual(t *testing.T) {
 	t.Logf("%#v", inspectRes)
 }
 
-func TestGetTransaction(t *testing.T) {
+func TestClient_GetTransaction(t *testing.T) {
 	cli := DevnetClient(t)
-	transactions, err := cli.GetTransactionsInRange(context.TODO(), 0, 1)
+	digest := "5rMRjX2HWFcWeeNUvMBmpBEa44zsVV7JSNayrGwhVRPy"
+	resp, err := cli.GetTransactionBlock(context.Background(), digest, types.SuiTransactionBlockResponseOptions{
+		ShowInput: false,
+	})
 	require.NoError(t, err)
-	require.NotEmpty(t, transactions)
-	resp, err := cli.GetTransaction(context.TODO(), transactions[0])
-	require.NoError(t, err)
-
 	t.Logf("%#v", resp)
 }
 
@@ -564,7 +485,20 @@ func TestClient_MultiGetObjects(t *testing.T) {
 
 func TestClient_GetOwnedObjects(t *testing.T) {
 	cli := DevnetClient(t)
-	objs, err := cli.GetOwnedObjects(context.Background(), *Address, nil, nil, 0)
+
+	obj, err := types.NewHexData("0x02")
+	require.Nil(t, err)
+	query := types.SuiObjectResponseQuery{
+		Filter: &types.SuiObjectDataFilter{
+			Package: obj,
+			// StructType: "0x2::coin::Coin<0x2::sui::SUI>",
+		},
+		Options: &types.SuiObjectDataOptions{
+			ShowType: true,
+		},
+	}
+
+	objs, err := cli.GetOwnedObjects(context.Background(), *Address, &query, nil, 0)
 	require.Nil(t, err)
 	t.Log(objs.Data)
 }
@@ -670,79 +604,6 @@ func TestClient_Publish(t *testing.T) {
 			}
 
 			t.Logf("%#v", txResult)
-		})
-	}
-}
-
-func TestClient_GetTransactions(t *testing.T) {
-	chain := DevnetClient(t)
-	All := ""
-	inputObject, err := types.NewHexData("0x9836b5d5bdf944fa09792e2b7d97bbd061e0a550")
-	require.NoError(t, err)
-	fromAddress, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
-	require.NoError(t, err)
-	type args struct {
-		ctx              context.Context
-		transactionQuery types.TransactionQuery
-		cursor           *string
-		limit            uint
-		descendingOrder  bool
-	}
-	tests := []struct {
-		name    string
-		chain   *Client
-		args    args
-		want    *types.TransactionsPage
-		wantErr bool
-	}{
-		{
-			name:  "test 1",
-			chain: chain,
-			args: args{
-				ctx: context.TODO(),
-				transactionQuery: types.TransactionQuery{
-					All: &All,
-				},
-				cursor:          nil,
-				limit:           20,
-				descendingOrder: false,
-			},
-		},
-		{
-			name:  "test 1",
-			chain: chain,
-			args: args{
-				ctx: context.TODO(),
-				transactionQuery: types.TransactionQuery{
-					InputObject: inputObject,
-				},
-				cursor:          nil,
-				limit:           20,
-				descendingOrder: false,
-			},
-		},
-		{
-			name:  "test 1",
-			chain: chain,
-			args: args{
-				ctx: context.TODO(),
-				transactionQuery: types.TransactionQuery{
-					FromAddress: fromAddress,
-				},
-				cursor:          nil,
-				limit:           20,
-				descendingOrder: false,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.GetTransactions(tt.args.ctx, tt.args.transactionQuery, tt.args.cursor, tt.args.limit, tt.args.descendingOrder)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetTransactions() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%#v", got)
 		})
 	}
 }

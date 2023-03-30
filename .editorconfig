@@ -8,6 +8,7 @@ indent_style = space
 insert_final_newline = false
 max_line_length = 120
 tab_width = 4
+ij_wrap_on_typing = true
 
 [{*.bash,*.sh,*.zsh}]
 indent_size = 2

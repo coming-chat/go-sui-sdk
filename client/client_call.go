@@ -164,56 +164,6 @@ func (c *Client) ExecuteSignedTransaction(ctx context.Context, txn types.SignedT
 	return c.ExecuteTransactionBlock(ctx, txn.TxBytes.String(), []string{txn.Signature.String()}, options, requestType)
 }
 
-// SplitCoin Create an unsigned transaction to split a coin object into multiple coins.
-func (c *Client) SplitCoin(ctx context.Context, signer types.Address, Coin types.ObjectId, splitAmounts []uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
-	resp := types.TransactionBytes{}
-	return &resp, c.CallContext(ctx, &resp, splitCoin, signer, Coin, splitAmounts, gas, gasBudget)
-}
-
-// MARK - Unmigrated
-
-func (c *Client) BatchTransaction(ctx context.Context, signer types.Address, txnParams []map[string]interface{}, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
-	resp := types.TransactionBytes{}
-	return &resp, c.CallContext(ctx, &resp, batchTransaction, signer, txnParams, gas, gasBudget)
-}
-
-//func (c *Client) BatchGetTransaction(digests []string) (map[string]*types.TransactionResponse, error) {
-//	if len(digests) == 0 {
-//		return map[string]*types.TransactionResponse{}, nil
-//	}
-//	var elems []BatchElem
-//	results := make(map[string]*types.TransactionResponse)
-//	for _, v := range digests {
-//		results[v] = new(types.TransactionResponse)
-//		elems = append(elems, BatchElem{
-//			Method: getTransaction,
-//			Args:   []interface{}{v},
-//			Result: results[v],
-//		})
-//	}
-//	return results, c.BatchCall(elems)
-//}
-
-// MergeCoins Create an unsigned transaction to merge multiple coins into one coin.
-func (c *Client) MergeCoins(ctx context.Context, signer types.Address, primaryCoin, coinToMerge types.ObjectId, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
-	resp := types.TransactionBytes{}
-	return &resp, c.CallContext(ctx, &resp, mergeCoins, signer, primaryCoin, coinToMerge, gas, gasBudget)
-}
-
-// MoveCall Create an unsigned transaction to execute a Move call on the network, by calling the specified function in the module of a given package.
-// TODO: not support param `typeArguments` yet.
-// So now only methods with `typeArguments` are supported
-func (c *Client) MoveCall(ctx context.Context, signer types.Address, packageId types.ObjectId, module, function string, typeArgs []string, arguments []any, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
-	resp := types.TransactionBytes{}
-	return &resp, c.CallContext(ctx, &resp, moveCall, signer, packageId, module, function, typeArgs, arguments, gas, gasBudget)
-}
-
-// SplitCoinEqual Create an unsigned transaction to split a coin object into multiple equal-size coins.
-func (c *Client) SplitCoinEqual(ctx context.Context, signer types.Address, Coin types.ObjectId, splitCount uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
-	resp := types.TransactionBytes{}
-	return &resp, c.CallContext(ctx, &resp, splitCoinEqual, signer, Coin, splitCount, gas, gasBudget)
-}
-
 // TransferObject Create an unsigned transaction to transfer an object from one address to another. The object's type must allow public transfers
 func (c *Client) TransferObject(ctx context.Context, signer, recipient types.Address, objID types.ObjectId, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
@@ -231,25 +181,52 @@ func (c *Client) TransferSui(ctx context.Context, signer, recipient types.Addres
 func (c *Client) PayAllSui(ctx context.Context, signer, recipient types.Address, inputCoins []types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, payAllSui, signer, inputCoins, recipient, gasBudget)
-
 }
 
-func (c *Client) Pay(ctx context.Context, signer types.Address, inputCoins []types.ObjectId, recipients []types.Address, amount []uint64, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) Pay(ctx context.Context, signer types.Address, inputCoins []types.ObjectId, recipients []types.Address, amount []decimal.Decimal, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, pay, signer, inputCoins, recipients, amount, gas, gasBudget)
 }
 
-func (c *Client) PaySui(ctx context.Context, signer types.Address, inputCoins []types.ObjectId, recipients []types.Address, amount []uint64, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) PaySui(ctx context.Context, signer types.Address, inputCoins []types.ObjectId, recipients []types.Address, amount []decimal.Decimal, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, paySui, signer, inputCoins, recipients, amount, gasBudget)
 }
 
-//func (c *Client) ExecuteTransactionSerializedSig(ctx context.Context, txn types.SignedTransactionSerializedSig, requestType types.ExecuteTransactionRequestType) (*types.ExecuteTransactionResponse, error) {
-//	resp := types.ExecuteTransactionResponse{}
-//	return &resp, c.CallContext(ctx, &resp, executeTransactionSerializedSig, txn.TxBytes, txn.Signature, requestType)
-//}
+// SplitCoin Create an unsigned transaction to split a coin object into multiple coins.
+func (c *Client) SplitCoin(ctx context.Context, signer types.Address, Coin types.ObjectId, splitAmounts []uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	return &resp, c.CallContext(ctx, &resp, splitCoin, signer, Coin, splitAmounts, gas, gasBudget)
+}
 
-func (c *Client) Publish(ctx context.Context, address types.Address, compiledModules []*types.Base64Data, gas types.ObjectId, gasBudget uint) (*types.TransactionBytes, error) {
+// SplitCoinEqual Create an unsigned transaction to split a coin object into multiple equal-size coins.
+func (c *Client) SplitCoinEqual(ctx context.Context, signer types.Address, Coin types.ObjectId, splitCount uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	return &resp, c.CallContext(ctx, &resp, splitCoinEqual, signer, Coin, splitCount, gas, gasBudget)
+}
+
+// MergeCoins Create an unsigned transaction to merge multiple coins into one coin.
+func (c *Client) MergeCoins(ctx context.Context, signer types.Address, primaryCoin, coinToMerge types.ObjectId, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	return &resp, c.CallContext(ctx, &resp, mergeCoins, signer, primaryCoin, coinToMerge, gas, gasBudget)
+}
+
+func (c *Client) Publish(ctx context.Context, sender types.Address, compiledModules []*types.Base64Data, dependencies []types.ObjectId, gas types.ObjectId, gasBudget uint) (*types.TransactionBytes, error) {
 	var resp types.TransactionBytes
-	return &resp, c.CallContext(ctx, &resp, publish, address, compiledModules, gas, gasBudget)
+	return &resp, c.CallContext(ctx, &resp, publish, sender, compiledModules, dependencies, gas, gasBudget)
+}
+
+// MoveCall Create an unsigned transaction to execute a Move call on the network, by calling the specified function in the module of a given package.
+// TODO: not support param `typeArguments` yet.
+// So now only methods with `typeArguments` are supported
+// TODO: execution_mode : <SuiTransactionBlockBuilderMode>
+func (c *Client) MoveCall(ctx context.Context, signer types.Address, packageId types.ObjectId, module, function string, typeArgs []string, arguments []any, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	return &resp, c.CallContext(ctx, &resp, moveCall, signer, packageId, module, function, typeArgs, arguments, gas, gasBudget)
+}
+
+// TODO: execution_mode : <SuiTransactionBlockBuilderMode>
+func (c *Client) BatchTransaction(ctx context.Context, signer types.Address, txnParams []map[string]interface{}, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	return &resp, c.CallContext(ctx, &resp, batchTransaction, signer, txnParams, gas, gasBudget)
 }

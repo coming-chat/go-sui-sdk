@@ -2,6 +2,8 @@ package client
 
 import (
 	"os"
+	"os/exec"
+	"strings"
 	"testing"
 
 	"github.com/coming-chat/go-sui/types"
@@ -17,8 +19,15 @@ const (
 )
 
 var (
-	Address, _ = types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
-	M1Mnemonic = os.Getenv("WalletSdkTestM1")
+	M1Mnemonic   = os.Getenv("WalletSdkTestM1")
+	M1Address, _ = types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
+	Address      = M1Address
+	// Address, _   = types.NewAddressFromHex("")
+)
+
+var (
+	out, _ = exec.Command("whoami").Output()
+	whoami = strings.TrimSpace(string(out))
 )
 
 func TestnetClient(t *testing.T) *Client {
@@ -44,4 +53,8 @@ func M1Account(t *testing.T) *account.Account {
 	a, err := account.NewAccountWithMnemonic(M1Mnemonic)
 	require.NoError(t, err)
 	return a
+}
+
+func Signer(t *testing.T) *account.Account {
+	return M1Account(t)
 }

@@ -72,9 +72,9 @@ type TransactionBytes struct {
 
 // ObjectRef for BCS, need to keep this order
 type ObjectRef struct {
-	ObjectId ObjectId `json:"objectId"`
-	Version  uint64   `json:"version"`
-	Digest   Digest   `json:"digest"`
+	ObjectId ObjectId          `json:"objectId"`
+	Version  uint64            `json:"version"`
+	Digest   TransactionDigest `json:"digest"`
 }
 
 type SignatureScheme string
@@ -89,13 +89,6 @@ type SignatureSchemeSerialized byte
 const (
 	SignatureSchemeSerializedEd25519   SignatureSchemeSerialized = 0
 	SignatureSchemeSerializedSecp256k1 SignatureSchemeSerialized = 1
-)
-
-type ExecuteTransactionRequestType string
-
-const (
-	TxnRequestTypeWaitForEffectsCert    ExecuteTransactionRequestType = "WaitForEffectsCert"
-	TxnRequestTypeWaitForLocalExecution ExecuteTransactionRequestType = "WaitForLocalExecution"
 )
 
 // SignedTransaction
@@ -328,8 +321,8 @@ const (
 )
 
 type ObjectRead struct {
-	Details *ObjectReadDetail `json:"details"`
-	Status  ObjectStatus      `json:"status"`
+	Details *SuiObjectData `json:"details"`
+	Status  ObjectStatus   `json:"status"`
 }
 
 type ObjectInfo struct {

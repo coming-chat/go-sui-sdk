@@ -1,12 +1,23 @@
 package types
 
+import (
+	"github.com/shopspring/decimal"
+)
+
+type ExecuteTransactionRequestType string
+
+const (
+	TxnRequestTypeWaitForEffectsCert    ExecuteTransactionRequestType = "WaitForEffectsCert"
+	TxnRequestTypeWaitForLocalExecution ExecuteTransactionRequestType = "WaitForLocalExecution"
+)
+
 type EpochId = string
 
 type GasCostSummary struct {
-	ComputationCost         uint64 `json:"computationCost"`
-	StorageCost             uint64 `json:"storageCost"`
-	StorageRebate           uint64 `json:"storageRebate"`
-	NonRefundableStorageFee uint64 `json:"nonRefundableStorageFee"`
+	ComputationCost         decimal.Decimal `json:"computationCost"`
+	StorageCost             decimal.Decimal `json:"storageCost"`
+	StorageRebate           decimal.Decimal `json:"storageRebate"`
+	NonRefundableStorageFee decimal.Decimal `json:"nonRefundableStorageFee"`
 }
 
 const (
@@ -71,7 +82,12 @@ type TransactionEffects struct {
 }
 
 func (te *TransactionEffects) GasFee() uint64 {
-	return te.GasUsed.StorageCost - te.GasUsed.StorageRebate + te.GasUsed.ComputationCost
+	feeInt := te.GasUsed.StorageCost.Sub(te.GasUsed.StorageRebate).Add(te.GasUsed.ComputationCost)
+	return feeInt.BigInt().Uint64()
+}
+
+func (te *TransactionEffects) IsSuccess() bool {
+	return te.Status.Status == ExecutionStatusSuccess
 }
 
 type TransactionEvents = []SuiEvent
@@ -158,4 +174,17 @@ type SuiTransactionBlockResponseOptions struct {
 type SuiTransactionBlockResponseQuery struct {
 	Filter  *TransactionFilter                  `json:"filter,omitempty"`
 	Options *SuiTransactionBlockResponseOptions `json:"options,omitempty"`
+}
+
+type PaginatedTransactionResponse struct {
+	Data        []SuiTransactionBlockResponse `json:"data,omitempty"`
+	NextCursor  *TransactionDigest            `json:"nextCursor,omitempty"`
+	HasNextPage bool                          `json:"hasNextPage"`
+}
+
+type DryRunTransactionBlockResponse struct {
+	Effects        TransactionEffects `json:"effects"`
+	Events         TransactionEvents  `json:"events"`
+	ObjectChanges  []SuiObjectChange  `json:"objectChanges,omitempty"`
+	BalanceChanges []BalanceChange    `json:"balanceChanges,omitempty"`
 }

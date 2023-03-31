@@ -58,12 +58,8 @@ const (
 type Coin = CoinStruct
 
 func (c *Coin) Reference() *ObjectRef {
-	digest, _ := NewBase64Data(c.Digest)
-	if digest == nil {
-		return nil
-	}
 	return &ObjectRef{
-		Digest:   *digest,
+		Digest:   c.Digest,
 		Version:  c.Version,
 		ObjectId: c.CoinObjectId,
 	}

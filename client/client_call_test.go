@@ -3,11 +3,11 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/shopspring/decimal"
 	"reflect"
 	"testing"
 
 	"github.com/coming-chat/go-sui/types"
+	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,45 +52,45 @@ import (
 //	}
 //}
 
-//func TestClient_DryRunTransaction(t *testing.T) {
-//	chain := DevnetClient(t)
-//	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
-//	require.NoError(t, err)
-//	coin, err := coins.PickCoinNoLess(2000)
-//	require.NoError(t, err)
-//	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coin.CoinObjectId, 1000, 1000)
-//	require.NoError(t, err)
-//	type args struct {
-//		ctx context.Context
-//		tx  *types.TransactionBytes
-//	}
-//	tests := []struct {
-//		name  string
-//		args  args
-//		chain *Client
-//		// want    *types.TransactionEffects
-//		wantErr bool
-//	}{
-//		{
-//			name:  "dry run",
-//			chain: chain,
-//			args: args{
-//				ctx: context.TODO(),
-//				tx:  tx,
-//			},
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			result, err := tt.chain.DryRunTransaction(tt.args.ctx, tt.args.tx)
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("Client.DryRunTransaction() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			t.Logf("%#v", result)
-//		})
-//	}
-//}
+func TestClient_DryRunTransaction(t *testing.T) {
+	chain := DevnetClient(t)
+	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+	require.NoError(t, err)
+	coin, err := coins.PickCoinNoLess(2000)
+	require.NoError(t, err)
+	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coin.CoinObjectId, 1000, 1000)
+	require.NoError(t, err)
+	type args struct {
+		ctx context.Context
+		tx  *types.TransactionBytes
+	}
+	tests := []struct {
+		name  string
+		args  args
+		chain *Client
+		// want    *types.TransactionEffects
+		wantErr bool
+	}{
+		{
+			name:  "dry run",
+			chain: chain,
+			args: args{
+				ctx: context.TODO(),
+				tx:  tx,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := tt.chain.DryRunTransaction(tt.args.ctx, tt.args.tx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.DryRunTransaction() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			t.Logf("%#v", result)
+		})
+	}
+}
 
 // TestClient_ExecuteTransactionSerializedSig
 // This test case will affect the real coin in the test case of account
@@ -609,100 +609,20 @@ func TestClient_GetTotalTransactionBlocks(t *testing.T) {
 //}
 
 func TestClient_TryGetPastObject(t *testing.T) {
-	chain := DevnetClient(t)
-	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
-	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(1000)
-	require.NoError(t, err)
-
-	type args struct {
-		ctx      context.Context
-		objectId types.ObjectId
-		version  uint64
-	}
-	tests := []struct {
-		name    string
-		chain   *Client
-		args    args
-		want    *types.ObjectRead
-		wantErr bool
-	}{
-		{
-			name:  "test for devnet",
-			chain: chain,
-			args: args{
-				ctx:      context.TODO(),
-				objectId: coin.CoinObjectId,
-				version:  coin.Version,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.TryGetPastObject(tt.args.ctx, tt.args.objectId, tt.args.version)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TryGetPastObject() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%#v", got)
-		})
-	}
+	cli := DevnetClient(t)
+	objId, err := types.NewHexData("0x11462c88e74bb00079e3c043efb664482ee4551744ee691c7623b98503cb3f4d")
+	require.Nil(t, err)
+	data, err := cli.TryGetPastObject(context.Background(), *objId, 903, nil)
+	require.Nil(t, err)
+	t.Log(data)
 }
 
 func TestClient_GetEvents(t *testing.T) {
-	chain := DevnetClient(t)
-	type args struct {
-		ctx             context.Context
-		eventQuery      types.EventQuery
-		cursor          *types.EventID
-		limit           uint
-		descendingOrder bool
-	}
-	all := "All"
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "all",
-			args: args{
-				ctx: context.Background(),
-				eventQuery: types.EventQuery{
-					All: &all,
-				},
-				cursor:          nil,
-				limit:           10,
-				descendingOrder: false,
-			},
-			wantErr: false,
-		},
-		{
-			name: "from address",
-			args: args{
-				ctx: context.Background(),
-				eventQuery: types.EventQuery{
-					Sender: Address,
-				},
-				cursor:          nil,
-				limit:           10,
-				descendingOrder: false,
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			es, err := chain.GetEvents(tt.args.ctx, tt.args.eventQuery, tt.args.cursor, tt.args.limit, tt.args.descendingOrder)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Client.GetEvents() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(es.Data) == 0 {
-				t.Errorf("no events")
-			}
-		})
-	}
+	cli := DevnetClient(t)
+	digest := "bWEVPGbA81GDJ4655fFuiabV11Z2gSgJyqfURXyNL6G"
+	res, err := cli.GetEvents(context.Background(), digest)
+	require.NoError(t, err)
+	t.Log(res)
 }
 
 func TestClient_GetReferenceGasPrice(t *testing.T) {

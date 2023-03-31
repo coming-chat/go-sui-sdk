@@ -2,11 +2,14 @@ package client
 
 import (
 	"context"
-	"github.com/shopspring/decimal"
 	"strings"
+
+	"github.com/shopspring/decimal"
 
 	"github.com/coming-chat/go-sui/types"
 )
+
+// MARK - Getter Function
 
 // GetBalance to use default sui coin(0x2::sui::SUI) when coinType is empty
 func (c *Client) GetBalance(ctx context.Context, owner types.Address, coinType string) (*types.CoinBalance, error) {
@@ -127,9 +130,44 @@ func (c *Client) GetReferenceGasPrice(ctx context.Context) (*decimal.Decimal, er
 	return &resp, c.CallContext(ctx, &resp, getReferenceGasPrice)
 }
 
+func (c *Client) GetEvents(ctx context.Context, digest types.TransactionDigest) ([]types.SuiEvent, error) {
+	var resp []types.SuiEvent
+	return resp, c.CallContext(ctx, &resp, getEvents, digest)
+}
+
+func (c *Client) TryGetPastObject(ctx context.Context, objectId types.ObjectId, version types.SequenceNumber, options *types.SuiObjectDataOptions) (*types.ObjectRead, error) {
+	var resp types.ObjectRead
+	return &resp, c.CallContext(ctx, &resp, tryGetPastObject, objectId, version, options)
+}
+
 func (c *Client) DevInspectTransactionBlock(ctx context.Context, senderAddress types.Address, txByte types.Base64Data, gasPrice *decimal.Decimal, epoch *uint64) (*types.DevInspectResults, error) {
 	var resp types.DevInspectResults
 	return &resp, c.CallContext(ctx, &resp, devInspectTransactionBlock, senderAddress, txByte, gasPrice, epoch)
+}
+
+func (c *Client) DryRunTransaction(ctx context.Context, tx *types.TransactionBytes) (*types.DryRunTransactionBlockResponse, error) {
+	var resp types.DryRunTransactionBlockResponse
+	return &resp, c.CallContext(ctx, &resp, dryRunTransactionBlock, tx.TxBytes)
+}
+
+// MARK - Write Function
+
+// TODO
+func (c *Client) ExecuteTransactionBlock(ctx context.Context, txBytes types.Base64String, signatures []types.SerializedSignature,
+	options *types.SuiTransactionBlockResponseOptions, requestType types.ExecuteTransactionRequestType) (*types.SuiTransactionBlockResponse, error) {
+	resp := types.SuiTransactionBlockResponse{}
+	return &resp, c.CallContext(ctx, &resp, executeTransactionBlock, txBytes, signatures, options, requestType)
+}
+
+func (c *Client) ExecuteSignedTransaction(ctx context.Context, txn types.SignedTransactionSerializedSig,
+	options *types.SuiTransactionBlockResponseOptions, requestType types.ExecuteTransactionRequestType) (*types.SuiTransactionBlockResponse, error) {
+	return c.ExecuteTransactionBlock(ctx, txn.TxBytes.String(), []string{txn.Signature.String()}, options, requestType)
+}
+
+// SplitCoin Create an unsigned transaction to split a coin object into multiple coins.
+func (c *Client) SplitCoin(ctx context.Context, signer types.Address, Coin types.ObjectId, splitAmounts []uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	resp := types.TransactionBytes{}
+	return &resp, c.CallContext(ctx, &resp, splitCoin, signer, Coin, splitAmounts, gas, gasBudget)
 }
 
 // MARK - Unmigrated
@@ -138,16 +176,6 @@ func (c *Client) BatchTransaction(ctx context.Context, signer types.Address, txn
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, batchTransaction, signer, txnParams, gas, gasBudget)
 }
-
-//func (c *Client) DryRunTransaction(ctx context.Context, tx *types.TransactionBytes) (*types.TransactionEffects, error) {
-//	resp := types.TransactionEffects{}
-//	return &resp, c.CallContext(ctx, &resp, dryRunTransaction, tx.TxBytes)
-//}
-
-//func (c *Client) ExecuteTransaction(ctx context.Context, txn types.SignedTransactionSerializedSig, requestType types.ExecuteTransactionRequestType) (*types.ExecuteTransactionResponse, error) {
-//	resp := types.ExecuteTransactionResponse{}
-//	return &resp, c.CallContext(ctx, &resp, executeTransaction, txn.TxBytes, txn.Signature, requestType)
-//}
 
 //func (c *Client) BatchGetTransaction(digests []string) (map[string]*types.TransactionResponse, error) {
 //	if len(digests) == 0 {
@@ -178,12 +206,6 @@ func (c *Client) MergeCoins(ctx context.Context, signer types.Address, primaryCo
 func (c *Client) MoveCall(ctx context.Context, signer types.Address, packageId types.ObjectId, module, function string, typeArgs []string, arguments []any, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, moveCall, signer, packageId, module, function, typeArgs, arguments, gas, gasBudget)
-}
-
-// SplitCoin Create an unsigned transaction to split a coin object into multiple coins.
-func (c *Client) SplitCoin(ctx context.Context, signer types.Address, Coin types.ObjectId, splitAmounts []uint64, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
-	resp := types.TransactionBytes{}
-	return &resp, c.CallContext(ctx, &resp, splitCoin, signer, Coin, splitAmounts, gas, gasBudget)
 }
 
 // SplitCoinEqual Create an unsigned transaction to split a coin object into multiple equal-size coins.
@@ -230,14 +252,4 @@ func (c *Client) PaySui(ctx context.Context, signer types.Address, inputCoins []
 func (c *Client) Publish(ctx context.Context, address types.Address, compiledModules []*types.Base64Data, gas types.ObjectId, gasBudget uint) (*types.TransactionBytes, error) {
 	var resp types.TransactionBytes
 	return &resp, c.CallContext(ctx, &resp, publish, address, compiledModules, gas, gasBudget)
-}
-
-func (c *Client) TryGetPastObject(ctx context.Context, objectId types.ObjectId, version uint64) (*types.ObjectRead, error) {
-	resp := types.ObjectRead{}
-	return &resp, c.CallContext(ctx, &resp, tryGetPastObject, objectId, version)
-}
-
-func (c *Client) GetEvents(ctx context.Context, eventQuery types.EventQuery, cursor *types.EventID, limit uint, descendingOrder bool) (*types.EventPage, error) {
-	resp := types.EventPage{}
-	return &resp, c.CallContext(ctx, &resp, getEvents, eventQuery, cursor, limit, descendingOrder)
 }

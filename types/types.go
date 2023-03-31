@@ -61,7 +61,7 @@ type InputObjectKind map[string]interface{}
 
 type TransactionBytes struct {
 	// the gas object to be used
-	Gas ObjectRef `json:"gas"`
+	Gas []ObjectRef `json:"gas"`
 
 	// objects to be used in this transaction
 	InputObjects []InputObjectKind `json:"inputObjects"`

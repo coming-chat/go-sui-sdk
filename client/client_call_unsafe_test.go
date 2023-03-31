@@ -161,12 +161,13 @@ func TestClient_BatchTransaction(t *testing.T) {
 
 // params & return like `func simulateAndSendTxn`
 // @param acc Never use
-// @return Always nil
-func simulateCheck(t *testing.T, cli *Client, txn *types.TransactionBytes, acc *account.Account) *types.SuiTransactionBlockResponse {
+// @return types.DryRunTransactionBlockResponse
+func simulateCheck(t *testing.T, cli *Client, txn *types.TransactionBytes, acc *account.Account) *types.DryRunTransactionBlockResponse {
 	if shouldSimulate() {
 		simulate, err := cli.DryRunTransaction(context.Background(), txn)
 		require.Nil(t, err)
 		require.True(t, simulate.Effects.IsSuccess())
+		return simulate
 	}
 	return nil
 }

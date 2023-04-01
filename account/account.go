@@ -1,40 +1,46 @@
 package account
 
 import (
-	"crypto/ed25519"
+	"encoding/base64"
 	"encoding/hex"
-
 	"github.com/coming-chat/go-aptos/crypto/derivation"
+	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/crypto/blake2b"
 )
 
 const (
-	SIGNATURE_SCHEME_FLAG_ED25519 = 0x0
-
 	ADDRESS_LENGTH = 64
 )
 
 type Account struct {
-	PrivateKey ed25519.PrivateKey
-	PublicKey  ed25519.PublicKey
-	Address    string
+	KeyPair sui_types.SuiKeyPair
+	Address string
 }
 
-func NewAccount(seed []byte) *Account {
-	privateKey := ed25519.NewKeyFromSeed(seed[:])
-	publicKey := privateKey.Public().(ed25519.PublicKey)
-
-	tmp := []byte{SIGNATURE_SCHEME_FLAG_ED25519}
-	tmp = append(tmp, publicKey...)
+func NewAccount(scheme sui_types.SignatureScheme, seed []byte) *Account {
+	suiKeyPair := sui_types.NewSuiKeyPair(scheme, seed)
+	tmp := []byte{scheme.Flag()}
+	tmp = append(tmp, suiKeyPair.PublicKey()...)
 	addrBytes := blake2b.Sum256(tmp)
 	address := "0x" + hex.EncodeToString(addrBytes[:])[:ADDRESS_LENGTH]
 
 	return &Account{
-		PrivateKey: privateKey,
-		PublicKey:  publicKey,
-		Address:    address,
+		KeyPair: suiKeyPair,
+		Address: address,
 	}
+}
+
+func NewAccountWithKeystore(keystore string) (*Account, error) {
+	ksByte, err := base64.StdEncoding.DecodeString(keystore)
+	if err != nil {
+		return nil, err
+	}
+	scheme, err := sui_types.NewSignatureScheme(ksByte[0])
+	if err != nil {
+		return nil, err
+	}
+	return NewAccount(scheme, ksByte[1:]), nil
 }
 
 func NewAccountWithMnemonic(mnemonic string) (*Account, error) {
@@ -46,9 +52,28 @@ func NewAccountWithMnemonic(mnemonic string) (*Account, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewAccount(key.Key), nil
+	scheme, err := sui_types.NewSignatureScheme(0)
+	if err != nil {
+		return nil, err
+	}
+	return NewAccount(scheme, key.Key), nil
 }
 
 func (a *Account) Sign(data []byte) []byte {
-	return ed25519.Sign(a.PrivateKey, data)
+	switch a.KeyPair.Flag() {
+	case 0:
+		return a.KeyPair.Ed25519.Sign(data)
+	default:
+		return []byte{}
+	}
+}
+
+func (a *Account) SignSecure(msg any, intent sui_types.Intent) (sui_types.Signature, error) {
+	signature, err := sui_types.NewSignatureSecure(
+		sui_types.NewIntentMessage(intent, msg), &a.KeyPair,
+	)
+	if err != nil {
+		return sui_types.Signature{}, err
+	}
+	return signature, nil
 }

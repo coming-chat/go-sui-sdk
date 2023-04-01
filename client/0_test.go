@@ -20,7 +20,7 @@ const (
 
 var (
 	M1Mnemonic   = os.Getenv("WalletSdkTestM1")
-	M1Address, _ = types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
+	M1Address, _ = types.NewAddressFromHex("0x7e875ea78ee09f08d72e2676cf84e0f1c8ac61d94fa339cc8e37cace85bebc6e")
 	Address      = M1Address
 	// Address, _   = types.NewAddressFromHex("")
 )

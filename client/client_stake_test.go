@@ -48,6 +48,37 @@ func TestGetStakesByIds(t *testing.T) {
 
 func TestRequestAddDelegation(t *testing.T) {
 	if true {
+		coin := "0x0501ebf5518912e380e8b3b68f93548418fb1bce59ed025f68ad6d236f012f92"
+		validatorAddress := "0x8ce890590fed55c37d44a043e781ad94254b413ee079a53fb5c037f7a6311304"
+		// gasId := "0x11ce8b45348f6db3f46a8a54a5d06ab91d8381bbc3cb67d66bef8c7ce2b5a7c5"
+
+		requestAddDelegation(t, coin, validatorAddress)
+		// ✅ https://explorer.sui.io/transaction/EcH9dK1wSLzgv15CNNHr2KvDEpARUW5mSeug3LHeFqGB?network=testnet
+	}
+}
+
+func requestAddDelegation(t *testing.T, coin string, validatorAddress string) {
+	cli := DevnetClient(t)
+	acc := M1Account(t)
+	addr, _ := types.NewAddressFromHex(acc.Address)
+
+	coinobj, err := types.NewHexData(coin)
+	require.Nil(t, err)
+
+	validator, err := types.NewAddressFromHex(validatorAddress)
+	require.Nil(t, err)
+
+	gasId := "0x11ce8b45348f6db3f46a8a54a5d06ab91d8381bbc3cb67d66bef8c7ce2b5a7c5"
+	gas, _ := types.NewHexData(gasId)
+	txn, err := cli.RequestAddDelegation(context.Background(), *addr, *coinobj, *validator, gas, 20000)
+	require.Nil(t, err)
+
+	resp := simulateCheck(t, cli, txn, acc)
+	t.Log(resp)
+}
+
+func TestRequestAddDelegationMulCoin(t *testing.T) {
+	if true {
 		coins := []string{
 			"0x0501ebf5518912e380e8b3b68f93548418fb1bce59ed025f68ad6d236f012f92",
 			"0x0d19d099213c23af5a6562034ce2772555f6945920913e18809369d738042b91",
@@ -56,15 +87,15 @@ func TestRequestAddDelegation(t *testing.T) {
 		validatorAddress := "0x8ce890590fed55c37d44a043e781ad94254b413ee079a53fb5c037f7a6311304"
 		// gasId := "0x11ce8b45348f6db3f46a8a54a5d06ab91d8381bbc3cb67d66bef8c7ce2b5a7c5"
 
-		requestAddDelegation(t, coins, amount, validatorAddress)
+		requestAddDelegationMulCoin(t, coins, amount, validatorAddress)
 		// ✅ https://explorer.sui.io/transaction/EcH9dK1wSLzgv15CNNHr2KvDEpARUW5mSeug3LHeFqGB?network=testnet
 	}
 }
 
-func requestAddDelegation(t *testing.T, coinIds []string, amount uint64, validatorAddress string) {
+func requestAddDelegationMulCoin(t *testing.T, coinIds []string, amount uint64, validatorAddress string) {
 	cli := DevnetClient(t)
 	acc := M1Account(t)
-	addr := M1Address
+	addr, _ := types.NewAddressFromHex(acc.Address)
 
 	var coins = []types.ObjectId{}
 	for _, id := range coinIds {
@@ -78,7 +109,7 @@ func requestAddDelegation(t *testing.T, coinIds []string, amount uint64, validat
 
 	gasId := "0x11ce8b45348f6db3f46a8a54a5d06ab91d8381bbc3cb67d66bef8c7ce2b5a7c5"
 	gas, _ := types.NewHexData(gasId)
-	txn, err := cli.RequestAddDelegation(context.Background(), *addr, coins, amount, *validator, gas, 20000)
+	txn, err := cli.RequestAddDelegationMulCoin(context.Background(), *addr, coins, amount, *validator, gas, 20000)
 	require.Nil(t, err)
 
 	resp := simulateCheck(t, cli, txn, acc)

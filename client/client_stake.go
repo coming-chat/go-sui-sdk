@@ -10,6 +10,7 @@ const (
 	packageIdStake          = "0x03"
 	systemState             = "0x05"
 	moduleNameStake         = "sui_system"
+	funcNameAddStake        = "request_add_stake"
 	funcNameAddStakeMulCoin = "request_add_stake_mul_coin"
 	funcNameWithdrawStake   = "request_withdraw_stake"
 )
@@ -29,26 +30,43 @@ func (c *Client) GetStakesByIds(ctx context.Context, stakedSuiIds []types.Object
 	return resp, c.CallContext(ctx, &resp, getStakesByIds, stakedSuiIds)
 }
 
-// TODO: fix params
-func (c *Client) RequestAddDelegation(ctx context.Context, signer types.Address, coins []types.ObjectId, amount uint64, validator types.Address, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) RequestAddDelegation(ctx context.Context, signer types.Address, coin types.ObjectId, validator types.Address, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	packageId, _ := types.NewHexData(packageIdStake)
 	systemId, _ := types.NewHexData(systemState)
 	return c.MoveCall(ctx,
 		signer,
 		*packageId,
 		moduleNameStake,
-		funcNameAddStakeMulCoin,
+		funcNameAddStake,
 		[]string{},
 		[]any{
 			systemId,
-			coins,
-			amount,
+			coin,
 			validator,
 		},
 		gas, gasBudget)
 }
 
-func (c *Client) RequestWithdrawDelegation(ctx context.Context, signer types.Address, stakedSui types.ObjectId, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+// TODO: fix params
+func (c *Client) RequestAddDelegationMulCoin(ctx context.Context, signer types.Address, coins []types.ObjectId, amount uint64, validator types.Address, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+	packageId, _ := types.NewHexData(packageIdStake)
+	systemId, _ := types.NewHexData(systemState)
+	return c.MoveCall(ctx,
+		signer,                  // 0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f
+		*packageId,              // 0x3
+		moduleNameStake,         // sui_system
+		funcNameAddStakeMulCoin, // request_add_stake_mul_coin
+		[]string{},
+		[]any{
+			systemId,  // 0x5
+			coins,     // [0x0501ebf5518912e380e8b3b68f93548418fb1bce59ed025f68ad6d236f012f92]
+			amount,    // uint64(10000) ???
+			validator, // 0x8ce890590fed55c37d44a043e781ad94254b413ee079a53fb5c037f7a6311304
+		},
+		gas, gasBudget)
+}
+
+func (c *Client) RequestWithdrawDelegation(ctx context.Context, signer types.Address, stakedSuiId types.ObjectId, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
 	packageId, _ := types.NewHexData(packageIdStake)
 	systemId, _ := types.NewHexData(systemState)
 	return c.MoveCall(ctx,
@@ -59,7 +77,7 @@ func (c *Client) RequestWithdrawDelegation(ctx context.Context, signer types.Add
 		[]string{},
 		[]any{
 			systemId,
-			stakedSui,
+			stakedSuiId,
 		},
 		gas, gasBudget)
 }

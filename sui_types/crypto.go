@@ -96,8 +96,8 @@ type Ed25519SuiSignature struct {
 }
 
 func NewSuiKeyPair(scheme SignatureScheme, seed []byte) SuiKeyPair {
-	switch {
-	case scheme.ED25519 != nil:
+	switch scheme.Flag() {
+	case 0:
 		return SuiKeyPair{
 			Ed25519: crypto.NewEd25519KeyPair(ed25519.NewKeyFromSeed(seed[:])),
 		}

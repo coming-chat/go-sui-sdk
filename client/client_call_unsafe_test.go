@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"github.com/coming-chat/go-sui/sui_types"
 	"testing"
 
 	"github.com/coming-chat/go-sui/account"
@@ -73,7 +74,15 @@ func TestClient_Pay(t *testing.T) {
 	require.NoError(t, err)
 
 	amount := decimal.NewFromInt(10000)
-	txnBytes, err := cli.Pay(context.Background(), *signer, []types.ObjectId{*objId}, []types.Address{*recipient}, []decimal.Decimal{amount}, nil, 10000)
+	txnBytes, err := cli.Pay(
+		context.Background(),
+		*signer,
+		[]types.ObjectId{*objId},
+		[]types.Address{*recipient},
+		[]decimal.Decimal{amount},
+		nil,
+		10000,
+	)
 	require.Nil(t, err)
 
 	simulateCheck(t, cli, txnBytes, M1Account(t))
@@ -87,7 +96,14 @@ func TestClient_PaySui(t *testing.T) {
 	require.NoError(t, err)
 
 	amount := decimal.NewFromInt(10000)
-	txnBytes, err := cli.PaySui(context.Background(), *signer, []types.ObjectId{*objId}, []types.Address{*recipient}, []decimal.Decimal{amount}, 10000)
+	txnBytes, err := cli.PaySui(
+		context.Background(),
+		*signer,
+		[]types.ObjectId{*objId},
+		[]types.Address{*recipient},
+		[]decimal.Decimal{amount},
+		10000,
+	)
 	require.Nil(t, err)
 
 	simulateCheck(t, cli, txnBytes, M1Account(t))
@@ -162,7 +178,12 @@ func TestClient_BatchTransaction(t *testing.T) {
 // params & return like `func simulateAndSendTxn`
 // @param acc Never use
 // @return types.DryRunTransactionBlockResponse
-func simulateCheck(t *testing.T, cli *Client, txn *types.TransactionBytes, acc *account.Account) *types.DryRunTransactionBlockResponse {
+func simulateCheck(
+	t *testing.T,
+	cli *Client,
+	txn *types.TransactionBytes,
+	acc *account.Account,
+) *types.DryRunTransactionBlockResponse {
 	if shouldSimulate() {
 		simulate, err := cli.DryRunTransaction(context.Background(), txn)
 		require.Nil(t, err)
@@ -172,18 +193,27 @@ func simulateCheck(t *testing.T, cli *Client, txn *types.TransactionBytes, acc *
 	return nil
 }
 
-func simulateAndSendTxn(t *testing.T, cli *Client, txn *types.TransactionBytes, acc *account.Account) *types.SuiTransactionBlockResponse {
+func simulateAndSendTxn(
+	t *testing.T,
+	cli *Client,
+	txn *types.TransactionBytes,
+	acc *account.Account,
+) *types.SuiTransactionBlockResponse {
 	if shouldExecute() || shouldSimulate() {
 		simulate, err := cli.DryRunTransaction(context.Background(), txn)
 		require.Nil(t, err)
 		require.True(t, simulate.Effects.IsSuccess())
 	}
 	if shouldExecute() {
-		signedTxn := txn.SignSerializedSigWith(acc.PrivateKey)
+		signature, err := acc.SignSecure(txn.TxBytes, sui_types.DefaultIntent())
+		require.NoError(t, err)
 		options := types.SuiTransactionBlockResponseOptions{
 			ShowEffects: true,
 		}
-		resp, err := cli.ExecuteSignedTransaction(context.Background(), *signedTxn, &options, types.TxnRequestTypeWaitForLocalExecution)
+		resp, err := cli.ExecuteTransactionBlock(
+			context.TODO(), txn.TxBytes, []any{signature}, &options,
+			types.TxnRequestTypeWaitForLocalExecution,
+		)
 		require.NoError(t, err)
 		t.Log(resp)
 		return resp

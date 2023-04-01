@@ -2,7 +2,6 @@ package types
 
 import (
 	"bytes"
-	"crypto/ed25519"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -75,36 +74,6 @@ type ObjectRef struct {
 	ObjectId ObjectId          `json:"objectId"`
 	Version  uint64            `json:"version"`
 	Digest   TransactionDigest `json:"digest"`
-}
-
-type SignatureScheme string
-
-const (
-	SignatureSchemeEd25519   SignatureScheme = "ED25519"
-	SignatureSchemeSecp256k1 SignatureScheme = "Secp256k1"
-)
-
-type SignatureSchemeSerialized byte
-
-const (
-	SignatureSchemeSerializedEd25519   SignatureSchemeSerialized = 0
-	SignatureSchemeSerializedSecp256k1 SignatureSchemeSerialized = 1
-)
-
-// SignedTransaction
-// Deprecated: replace with SignedTransactionSerializedSig
-type SignedTransaction struct {
-	// transaction data bytes
-	TxBytes *Base64Data `json:"tx_bytes"`
-
-	// Flag of the signature scheme that is used.
-	SigScheme SignatureScheme `json:"sig_scheme"`
-
-	// transaction signature
-	Signature *Base64Data `json:"signature"`
-
-	// signer's public key
-	PublicKey *Base64Data `json:"pub_key"`
 }
 
 type SignedTransactionSerializedSig struct {
@@ -335,45 +304,9 @@ type ObjectInfo struct {
 	PreviousTransaction string `json:"previousTransaction"`
 }
 
-// IntentBytes See: sui/crates/sui-types/src/intent.rs
-// This is currently hardcoded with [IntentScope::TransactionData = 0, Version::V0 = 0, AppId::Sui = 0]
-var IntentBytes = []byte{0, 0, 0}
+type Base64String = string
 
-// SignWith
-// Deprecated: replace with SignSerializedSigWith
-func (txn *TransactionBytes) SignWith(privateKey ed25519.PrivateKey) *SignedTransaction {
-	signTx := bytes.NewBuffer(IntentBytes)
-	signTx.Write(txn.TxBytes.Data())
-	message := signTx.Bytes()
-	signature := ed25519.Sign(privateKey, message)
-	sign := Bytes(signature).GetBase64Data()
-	publicKey := privateKey.Public().(ed25519.PublicKey)
-	pub := Bytes(publicKey).GetBase64Data()
-
-	return &SignedTransaction{
-		TxBytes:   &txn.TxBytes,
-		SigScheme: SignatureSchemeEd25519,
-		Signature: &sign,
-		PublicKey: &pub,
-	}
-}
-
-func (txn *TransactionBytes) SignSerializedSigWith(privateKey ed25519.PrivateKey) *SignedTransactionSerializedSig {
-	signTx := bytes.NewBuffer(IntentBytes)
-	signTx.Write(txn.TxBytes.Data())
-	message := signTx.Bytes()
-	signatureData := bytes.NewBuffer([]byte{byte(SignatureSchemeSerializedEd25519)})
-	signatureData.Write(ed25519.Sign(privateKey, message))
-	signatureData.Write(privateKey.Public().(ed25519.PublicKey))
-	signature := Base64Data{
-		data: signatureData.Bytes(),
-	}
-
-	return &SignedTransactionSerializedSig{
-		TxBytes:   &txn.TxBytes,
-		Signature: &signature,
-	}
-}
+type SerializedSignature = Base64String
 
 func IsSameStringAddress(addr1, addr2 string) bool {
 	if strings.HasPrefix(addr1, "0x") {

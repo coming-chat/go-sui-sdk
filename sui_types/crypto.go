@@ -3,7 +3,6 @@ package sui_types
 import (
 	"bytes"
 	"crypto/ed25519"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"github.com/coming-chat/go-sui/crypto"
@@ -20,11 +19,11 @@ type Signature struct {
 func (s Signature) MarshalJSON() ([]byte, error) {
 	switch {
 	case s.Ed25519SuiSignature != nil:
-		return json.Marshal(base64.StdEncoding.EncodeToString(s.Ed25519SuiSignature.Signature[:]))
+		return json.Marshal(s.Ed25519SuiSignature.Signature[:])
 	case s.Secp256k1SuiSignature != nil:
-		return json.Marshal(base64.StdEncoding.EncodeToString(s.Secp256k1SuiSignature.Signature[:]))
+		return json.Marshal(s.Secp256k1SuiSignature.Signature[:])
 	case s.Secp256r1SuiSignature != nil:
-		return json.Marshal(base64.StdEncoding.EncodeToString(s.Secp256r1SuiSignature.Signature[:]))
+		return json.Marshal(s.Secp256r1SuiSignature.Signature[:])
 	default:
 		return nil, errors.New("nil signature")
 	}

@@ -1,11 +1,9 @@
 package types
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/fardream/go-bcs/bcs"
 	"strings"
 	// "github.com/btcsuite/btcutil/base58"
 )
@@ -110,17 +108,9 @@ func (h *Base64Data) UnmarshalJSON(data []byte) error {
 }
 
 func (h Base64Data) MarshalBCS() ([]byte, error) {
-	buffer := bytes.NewBuffer([]byte{})
-	en := bcs.NewEncoder(buffer)
-	err := en.Encode(h)
-	if err != nil {
-		return nil, err
-	}
-	return buffer.Bytes(), nil
+	return h, nil
 }
 
-// type Base58Data struct {
-// 	data []byte
 // }
 
 // func NewBase58Data(str string) (*Base58Data, error) {

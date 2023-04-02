@@ -1,9 +1,5 @@
 package sui_types
 
-import (
-	"github.com/fardream/go-bcs/bcs"
-)
-
 type EmptyEnum struct {
 }
 
@@ -59,28 +55,18 @@ func DefaultIntent() Intent {
 	}
 }
 
-type IntentMessage struct {
+type IntentValue interface {
+	~[]byte | TransactionData
+	MarshalBCS() ([]byte, error)
+}
+
+type IntentMessage[T IntentValue] struct {
 	Intent Intent
-	Value  any
+	Value  T
 }
 
-func (i IntentMessage) MarshalBCS() ([]byte, error) {
-	intentBcs, err := bcs.Marshal(i.Intent)
-	if err != nil {
-		return nil, err
-	}
-
-	switch (i.Value).(type) {
-	case []byte:
-		data := i.Value.([]byte)
-		return append(intentBcs, data...), nil
-	default:
-		return bcs.Marshal(i)
-	}
-}
-
-func NewIntentMessage(intent Intent, value any) IntentMessage {
-	return IntentMessage{
+func NewIntentMessage[T IntentValue](intent Intent, value T) IntentMessage[T] {
+	return IntentMessage[T]{
 		Intent: intent,
 		Value:  value,
 	}

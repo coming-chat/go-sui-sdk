@@ -53,7 +53,7 @@ func (s *Signature) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func NewSignatureSecure(value IntentMessage, secret crypto.Signer[Signature]) (Signature, error) {
+func NewSignatureSecure[T IntentValue](value IntentMessage[T], secret crypto.Signer[Signature]) (Signature, error) {
 	message, err := bcs.Marshal(value)
 	if err != nil {
 		return Signature{}, err

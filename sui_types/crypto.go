@@ -122,6 +122,15 @@ func (s *SuiKeyPair) PublicKey() []byte {
 	}
 }
 
+func (s *SuiKeyPair) PrivateKey() []byte {
+	switch s.Flag() {
+	case 0:
+		return s.Ed25519.PrivateKey()
+	default:
+		return []byte{}
+	}
+}
+
 func (s *SuiKeyPair) Sign(msg []byte) Signature {
 	switch s.Flag() {
 	case 0:

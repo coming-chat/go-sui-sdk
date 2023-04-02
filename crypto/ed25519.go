@@ -5,6 +5,7 @@ import "crypto/ed25519"
 type KeyPair interface {
 	Sign(msg []byte) []byte
 	PublicKey() []byte
+	PrivateKey() []byte
 }
 
 type Ed25519KeyPair struct {
@@ -25,4 +26,8 @@ func (e *Ed25519KeyPair) Sign(msg []byte) []byte {
 
 func (e *Ed25519KeyPair) PublicKey() []byte {
 	return e.publicKey
+}
+
+func (e *Ed25519KeyPair) PrivateKey() []byte {
+	return e.privateKey
 }

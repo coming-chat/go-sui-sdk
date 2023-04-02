@@ -2,8 +2,9 @@ package client
 
 import (
 	"context"
-	"github.com/coming-chat/go-sui/sui_types"
 	"testing"
+
+	"github.com/coming-chat/go-sui/sui_types"
 
 	"github.com/coming-chat/go-sui/account"
 	"github.com/coming-chat/go-sui/types"
@@ -25,11 +26,16 @@ func shouldExecute() bool {
 	return false
 }
 
+const (
+	M1Coin1 = "0x0501ebf5518912e380e8b3b68f93548418fb1bce59ed025f68ad6d236f012f92"
+	M1Coin2 = "0x0d19d099213c23af5a6562034ce2772555f6945920913e18809369d738042b91"
+)
+
 func TestClient_TransferObject(t *testing.T) {
 	cli := DevnetClient(t)
-	signer := Address
-	recipient := Address
-	objId, err := types.NewHexData("0x11462c88e74bb00079e3c043efb664482ee4551744ee691c7623b98503cb3f4d") // 0.2 SUI
+	signer := M1Address(t)
+	recipient := signer
+	objId, err := types.NewHexData(M1Coin1)
 	require.NoError(t, err)
 
 	txnBytes, err := cli.TransferObject(context.Background(), *signer, *recipient, *objId, nil, 10000)
@@ -40,9 +46,9 @@ func TestClient_TransferObject(t *testing.T) {
 
 func TestClient_TransferSui(t *testing.T) {
 	cli := DevnetClient(t)
-	signer := Address
-	recipient := Address
-	objId, err := types.NewHexData("0x11462c88e74bb00079e3c043efb664482ee4551744ee691c7623b98503cb3f4d") // 0.2 SUI
+	signer := M1Address(t)
+	recipient := signer
+	objId, err := types.NewHexData(M1Coin1)
 	require.NoError(t, err)
 
 	txnBytes, err := cli.TransferSui(context.Background(), *signer, *recipient, *objId, 100000, 10000)
@@ -53,11 +59,11 @@ func TestClient_TransferSui(t *testing.T) {
 
 func TestClient_PayAllSui(t *testing.T) {
 	cli := DevnetClient(t)
-	signer := Address
-	recipient := Address
-	objId, err := types.NewHexData("0x11462c88e74bb00079e3c043efb664482ee4551744ee691c7623b98503cb3f4d") // 0.2 SUI
+	signer := M1Address(t)
+	recipient := signer
+	objId, err := types.NewHexData(M1Coin1)
 	require.NoError(t, err)
-	coin2, err := types.NewHexData("0x0fe1d3981da6954ed97e98e715ba41c54e67e4b461b2420a1e082b93d5700871") // 0.2 SUI
+	coin2, err := types.NewHexData(M1Coin2)
 	require.NoError(t, err)
 
 	txnBytes, err := cli.PayAllSui(context.Background(), *signer, *recipient, []types.ObjectId{*objId, *coin2}, 10000)
@@ -68,9 +74,9 @@ func TestClient_PayAllSui(t *testing.T) {
 
 func TestClient_Pay(t *testing.T) {
 	cli := DevnetClient(t)
-	signer := Address
+	signer := M1Address(t)
 	recipient := Address
-	objId, err := types.NewHexData("0x11462c88e74bb00079e3c043efb664482ee4551744ee691c7623b98503cb3f4d") // 0.2 SUI
+	objId, err := types.NewHexData(M1Coin1)
 	require.NoError(t, err)
 
 	amount := decimal.NewFromInt(10000)
@@ -90,9 +96,9 @@ func TestClient_Pay(t *testing.T) {
 
 func TestClient_PaySui(t *testing.T) {
 	cli := DevnetClient(t)
-	signer := Address
+	signer := M1Address(t)
 	recipient := Address
-	objId, err := types.NewHexData("0x11462c88e74bb00079e3c043efb664482ee4551744ee691c7623b98503cb3f4d") // 0.2 SUI
+	objId, err := types.NewHexData(M1Coin1)
 	require.NoError(t, err)
 
 	amount := decimal.NewFromInt(10000)
@@ -111,10 +117,10 @@ func TestClient_PaySui(t *testing.T) {
 
 func TestClient_SplitCoin(t *testing.T) {
 	cli := DevnetClient(t)
-	signer := Address
-	objId, err := types.NewHexData("0x11462c88e74bb00079e3c043efb664482ee4551744ee691c7623b98503cb3f4d") // 0.2 SUI
+	signer := M1Address(t)
+	objId, err := types.NewHexData(M1Coin1)
 	require.NoError(t, err)
-	splitCoins := []uint64{150000000} // 0.15 SUI
+	splitCoins := []uint64{1e9} // 1SUI
 
 	txnBytes, err := cli.SplitCoin(context.Background(), *signer, *objId, splitCoins, nil, 10000)
 	require.Nil(t, err)
@@ -124,22 +130,23 @@ func TestClient_SplitCoin(t *testing.T) {
 
 func TestClient_SplitCoinEqual(t *testing.T) {
 	cli := DevnetClient(t)
-	signer := Address
-	objId, err := types.NewHexData("0x11462c88e74bb00079e3c043efb664482ee4551744ee691c7623b98503cb3f4d") // 0.2 SUI
+	signer := M1Address(t)
+	objId, err := types.NewHexData(M1Coin1)
 	require.NoError(t, err)
 
 	txnBytes, err := cli.SplitCoinEqual(context.Background(), *signer, *objId, 2, nil, 10000)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, M1Account(t))
+	// simulateCheck(t, cli, txnBytes, M1Account(t))
+	simulateAndSendTxn(t, cli, txnBytes, M1Account(t))
 }
 
 func TestClient_MergeCoins(t *testing.T) {
 	cli := DevnetClient(t)
 	signer := Address
-	coin1, err := types.NewHexData("0x0b7b4b8474f22334aaf5688ed1ca05ef2877d8e695f8dc541db3935a52eace79") // 0.2 SUI
+	coin1, err := types.NewHexData(M1Coin1)
 	require.NoError(t, err)
-	coin2, err := types.NewHexData("0x0fe1d3981da6954ed97e98e715ba41c54e67e4b461b2420a1e082b93d5700871") // 0.2 SUI
+	coin2, err := types.NewHexData(M1Coin2)
 	require.NoError(t, err)
 
 	txnBytes, err := cli.MergeCoins(context.Background(), *signer, *coin1, *coin2, nil, 10000)

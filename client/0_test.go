@@ -14,9 +14,8 @@ import (
 )
 
 var (
-	M1Mnemonic   = os.Getenv("WalletSdkTestM1")
-	M1Address, _ = types.NewAddressFromHex("0x7e875ea78ee09f08d72e2676cf84e0f1c8ac61d94fa339cc8e37cace85bebc6e")
-	Address      = M1Address
+	M1Mnemonic = os.Getenv("WalletSdkTestM1")
+	Address, _ = types.NewAddressFromHex("0x7e875ea78ee09f08d72e2676cf84e0f1c8ac61d94fa339cc8e37cace85bebc6e")
 )
 
 var (
@@ -47,6 +46,13 @@ func M1Account(t *testing.T) *account.Account {
 	a, err := account.NewAccountWithMnemonic(M1Mnemonic)
 	require.NoError(t, err)
 	return a
+}
+
+func M1Address(t *testing.T) *types.Address {
+	a, err := account.NewAccountWithMnemonic(M1Mnemonic)
+	require.NoError(t, err)
+	addr, _ := types.NewAddressFromHex(a.Address)
+	return addr
 }
 
 func Signer(t *testing.T) *account.Account {

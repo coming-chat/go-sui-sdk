@@ -22,7 +22,7 @@ func TestClient_GetLatestSuiSystemState(t *testing.T) {
 func TestGetDelegatedStakes(t *testing.T) {
 	cli := DevnetClient(t)
 
-	stakes, err := cli.GetStakes(context.Background(), *M1Address)
+	stakes, err := cli.GetStakes(context.Background(), *M1Address(t))
 	require.Nil(t, err)
 
 	for _, validator := range stakes {

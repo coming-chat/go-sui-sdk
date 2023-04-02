@@ -5,6 +5,7 @@ import (
 	"crypto/ed25519"
 	"encoding/json"
 	"errors"
+
 	"github.com/coming-chat/go-sui/crypto"
 	"github.com/fardream/go-bcs/bcs"
 	"golang.org/x/crypto/blake2b"
@@ -27,6 +28,29 @@ func (s Signature) MarshalJSON() ([]byte, error) {
 	default:
 		return nil, errors.New("nil signature")
 	}
+
+}
+
+func (s *Signature) UnmarshalJSON(data []byte) error {
+	var signature []byte
+	err := json.Unmarshal(data, &signature)
+	if err != nil {
+		return err
+	}
+	switch signature[0] {
+	case 0:
+		if len(signature) != ed25519.PublicKeySize+ed25519.SignatureSize+1 {
+			return errors.New("invalid ed25519 signature")
+		}
+		var signatureBytes [ed25519.PublicKeySize + ed25519.SignatureSize + 1]byte
+		copy(signatureBytes[:], signature)
+		s.Ed25519SuiSignature = &Ed25519SuiSignature{
+			Signature: signatureBytes,
+		}
+	default:
+		return errors.New("unsupport signature")
+	}
+	return nil
 }
 
 func NewSignatureSecure(value IntentMessage, secret crypto.Signer[Signature]) (Signature, error) {

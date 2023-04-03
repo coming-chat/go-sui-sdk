@@ -25,7 +25,7 @@ func Test_Signature_Marshal_Unmarshal(t *testing.T) {
 	msg := "Coming chat is very good jopfpzf"
 	msgBytes := []byte(msg)
 
-	signature1, err := account.SignSecure(msgBytes, sui_types.DefaultIntent())
+	signature1, err := account.SignSecureWithoutEncode(msgBytes, sui_types.DefaultIntent())
 	require.Nil(t, err)
 
 	marshaedData, err := json.Marshal(signature1)

@@ -89,7 +89,7 @@ func (v *SuiValidatorSummary) CalculateAPY(epoch int64) float64 {
 		numEpochsParticipated := epoch - stakingPoolActivationEpoch
 		pow1 := stakingPoolSuiBalance.Sub(poolTokenBalance).Div(poolTokenBalance).Add(decimal.NewFromInt(1))
 		pow2 := decimal.NewFromInt(365).Div(decimal.NewFromInt(numEpochsParticipated))
-		apy := pow1.Pow(pow2).Sub(decimal.NewFromInt(1))
+		apy := pow1.Pow(pow2).Sub(decimal.NewFromInt(1)).Mul(decimal.NewFromInt(100))
 		apyValue, _ := apy.Round(4).Float64()
 		if apyValue > 100000 {
 			return 0

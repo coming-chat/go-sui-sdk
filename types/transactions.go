@@ -90,7 +90,9 @@ func (te *TransactionEffects) IsSuccess() bool {
 	return te.Status.Status == ExecutionStatusSuccess
 }
 
-type TransactionEvents = []SuiEvent
+type TransactionEvents struct {
+	Data []SuiEvent `json:"data"`
+}
 
 const (
 	SuiTransactionBlockKindSuiChangeEpoch             = "ChangeEpoch"
@@ -123,12 +125,13 @@ type BalanceChange struct {
 }
 
 type SuiTransactionBlockResponse struct {
-	Digest                  TransactionDigest    `json:"digest,omitempty"`
+	Digest                  TransactionDigest    `json:"digest"`
 	Transaction             *SuiTransactionBlock `json:"transaction,omitempty"`
+	RawTransaction          []byte               `json:"rawTransaction,omitempty"`
 	Effects                 *TransactionEffects  `json:"effects,omitempty"`
-	Events                  TransactionEvents    `json:"events,omitempty"`
-	TimestampMs             *int64               `json:"timestampMs,omitempty"`
-	Checkpoint              *int64               `json:"checkpoint,omitempty"`
+	Events                  *TransactionEvents   `json:"events,omitempty"`
+	TimestampMs             *uint64              `json:"timestampMs,omitempty"`
+	Checkpoint              *SequenceNumber      `json:"checkpoint,omitempty"`
 	ConfirmedLocalExecution *bool                `json:"confirmedLocalExecution,omitempty"`
 	ObjectChanges           []SuiObjectChange    `json:"objectChanges,omitempty"`
 	BalanceChanges          []BalanceChange      `json:"balanceChanges,omitempty"`
@@ -147,7 +150,7 @@ type DevInspectResults struct {
 	Effects TransactionEffects    `json:"effects"`
 	Events  TransactionEvents     `json:"events"`
 	Results []ExecutionResultType `json:"results,omitempty"`
-	Error   string                `json:"error,omitempty"`
+	Error   *string               `json:"error,omitempty"`
 }
 
 type TransactionFilter struct {
@@ -191,6 +194,6 @@ type TransactionBlocksPage = Page[SuiTransactionBlockResponse, TransactionDigest
 type DryRunTransactionBlockResponse struct {
 	Effects        TransactionEffects `json:"effects"`
 	Events         TransactionEvents  `json:"events"`
-	ObjectChanges  []SuiObjectChange  `json:"objectChanges,omitempty"`
-	BalanceChanges []BalanceChange    `json:"balanceChanges,omitempty"`
+	ObjectChanges  []SuiObjectChange  `json:"objectChanges"`
+	BalanceChanges []BalanceChange    `json:"balanceChanges"`
 }

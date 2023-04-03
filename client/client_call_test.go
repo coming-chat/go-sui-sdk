@@ -81,14 +81,16 @@ func TestClient_DryRunTransaction(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result, err := tt.chain.DryRunTransaction(tt.args.ctx, tt.args.tx)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Client.DryRunTransaction() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%#v", result)
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				result, err := tt.chain.DryRunTransaction(tt.args.ctx, tt.args.tx)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Client.DryRunTransaction() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Logf("%#v", result)
+			},
+		)
 	}
 }
 
@@ -160,14 +162,16 @@ func TestClient_GetSuiCoinsOwnedByAddress(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.GetSuiCoinsOwnedByAddress(tt.args.ctx, tt.args.address)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetSuiCoinsOwnedByAddress() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("coin data: %v", got)
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := tt.chain.GetSuiCoinsOwnedByAddress(tt.args.ctx, tt.args.address)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("GetSuiCoinsOwnedByAddress() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Logf("coin data: %v", got)
+			},
+		)
 	}
 }
 
@@ -326,14 +330,16 @@ func TestClient_GetAllCoins(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := chain.GetAllCoins(tt.args.ctx, tt.args.address, tt.args.cursor, tt.args.limit)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetAllCoins() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%#v", got)
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := chain.GetAllCoins(tt.args.ctx, tt.args.address, tt.args.cursor, tt.args.limit)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("GetAllCoins() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Logf("%#v", got)
+			},
+		)
 	}
 }
 
@@ -390,9 +396,11 @@ func TestClient_GetAllCoins(t *testing.T) {
 func TestClient_GetTransaction(t *testing.T) {
 	cli := DevnetClient(t)
 	digest := "5rMRjX2HWFcWeeNUvMBmpBEa44zsVV7JSNayrGwhVRPy"
-	resp, err := cli.GetTransactionBlock(context.Background(), digest, types.SuiTransactionBlockResponseOptions{
-		ShowInput: false,
-	})
+	resp, err := cli.GetTransactionBlock(
+		context.Background(), digest, types.SuiTransactionBlockResponseOptions{
+			ShowInput: false,
+		},
+	)
 	require.NoError(t, err)
 	t.Logf("%#v", resp)
 }
@@ -405,10 +413,12 @@ func TestBatchCall_GetObject(t *testing.T) {
 		idstr := "0x4ad2f0a918a241d6a19573212aeb56947bb9255a14e921a7ec78b262536826f0"
 		objId, err := types.NewHexData(idstr)
 		require.Nil(t, err)
-		obj, err := cli.GetObject(context.Background(), *objId, &types.SuiObjectDataOptions{
-			ShowType:    true,
-			ShowContent: true,
-		})
+		obj, err := cli.GetObject(
+			context.Background(), *objId, &types.SuiObjectDataOptions{
+				ShowType:    true,
+				ShowContent: true,
+			},
+		)
 		require.Nil(t, err)
 		t.Log(obj.Data)
 	}
@@ -452,14 +462,16 @@ func TestClient_GetObject(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.GetObject(tt.args.ctx, tt.args.objID, nil)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetObject() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%+v", got)
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := tt.chain.GetObject(tt.args.ctx, tt.args.objID, nil)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("GetObject() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Logf("%+v", got)
+			},
+		)
 	}
 }
 
@@ -474,10 +486,12 @@ func TestClient_MultiGetObjects(t *testing.T) {
 
 	obj := coins.Data[0].CoinObjectId
 	objs := []types.ObjectId{obj, obj}
-	resp, err := chain.MultiGetObjects(context.Background(), objs, &types.SuiObjectDataOptions{
-		ShowType:  true,
-		ShowOwner: true,
-	})
+	resp, err := chain.MultiGetObjects(
+		context.Background(), objs, &types.SuiObjectDataOptions{
+			ShowType:  true,
+			ShowOwner: true,
+		},
+	)
 	require.Nil(t, err)
 	require.Equal(t, len(objs), len(resp))
 	require.Equal(t, resp[0], resp[1])
@@ -535,14 +549,16 @@ func TestClient_GetTotalSupply(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.GetTotalSupply(tt.args.ctx, tt.args.coinType)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetTotalSupply() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%d", got)
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := tt.chain.GetTotalSupply(tt.args.ctx, tt.args.coinType)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("GetTotalSupply() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Logf("%d", got)
+			},
+		)
 	}
 }
 func TestClient_GetTotalTransactionBlocks(t *testing.T) {
@@ -669,15 +685,78 @@ func TestClient_DevInspectTransactionBlock(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.args.chain.DevInspectTransactionBlock(tt.args.ctx, tt.args.senderAddress, tt.args.txByte, tt.args.gasPrice, tt.args.epoch)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("DevInspectTransactionBlock() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("DevInspectTransactionBlock() got = %v, want %v", got, tt.want)
-			}
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := tt.args.chain.DevInspectTransactionBlock(
+					tt.args.ctx,
+					tt.args.senderAddress,
+					tt.args.txByte,
+					tt.args.gasPrice,
+					tt.args.epoch,
+				)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("DevInspectTransactionBlock() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("DevInspectTransactionBlock() got = %v, want %v", got, tt.want)
+				}
+			},
+		)
+	}
+}
+
+func TestClient_QueryTransactionBlocks(t *testing.T) {
+	cli := DevnetClient(t)
+	limit := uint(10)
+	type args struct {
+		ctx             context.Context
+		query           types.SuiTransactionBlockResponseQuery
+		cursor          *types.TransactionDigest
+		limit           *uint
+		descendingOrder bool
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *types.TransactionBlocksPage
+		wantErr bool
+	}{
+		{
+			name: "test for queryTransactionBlocks",
+			args: args{
+				ctx: context.TODO(),
+				query: types.SuiTransactionBlockResponseQuery{
+					Filter: &types.TransactionFilter{
+						FromAddress: Address,
+					},
+					Options: &types.SuiTransactionBlockResponseOptions{
+						ShowInput:   true,
+						ShowEffects: true,
+					},
+				},
+				cursor:          nil,
+				limit:           &limit,
+				descendingOrder: true,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := cli.QueryTransactionBlocks(
+					tt.args.ctx,
+					tt.args.query,
+					tt.args.cursor,
+					tt.args.limit,
+					tt.args.descendingOrder,
+				)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("QueryTransactionBlocks() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Logf("%#v", got)
+			},
+		)
 	}
 }

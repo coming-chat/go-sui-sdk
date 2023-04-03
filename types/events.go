@@ -41,8 +41,8 @@ type EventFilter struct {
 	/// Return events with the given move event struct name
 	MoveEventType  *string `json:"MoveEventType,omitempty"`
 	MoveEventField *struct {
-		Path  string      `json:"Path"`
-		Value interface{} `json:"Value"`
+		Path  string      `json:"path"`
+		Value interface{} `json:"value"`
 	} `json:"MoveEventField,omitempty"`
 	/// Return events emitted in [start_time, end_time] interval
 	TimeRange *struct {

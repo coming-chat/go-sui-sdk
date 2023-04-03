@@ -59,9 +59,10 @@ type Supply struct {
 	Value uint64 `json:"value"`
 }
 
-type TransactionsPage struct {
-	Data       []string `json:"data"`
-	NextCursor string   `json:"nextCursor"`
+type TransactionBlocksPage struct {
+	Data        []SuiTransactionBlockResponse `json:"data"`
+	NextCursor  string                        `json:"nextCursor"`
+	HasNextPage bool                          `json:"hasNextPage"`
 }
 
 type EventPage struct {

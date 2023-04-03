@@ -143,24 +143,6 @@ type SenderSignedData struct {
 
 type Event interface{}
 
-type TransactionQuery struct {
-	All *string `json:"All"`
-	/// Query by move function.
-	MoveFunction *MoveFunction `json:"MoveFunction"`
-	/// Query by input object.
-	InputObject *ObjectId `json:"InputObject"`
-	/// Query by mutated object.
-	MutatedObject *ObjectId `json:"MutatedObject"`
-	/// Query by sender address.
-	FromAddress *Address `json:"FromAddress"`
-	/// Query by recipient address.
-	ToAddress *Address `json:"ToAddress"`
-}
-
-func (t TransactionQuery) MarshalJSON() ([]byte, error) {
-	return marshalQuery(t)
-}
-
 type TimeRange struct {
 	StartTime uint64 `json:"startTime"` // left endpoint of time interval, milliseconds since epoch, inclusive
 	EndTime   uint64 `json:"endTime"`   // right endpoint of time interval, milliseconds since epoch, exclusive
@@ -214,12 +196,6 @@ func marshalQuery(q any) ([]byte, error) {
 		return result, nil
 	}
 	return nil, errors.New("all data is nil")
-}
-
-type MoveFunction struct {
-	Package  ObjectId `json:"package"`
-	Module   string   `json:"module,omitempty"`
-	Function string   `json:"function,omitempty"`
 }
 
 type MoveModule struct {

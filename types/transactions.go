@@ -151,11 +151,21 @@ type DevInspectResults struct {
 }
 
 type TransactionFilter struct {
-	MoveFunction  *MoveFunction
-	InputObject   *ObjectId
-	ChangedObject *ObjectId
-	FromAddress   *Address
-	ToAddress     *Address
+	Checkpoint   *SequenceNumber `json:"Checkpoint,omitempty"`
+	MoveFunction *struct {
+		Package  ObjectId `json:"package"`
+		Module   string   `json:"module,omitempty"`
+		Function string   `json:"function,omitempty"`
+	} `json:"MoveFunction,omitempty"`
+	InputObject      *ObjectId `json:"InputObject,omitempty"`
+	ChangedObject    *ObjectId `json:"ChangedObject,omitempty"`
+	FromAddress      *Address  `json:"FromAddress,omitempty"`
+	ToAddress        *Address  `json:"ToAddress,omitempty"`
+	FromAndToAddress *struct {
+		From *Address `json:"from"`
+		To   *Address `json:"to"`
+	} `json:"FromAndToAddress,omitempty"`
+	TransactionKind *string `json:"TransactionKind,omitempty"`
 }
 
 type SuiTransactionBlockResponseOptions struct {

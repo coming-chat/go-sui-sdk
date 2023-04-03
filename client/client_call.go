@@ -364,3 +364,11 @@ func (c *Client) BatchTransaction(
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, batchTransaction, signer, txnParams, gas, gasBudget)
 }
+
+func (c *Client) QueryTransactionBlocks(
+	ctx context.Context, query types.SuiTransactionBlockResponseQuery,
+	cursor *types.TransactionDigest, limit *uint, descendingOrder bool,
+) (*types.TransactionBlocksPage, error) {
+	resp := types.TransactionBlocksPage{}
+	return &resp, c.CallContext(ctx, &resp, queryTransactionBlocks, query, cursor, limit, descendingOrder)
+}

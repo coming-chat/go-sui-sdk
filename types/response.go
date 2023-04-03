@@ -12,17 +12,6 @@ type CertifiedTransaction struct {
 
 type ParsedTransactionResponse interface{}
 
-// TxnRequestTypeImmediateReturn       ExecuteTransactionRequestType = "ImmediateReturn"
-// TxnRequestTypeWaitForTxCert         ExecuteTransactionRequestType = "WaitForTxCert"
-// TxnRequestTypeWaitForEffectsCert    ExecuteTransactionRequestType = "WaitForEffectsCert"
-
-type TransactionResponse struct {
-	Certificate *CertifiedTransaction     `json:"certificate"`
-	Effects     *TransactionEffects       `json:"effects"`
-	ParsedData  ParsedTransactionResponse `json:"parsed_data,omitempty"`
-	TimestampMs uint64                    `json:"timestamp_ms,omitempty"`
-}
-
 type ExecuteTransactionEffects struct {
 	TransactionEffectsDigest string `json:"transactionEffectsDigest"`
 
@@ -57,20 +46,4 @@ type DevInspectResult struct {
 
 type Supply struct {
 	Value uint64 `json:"value"`
-}
-
-type TransactionBlocksPage struct {
-	Data        []SuiTransactionBlockResponse `json:"data"`
-	NextCursor  string                        `json:"nextCursor"`
-	HasNextPage bool                          `json:"hasNextPage"`
-}
-
-type EventPage struct {
-	Data       []Event `json:"data"`
-	NextCursor EventID `json:"nextCursor"`
-}
-
-type EventID struct {
-	TxDigest string `json:"txDigest"`
-	EventSeq int64  `json:"eventSeq"`
 }

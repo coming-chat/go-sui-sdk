@@ -186,11 +186,7 @@ type SuiTransactionBlockResponseQuery struct {
 	Options *SuiTransactionBlockResponseOptions `json:"options,omitempty"`
 }
 
-type PaginatedTransactionResponse struct {
-	Data        []SuiTransactionBlockResponse `json:"data,omitempty"`
-	NextCursor  *TransactionDigest            `json:"nextCursor,omitempty"`
-	HasNextPage bool                          `json:"hasNextPage"`
-}
+type TransactionBlocksPage = Page[SuiTransactionBlockResponse, TransactionDigest]
 
 type DryRunTransactionBlockResponse struct {
 	Effects        TransactionEffects `json:"effects"`

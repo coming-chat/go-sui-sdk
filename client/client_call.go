@@ -372,3 +372,11 @@ func (c *Client) QueryTransactionBlocks(
 	resp := types.TransactionBlocksPage{}
 	return &resp, c.CallContext(ctx, &resp, queryTransactionBlocks, query, cursor, limit, descendingOrder)
 }
+
+func (c *Client) QueryEvents(
+	ctx context.Context, query types.EventFilter, cursor *types.EventId, limit *uint,
+	descendingOrder bool,
+) (*types.EventPage, error) {
+	var resp types.EventPage
+	return &resp, c.CallContext(ctx, &resp, queryEvents, query, cursor, limit, descendingOrder)
+}

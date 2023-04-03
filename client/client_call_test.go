@@ -760,3 +760,54 @@ func TestClient_QueryTransactionBlocks(t *testing.T) {
 		)
 	}
 }
+
+func TestClient_QueryEvents(t *testing.T) {
+	cli := DevnetClient(t)
+	limit := uint(10)
+	type args struct {
+		ctx             context.Context
+		query           types.EventFilter
+		cursor          *types.EventId
+		limit           *uint
+		descendingOrder bool
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *types.EventPage
+		wantErr bool
+	}{
+		{
+			name: "test for query events",
+			args: args{
+				ctx: context.TODO(),
+				query: types.EventFilter{
+					Sender: Address,
+				},
+				cursor:          nil,
+				limit:           &limit,
+				descendingOrder: false,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := cli.QueryEvents(
+					tt.args.ctx,
+					tt.args.query,
+					tt.args.cursor,
+					tt.args.limit,
+					tt.args.descendingOrder,
+				)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("QueryEvents() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("QueryEvents() got = %v, want %v", got, tt.want)
+				}
+			},
+		)
+	}
+}

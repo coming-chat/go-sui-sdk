@@ -1,5 +1,9 @@
 package types
 
+import (
+	"encoding/json"
+)
+
 type ObjectDigest = string
 
 type SuiObjectRef struct {
@@ -80,10 +84,51 @@ type SuiObjectDataOptions struct {
 }
 
 type SuiObjectResponseError struct {
-	Tag      string          `json:"tag"`
-	ObjectId *ObjectId       `json:"object_id,omitempty"`
-	Version  *SequenceNumber `json:"version,omitempty"`
-	Digest   *ObjectDigest   `json:"digest,omitempty"`
+	NotExists *struct {
+		ObjectId ObjectId `json:"object_id"`
+	} `json:"notExists,omitempty"`
+	Deleted *struct {
+		ObjectId ObjectId       `json:"object_id"`
+		Version  SequenceNumber `json:"version"`
+		Digest   ObjectDigest   `json:"digest"`
+	} `json:"deleted,omitempty"`
+	UnKnown *struct{} `json:"unKnown"`
+}
+
+func (e *SuiObjectResponseError) UnmarshalJSON(data []byte) error {
+	type orError struct {
+		Code     string          `json:"code"`
+		ObjectId *ObjectId       `json:"object_id,omitempty"`
+		Version  *SequenceNumber `json:"version,omitempty"`
+		Digest   *ObjectDigest   `json:"digest,omitempty"`
+	}
+	var tmp = orError{}
+	err := json.Unmarshal(data, &tmp)
+	if err != nil {
+		return err
+	}
+	switch tmp.Code {
+	case "notExists":
+		e.NotExists = &struct {
+			ObjectId ObjectId `json:"object_id"`
+		}{
+			ObjectId: *tmp.ObjectId,
+		}
+	case "deleted":
+		e.Deleted = &struct {
+			ObjectId ObjectId       `json:"object_id"`
+			Version  SequenceNumber `json:"version"`
+			Digest   ObjectDigest   `json:"digest"`
+		}{
+			ObjectId: *tmp.ObjectId,
+			Version:  *tmp.Version,
+			Digest:   *tmp.Digest,
+		}
+	case "unknown":
+		e.UnKnown = &struct{}{}
+	default:
+	}
+	return nil
 }
 
 type SuiObjectResponse struct {

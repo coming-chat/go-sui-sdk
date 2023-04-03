@@ -9,7 +9,7 @@ import (
 )
 
 func TestClient_GetLatestSuiSystemState(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := TestnetClient(t)
 	state, err := cli.GetLatestSuiSystemState(context.Background())
 	require.Nil(t, err)
 	t.Logf("system state = %v", state)

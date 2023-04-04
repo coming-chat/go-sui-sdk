@@ -166,6 +166,10 @@ func (o SuiObjectChange) Tag() string {
 	return "type"
 }
 
+func (o SuiObjectChange) Content() string {
+	return ""
+}
+
 type BalanceChange struct {
 	Owner    ObjectOwner `json:"owner"`
 	CoinType string      `json:"coinType"`

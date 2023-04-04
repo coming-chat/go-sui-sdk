@@ -19,8 +19,67 @@ type SuiGasData struct {
 	Budget int64  `json:"budget"`
 }
 
-type SuiParsedData interface{}
-type SuiRawData interface{}
+type SuiParsedData struct {
+	MoveObject *SuiParsedMoveObject `json:"moveObject,omitempty"`
+	Package    *SuiMovePackage      `json:"package,omitempty"`
+}
+
+func (p SuiParsedData) Tag() string {
+	return "dataType"
+}
+
+func (p SuiParsedData) Content() string {
+	return ""
+}
+
+type SuiMovePackage struct {
+	Disassembled map[string]interface{} `json:"disassembled"`
+}
+
+type SuiParsedMoveObject struct {
+	Type              string `json:"type"`
+	HasPublicTransfer bool   `json:"hasPublicTransfer"`
+	Fields            any    `json:"fields"`
+}
+
+type SuiRawData struct {
+	MoveObject *SuiRawMoveObject  `json:"moveObject,omitempty"`
+	Package    *SuiRawMovePackage `json:"package,omitempty"`
+}
+
+func (r SuiRawData) Tag() string {
+	return "dataType"
+}
+
+func (r SuiRawData) Content() string {
+	return ""
+}
+
+type SuiRawMoveObject struct {
+	Type              string         `json:"type"`
+	HasPublicTransfer bool           `json:"hasPublicTransfer"`
+	Version           SequenceNumber `json:"version"`
+	BcsBytes          Base64Data     `json:"bcsBytes"`
+}
+
+type SuiRawMovePackage struct {
+	Id              ObjectId              `json:"id"`
+	Version         SequenceNumber        `json:"version"`
+	ModuleMap       map[string]Base64Data `json:"moduleMap"`
+	TypeOriginTable []TypeOrigin          `json:"typeOriginTable"`
+	LinkageTable    map[string]UpgradeInfo
+}
+
+type UpgradeInfo struct {
+	UpgradedId      ObjectId
+	UpgradedVersion SequenceNumber
+}
+
+type TypeOrigin struct {
+	ModuleName string   `json:"moduleName"`
+	StructName string   `json:"structName"`
+	Package    ObjectId `json:"package"`
+}
 
 type SuiObjectData struct {
 	ObjectId ObjectId       `json:"objectId"`
@@ -33,11 +92,11 @@ type SuiObjectData struct {
 	/**
 	 * Move object content or package content, default to be undefined unless SuiObjectDataOptions.showContent is set to true
 	 */
-	Content SuiParsedData `json:"content,omitempty"`
+	Content *TagJson[SuiParsedData] `json:"content,omitempty"`
 	/**
 	 * Move object content or package content in BCS bytes, default to be undefined unless SuiObjectDataOptions.showBcs is set to true
 	 */
-	Bcs SuiRawData `json:"bcs,omitempty"`
+	Bcs *TagJson[SuiRawData] `json:"bcs,omitempty"`
 	/**
 	 * The owner of this object. Default to be undefined unless SuiObjectDataOptions.showOwner is set to true
 	 */
@@ -95,6 +154,10 @@ func (e SuiObjectResponseError) Tag() string {
 	return "code"
 }
 
+func (e SuiObjectResponseError) Content() string {
+	return ""
+}
+
 type SuiObjectResponse struct {
 	Data  *SuiObjectData                   `json:"data,omitempty"`
 	Error *TagJson[SuiObjectResponseError] `json:"error,omitempty"`
@@ -120,4 +183,31 @@ type SuiObjectDataFilter struct {
 type SuiObjectResponseQuery struct {
 	Filter  *SuiObjectDataFilter  `json:"filter,omitempty"`
 	Options *SuiObjectDataOptions `json:"options,omitempty"`
+}
+
+type SuiPastObjectResponse = TagJson[SuiPastObject]
+
+type SuiPastObject struct {
+	/// The object exists and is found with this version
+	VersionFound *SuiObjectData `json:"VersionFound,omitempty"`
+	/// The object does not exist
+	ObjectNotExists *ObjectId `json:"ObjectNotExists,omitempty"`
+	/// The object is found to be deleted with this version
+	ObjectDeleted *SuiObjectRef `json:"ObjectDeleted,omitempty"`
+	/// The object exists but not found with this version
+	VersionNotFound *struct{ ObjectId SequenceNumber } `json:"VersionNotFound,omitempty"`
+	/// The asked object version is higher than the latest
+	VersionTooHigh *struct {
+		ObjectId      ObjectId       `json:"object_id"`
+		AskedVersion  SequenceNumber `json:"asked_version"`
+		LatestVersion SequenceNumber `json:"latest_version"`
+	} `json:"VersionTooHigh,omitempty"`
+}
+
+func (s SuiPastObject) Tag() string {
+	return "status"
+}
+
+func (s SuiPastObject) Content() string {
+	return "details"
 }

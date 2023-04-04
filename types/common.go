@@ -36,8 +36,8 @@ type ObjectOwner struct {
 }
 
 type TagJsonType interface {
-	SuiObjectChange | SuiObjectResponseError
 	Tag() string
+	Content() string
 }
 
 type TagJson[T TagJsonType] struct {
@@ -65,7 +65,18 @@ func (t *TagJson[T]) UnmarshalJSON(data []byte) error {
 		if rv.Field(i).IsNil() {
 			rv.Field(i).Set(reflect.New(rv.Field(i).Type().Elem()))
 		}
-		err = json.Unmarshal(data, rv.Field(i).Interface())
+		jsonData := data
+		if t.Data.Content() != "" {
+			value, has := tmp[t.Data.Content()]
+			if !has {
+				return fmt.Errorf("json data [%v] get content key [%s] failed", tmp, t.Data.Content())
+			}
+			jsonData, err = json.Marshal(value)
+			if err != nil {
+				return err
+			}
+		}
+		err = json.Unmarshal(jsonData, rv.Field(i).Interface())
 		if err != nil {
 			return err
 		}

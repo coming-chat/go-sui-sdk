@@ -90,10 +90,6 @@ func (te *TransactionEffects) IsSuccess() bool {
 	return te.Status.Status == ExecutionStatusSuccess
 }
 
-type TransactionEvents struct {
-	Data []SuiEvent `json:"data"`
-}
-
 const (
 	SuiTransactionBlockKindSuiChangeEpoch             = "ChangeEpoch"
 	SuiTransactionBlockKindSuiConsensusCommitPrologue = "ConsensusCommitPrologue"
@@ -129,7 +125,7 @@ type SuiTransactionBlockResponse struct {
 	Transaction             *SuiTransactionBlock `json:"transaction,omitempty"`
 	RawTransaction          []byte               `json:"rawTransaction,omitempty"`
 	Effects                 *TransactionEffects  `json:"effects,omitempty"`
-	Events                  *TransactionEvents   `json:"events,omitempty"`
+	Events                  []SuiEvent           `json:"events,omitempty"`
 	TimestampMs             *uint64              `json:"timestampMs,omitempty"`
 	Checkpoint              *SequenceNumber      `json:"checkpoint,omitempty"`
 	ConfirmedLocalExecution *bool                `json:"confirmedLocalExecution,omitempty"`
@@ -148,7 +144,7 @@ type ExecutionResultType struct {
 
 type DevInspectResults struct {
 	Effects TransactionEffects    `json:"effects"`
-	Events  TransactionEvents     `json:"events"`
+	Events  []SuiEvent            `json:"events"`
 	Results []ExecutionResultType `json:"results,omitempty"`
 	Error   *string               `json:"error,omitempty"`
 }
@@ -193,7 +189,7 @@ type TransactionBlocksPage = Page[SuiTransactionBlockResponse, TransactionDigest
 
 type DryRunTransactionBlockResponse struct {
 	Effects        TransactionEffects `json:"effects"`
-	Events         TransactionEvents  `json:"events"`
+	Events         []SuiEvent         `json:"events"`
 	ObjectChanges  []SuiObjectChange  `json:"objectChanges"`
 	BalanceChanges []BalanceChange    `json:"balanceChanges"`
 }

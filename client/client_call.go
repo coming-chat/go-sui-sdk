@@ -181,8 +181,8 @@ func (c *Client) TryGetPastObject(
 	objectId types.ObjectId,
 	version types.SequenceNumber,
 	options *types.SuiObjectDataOptions,
-) (*types.ObjectRead, error) {
-	var resp types.ObjectRead
+) (*types.SuiPastObjectResponse, error) {
+	var resp types.SuiPastObjectResponse
 	return &resp, c.CallContext(ctx, &resp, tryGetPastObject, objectId, version, options)
 }
 

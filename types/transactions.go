@@ -97,7 +97,54 @@ const (
 	SuiTransactionBlockKindProgrammableTransaction    = "ProgrammableTransaction"
 )
 
-type SuiTransactionBlockKind interface{}
+type SuiTransactionBlockKind = TagJson[TransactionBlockKind]
+
+type TransactionBlockKind struct {
+	/// A system transaction that will update epoch information on-chain.
+	ChangeEpoch *SuiChangeEpoch
+	/// A system transaction used for initializing the initial state of the chain.
+	Genesis *SuiGenesisTransaction
+	/// A system transaction marking the start of a series of transactions scheduled as part of a
+	/// checkpoint
+	ConsensusCommitPrologue *SuiConsensusCommitPrologue
+	/// A series of transactions where the results of one transaction can be used in future
+	/// transactions
+	ProgrammableTransaction *SuiProgrammableTransactionBlock
+	// .. more transaction types go here
+}
+
+func (t TransactionBlockKind) Tag() string {
+	return "kind"
+}
+
+func (t TransactionBlockKind) Content() string {
+	return ""
+}
+
+type SuiChangeEpoch struct {
+	Epoch                 decimal.Decimal `json:"epoch"`
+	StorageCharge         uint64          `json:"storage_charge"`
+	ComputationCharge     uint64          `json:"computation_charge"`
+	StorageRebate         uint64          `json:"storage_rebate"`
+	EpochStartTimestampMs uint64          `json:"epoch_start_timestamp_ms"`
+}
+
+type SuiGenesisTransaction struct {
+	Objects []ObjectId `json:"objects"`
+}
+
+type SuiConsensusCommitPrologue struct {
+	Epoch             uint64 `json:"epoch"`
+	Round             uint64 `json:"round"`
+	CommitTimestampMs uint64 `json:"commit_timestamp_ms"`
+}
+
+type SuiProgrammableTransactionBlock struct {
+	Inputs []interface{} `json:"inputs"`
+	/// The transactions to be executed sequentially. A failure in any transaction will
+	/// result in the failure of the entire programmable transaction block.
+	Commands []interface{} `json:"transactions"`
+}
 
 type SuiTransactionBlockData struct {
 	MessageVersion string                  `json:"messageVersion"`

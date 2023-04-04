@@ -1,5 +1,12 @@
 package types
 
+import (
+	"encoding/json"
+	"fmt"
+	"reflect"
+	"strings"
+)
+
 type TransactionDigest = string
 
 type TransactionEffectsDigest = string
@@ -26,4 +33,43 @@ type ObjectOwnerInternal struct {
 type ObjectOwner struct {
 	*ObjectOwnerInternal
 	*string
+}
+
+type TagJsonType interface {
+	SuiObjectChange | SuiObjectResponseError
+	Tag() string
+}
+
+type TagJson[T TagJsonType] struct {
+	Data T
+}
+
+func (t *TagJson[T]) UnmarshalJSON(data []byte) error {
+	tmp := make(map[string]interface{})
+	err := json.Unmarshal(data, &tmp)
+	if err != nil {
+		return err
+	}
+	rv := reflect.ValueOf(t).Elem().Field(0)
+	v, ok := tmp[t.Data.Tag()]
+	if !ok {
+		return fmt.Errorf("no such tag: %s in json data %v", t.Data.Tag(), tmp)
+	}
+	for i := 0; i < rv.Type().NumField(); i++ {
+		if !strings.Contains(rv.Type().Field(i).Tag.Get("json"), v.(string)) {
+			continue
+		}
+		if rv.Field(i).Kind() != reflect.Pointer {
+			return fmt.Errorf("field %s not pointer", rv.Field(i).Type().Name())
+		}
+		if rv.Field(i).IsNil() {
+			rv.Field(i).Set(reflect.New(rv.Field(i).Type().Elem()))
+		}
+		err = json.Unmarshal(data, rv.Field(i).Interface())
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return fmt.Errorf("no tag[%s] value <%s> in struct fields", t.Data.Tag(), v)
 }

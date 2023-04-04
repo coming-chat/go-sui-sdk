@@ -111,7 +111,60 @@ type SuiTransactionBlock struct {
 	TxSignatures []string                `json:"txSignatures"`
 }
 
-type SuiObjectChange interface{}
+type SuiObjectChange struct {
+	Published *struct {
+		PackageId ObjectId       `json:"packageId"`
+		Version   SequenceNumber `json:"version"`
+		Digest    ObjectDigest   `json:"digest"`
+		Nodules   []string       `json:"nodules"`
+	} `json:"published,omitempty"`
+	/// Transfer objects to new address / wrap in another object
+	Transferred *struct {
+		Sender     Address        `json:"sender"`
+		Recipient  ObjectOwner    `json:"recipient"`
+		ObjectType string         `json:"objectType"`
+		ObjectId   ObjectId       `json:"objectId"`
+		Version    SequenceNumber `json:"version"`
+		Digest     ObjectDigest   `json:"digest"`
+	} `json:"transferred,omitempty"`
+	/// Object mutated.
+	Mutated *struct {
+		Sender          Address        `json:"sender"`
+		Owner           ObjectOwner    `json:"owner"`
+		ObjectType      string         `json:"objectType"`
+		ObjectId        ObjectId       `json:"objectId"`
+		Version         SequenceNumber `json:"version"`
+		PreviousVersion SequenceNumber `json:"previousVersion"`
+		Digest          ObjectDigest   `json:"digest"`
+	} `json:"mutated,omitempty"`
+	/// Delete object j
+	Deleted *struct {
+		Sender     Address        `json:"sender"`
+		ObjectType string         `json:"objectType"`
+		ObjectId   ObjectId       `json:"objectId"`
+		Version    SequenceNumber `json:"version"`
+	} `json:"deleted,omitempty"`
+	/// Wrapped object
+	Wrapped *struct {
+		Sender     Address        `json:"sender"`
+		ObjectType string         `json:"objectType"`
+		ObjectId   ObjectId       `json:"objectId"`
+		Version    SequenceNumber `json:"version"`
+	} `json:"wrapped,omitempty"`
+	/// New object creation
+	Created *struct {
+		Sender     Address        `json:"sender"`
+		Owner      ObjectOwner    `json:"owner"`
+		ObjectType string         `json:"objectType"`
+		ObjectId   ObjectId       `json:"objectId"`
+		Version    SequenceNumber `json:"version"`
+		Digest     ObjectDigest   `json:"digest"`
+	} `json:"created,omitempty"`
+}
+
+func (o SuiObjectChange) Tag() string {
+	return "type"
+}
 
 type BalanceChange struct {
 	Owner    ObjectOwner `json:"owner"`
@@ -121,16 +174,16 @@ type BalanceChange struct {
 }
 
 type SuiTransactionBlockResponse struct {
-	Digest                  TransactionDigest    `json:"digest"`
-	Transaction             *SuiTransactionBlock `json:"transaction,omitempty"`
-	RawTransaction          []byte               `json:"rawTransaction,omitempty"`
-	Effects                 *TransactionEffects  `json:"effects,omitempty"`
-	Events                  []SuiEvent           `json:"events,omitempty"`
-	TimestampMs             *uint64              `json:"timestampMs,omitempty"`
-	Checkpoint              *SequenceNumber      `json:"checkpoint,omitempty"`
-	ConfirmedLocalExecution *bool                `json:"confirmedLocalExecution,omitempty"`
-	ObjectChanges           []SuiObjectChange    `json:"objectChanges,omitempty"`
-	BalanceChanges          []BalanceChange      `json:"balanceChanges,omitempty"`
+	Digest                  TransactionDigest          `json:"digest"`
+	Transaction             *SuiTransactionBlock       `json:"transaction,omitempty"`
+	RawTransaction          []byte                     `json:"rawTransaction,omitempty"`
+	Effects                 *TransactionEffects        `json:"effects,omitempty"`
+	Events                  []SuiEvent                 `json:"events,omitempty"`
+	TimestampMs             *uint64                    `json:"timestampMs,omitempty"`
+	Checkpoint              *SequenceNumber            `json:"checkpoint,omitempty"`
+	ConfirmedLocalExecution *bool                      `json:"confirmedLocalExecution,omitempty"`
+	ObjectChanges           []TagJson[SuiObjectChange] `json:"objectChanges,omitempty"`
+	BalanceChanges          []BalanceChange            `json:"balanceChanges,omitempty"`
 	/* Errors that occurred in fetching/serializing the transaction. */
 	Errors []string `json:"errors,omitempty"`
 }
@@ -188,8 +241,8 @@ type SuiTransactionBlockResponseQuery struct {
 type TransactionBlocksPage = Page[SuiTransactionBlockResponse, TransactionDigest]
 
 type DryRunTransactionBlockResponse struct {
-	Effects        TransactionEffects `json:"effects"`
-	Events         []SuiEvent         `json:"events"`
-	ObjectChanges  []SuiObjectChange  `json:"objectChanges"`
-	BalanceChanges []BalanceChange    `json:"balanceChanges"`
+	Effects        TransactionEffects         `json:"effects"`
+	Events         []SuiEvent                 `json:"events"`
+	ObjectChanges  []TagJson[SuiObjectChange] `json:"objectChanges"`
+	BalanceChanges []BalanceChange            `json:"balanceChanges"`
 }

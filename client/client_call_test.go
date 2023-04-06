@@ -515,6 +515,8 @@ func TestClient_GetOwnedObjects(t *testing.T) {
 	objs, err := cli.GetOwnedObjects(context.Background(), *Address, &query, nil, 0)
 	require.Nil(t, err)
 	t.Log(objs.Data)
+	c := objs.ReadNextCursor()
+	t.Log(c)
 }
 
 func TestBatchGetObjectsOwnedByAddress(t *testing.T) {

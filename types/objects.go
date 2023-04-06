@@ -1,5 +1,7 @@
 package types
 
+import "encoding/json"
+
 type ObjectDigest = string
 
 type SuiObjectRef struct {
@@ -169,9 +171,26 @@ type CheckpointedObjectId struct {
 }
 
 type PaginatedObjectsResponse struct {
-	Data        []SuiObjectResponse   `json:"data,omitempty"`
-	NextCursor  *CheckpointedObjectId `json:"nextCursor,omitempty"`
-	HasNextPage bool                  `json:"hasNextPage"`
+	Data []SuiObjectResponse `json:"data,omitempty"`
+	// NextCursor  *CheckpointedObjectId `json:"nextCursor,omitempty"`
+	NextCursor  interface{} `json:"nextCursor,omitempty"` // will update when testnet after 0.30.0
+	HasNextPage bool        `json:"hasNextPage"`
+}
+
+func (p *PaginatedObjectsResponse) ReadNextCursor() string {
+	if c, ok := p.NextCursor.(string); ok {
+		return c
+	}
+	data, err := json.Marshal(p.NextCursor)
+	if err != nil {
+		return ""
+	}
+	var cpo CheckpointedObjectId
+	err = json.Unmarshal(data, &cpo)
+	if err != nil {
+		return ""
+	}
+	return cpo.ObjectId.String()
 }
 
 type SuiObjectDataFilter struct {

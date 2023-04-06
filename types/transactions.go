@@ -101,15 +101,15 @@ type SuiTransactionBlockKind = TagJson[TransactionBlockKind]
 
 type TransactionBlockKind struct {
 	/// A system transaction that will update epoch information on-chain.
-	ChangeEpoch *SuiChangeEpoch
+	ChangeEpoch *SuiChangeEpoch `json:"ChangeEpoch,omitempty"`
 	/// A system transaction used for initializing the initial state of the chain.
-	Genesis *SuiGenesisTransaction
+	Genesis *SuiGenesisTransaction `json:"Genesis,omitempty"`
 	/// A system transaction marking the start of a series of transactions scheduled as part of a
 	/// checkpoint
-	ConsensusCommitPrologue *SuiConsensusCommitPrologue
+	ConsensusCommitPrologue *SuiConsensusCommitPrologue `json:"ConsensusCommitPrologue,omitempty"`
 	/// A series of transactions where the results of one transaction can be used in future
 	/// transactions
-	ProgrammableTransaction *SuiProgrammableTransactionBlock
+	ProgrammableTransaction *SuiProgrammableTransactionBlock `json:"ProgrammableTransaction,omitempty"`
 	// .. more transaction types go here
 }
 

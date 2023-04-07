@@ -19,6 +19,15 @@ func TestClient_GetLatestSuiSystemState(t *testing.T) {
 	}
 }
 
+func TestClient_GetAndCalculateRollingAverageApys(t *testing.T) {
+	cli := TestnetClient(t)
+	apys, err := cli.GetAndCalculateRollingAverageApys(context.Background(), 98)
+	require.Nil(t, err)
+	for address, apy := range apys {
+		t.Logf("%v apy = %v", address, apy)
+	}
+}
+
 func TestGetDelegatedStakes(t *testing.T) {
 	cli := DevnetClient(t)
 

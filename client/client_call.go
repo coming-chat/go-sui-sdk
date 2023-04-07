@@ -9,6 +9,9 @@ import (
 	"github.com/coming-chat/go-sui/types"
 )
 
+// NOTE: This copys the query limit from our Rust JSON RPC backend, this needs to be kept in sync!
+const QUERY_MAX_RESULT_LIMIT = 1000
+
 // MARK - Getter Function
 
 // GetBalance to use default sui coin(0x2::sui::SUI) when coinType is empty

@@ -8,7 +8,6 @@ import (
 
 	"github.com/coming-chat/go-sui/account"
 	"github.com/coming-chat/go-sui/types"
-	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -42,7 +41,7 @@ func TestClient_TransferObject(t *testing.T) {
 
 	txnBytes, err := cli.TransferObject(
 		context.Background(), *signer, *recipient, coin.CoinObjectId, nil,
-		decimal.NewFromInt(100000000),
+		types.NewSafeSuiBigInt(uint64(100000000)),
 	)
 	require.Nil(t, err)
 
@@ -59,8 +58,8 @@ func TestClient_TransferSui(t *testing.T) {
 	require.NoError(t, err)
 
 	txnBytes, err := cli.TransferSui(
-		context.Background(), *signer, *recipient, coin.CoinObjectId, decimal.NewFromInt(100000),
-		decimal.NewFromInt(100000000),
+		context.Background(), *signer, *recipient, coin.CoinObjectId, types.NewSafeSuiBigInt(uint64(100000)),
+		types.NewSafeSuiBigInt(uint64(100000000)),
 	)
 	require.Nil(t, err)
 
@@ -80,7 +79,7 @@ func TestClient_PayAllSui(t *testing.T) {
 
 	txnBytes, err := cli.PayAllSui(
 		context.Background(), *signer, *recipient, []types.ObjectId{coin.CoinObjectId, coin1.CoinObjectId},
-		decimal.NewFromInt(100000000),
+		types.NewSafeSuiBigInt(uint64(100000000)),
 	)
 	require.Nil(t, err)
 
@@ -96,15 +95,16 @@ func TestClient_Pay(t *testing.T) {
 	coin, err := coins.PickCoinNoLess(10000)
 	require.NoError(t, err)
 
-	amount := decimal.NewFromInt(10000)
 	txnBytes, err := cli.Pay(
 		context.Background(),
 		*signer,
 		[]types.ObjectId{coin.CoinObjectId},
 		[]types.Address{*recipient},
-		[]decimal.Decimal{amount},
+		[]types.SafeSuiBigInt[uint64]{
+			types.NewSafeSuiBigInt(uint64(10000)),
+		},
 		nil,
-		decimal.NewFromInt(100000000),
+		types.NewSafeSuiBigInt(uint64(100000000)),
 	)
 	require.Nil(t, err)
 
@@ -120,14 +120,15 @@ func TestClient_PaySui(t *testing.T) {
 	coin, err := coins.PickCoinNoLess(10000)
 	require.NoError(t, err)
 
-	amount := decimal.NewFromInt(10000)
 	txnBytes, err := cli.PaySui(
 		context.Background(),
 		*signer,
 		[]types.ObjectId{coin.CoinObjectId},
 		[]types.Address{*recipient},
-		[]decimal.Decimal{amount},
-		decimal.NewFromInt(100000000),
+		[]types.SafeSuiBigInt[uint64]{
+			types.NewSafeSuiBigInt(uint64(1000)),
+		},
+		types.NewSafeSuiBigInt(uint64(100000000)),
 	)
 	require.Nil(t, err)
 
@@ -137,11 +138,16 @@ func TestClient_PaySui(t *testing.T) {
 func TestClient_SplitCoin(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
-	objId, err := types.NewHexData(M1Coin1)
+	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
-	splitCoins := []uint64{1e9} // 1SUI
+	coin, err := coins.PickCoinNoLess(1e7)
+	require.NoError(t, err)
+	splitCoins := []types.SafeSuiBigInt[uint64]{types.NewSafeSuiBigInt(uint64(1e7))} // 1SUI
 
-	txnBytes, err := cli.SplitCoin(context.Background(), *signer, *objId, splitCoins, nil, 10000)
+	txnBytes, err := cli.SplitCoin(
+		context.Background(), *signer, coin.CoinObjectId, splitCoins, nil,
+		types.NewSafeSuiBigInt(uint64(100000000)),
+	)
 	require.Nil(t, err)
 
 	simulateCheck(t, cli, txnBytes)
@@ -150,28 +156,37 @@ func TestClient_SplitCoin(t *testing.T) {
 func TestClient_SplitCoinEqual(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
-	objId, err := types.NewHexData(M1Coin1)
+	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
-
-	txnBytes, err := cli.SplitCoinEqual(context.Background(), *signer, *objId, 2, nil, 10000)
+	coin, err := coins.PickCoinNoLess(100000)
 	require.Nil(t, err)
 
-	// simulateCheck(t, cli, txnBytes, M1Account(t))
-	simulateAndSendTxn(t, cli, txnBytes, M1Account(t))
+	txnBytes, err := cli.SplitCoinEqual(
+		context.Background(), *signer, coin.CoinObjectId, types.NewSafeSuiBigInt(uint64(2)),
+		nil, types.NewSafeSuiBigInt(uint64(100000000)),
+	)
+	require.Nil(t, err)
+
+	t.Log(simulateCheck(t, cli, txnBytes))
 }
 
 func TestClient_MergeCoins(t *testing.T) {
 	cli := ChainClient(t)
 	signer := Address
-	coin1, err := types.NewHexData(M1Coin1)
+	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
-	coin2, err := types.NewHexData(M1Coin2)
+	coin1, err := coins.PickCoinNoLess(1000)
+	require.NoError(t, err)
+	coin2, err := coins.PickCoinNoLess(20000)
 	require.NoError(t, err)
 
-	txnBytes, err := cli.MergeCoins(context.Background(), *signer, *coin1, *coin2, nil, 10000)
+	txnBytes, err := cli.MergeCoins(
+		context.Background(), *signer, coin1.CoinObjectId, coin2.CoinObjectId, nil,
+		types.NewSafeSuiBigInt(uint64(100000000)),
+	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes)
+	t.Log(simulateCheck(t, cli, txnBytes))
 }
 
 func TestClient_Publish(t *testing.T) {
@@ -209,14 +224,11 @@ func simulateCheck(
 	cli *Client,
 	txn *types.TransactionBytes,
 ) *types.DryRunTransactionBlockResponse {
-	if shouldSimulate() {
-		simulate, err := cli.DryRunTransaction(context.Background(), txn)
-		require.Nil(t, err)
-		require.Equal(t, simulate.Effects.Status.Error, "")
-		require.True(t, simulate.Effects.IsSuccess())
-		return simulate
-	}
-	return nil
+	simulate, err := cli.DryRunTransaction(context.Background(), txn)
+	require.Nil(t, err)
+	require.Equal(t, simulate.Effects.Data.V1.Status.Error, "")
+	require.True(t, simulate.Effects.Data.IsSuccess())
+	return simulate
 }
 
 func simulateAndSendTxn(
@@ -228,7 +240,7 @@ func simulateAndSendTxn(
 	if shouldExecute() || shouldSimulate() {
 		simulate, err := cli.DryRunTransaction(context.Background(), txn)
 		require.Nil(t, err)
-		require.True(t, simulate.Effects.IsSuccess())
+		require.True(t, simulate.Effects.Data.IsSuccess())
 	}
 	if shouldExecute() {
 		signature, err := acc.SignSecureWithoutEncode(txn.TxBytes, sui_types.DefaultIntent())

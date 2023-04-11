@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/coming-chat/go-sui/types"
-	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -59,8 +58,8 @@ func TestClient_DryRunTransaction(t *testing.T) {
 	coin, err := coins.PickCoinNoLess(2000)
 	require.NoError(t, err)
 	tx, err := chain.TransferSui(
-		context.TODO(), *Address, *Address, coin.CoinObjectId, decimal.NewFromInt(1000),
-		decimal.NewFromInt(100000000),
+		context.TODO(), *Address, *Address, coin.CoinObjectId, types.NewSafeSuiBigInt(uint64(1000)),
+		types.NewSafeSuiBigInt(uint64(100000000)),
 	)
 	require.NoError(t, err)
 	type args struct {
@@ -679,15 +678,15 @@ func TestClient_DevInspectTransactionBlock(t *testing.T) {
 	coin, err := coins.PickCoinNoLess(1000)
 	require.NoError(t, err)
 	tx, err := chain.TransferSui(
-		context.TODO(), *Address, *Address, coin.CoinObjectId, decimal.NewFromInt(1000),
-		decimal.NewFromInt(100000000),
+		context.TODO(), *Address, *Address, coin.CoinObjectId, types.NewSafeSuiBigInt(uint64(1000)),
+		types.NewSafeSuiBigInt(uint64(100000000)),
 	)
 	require.NoError(t, err)
 	type args struct {
 		ctx           context.Context
 		senderAddress types.Address
 		txByte        types.Base64Data
-		gasPrice      *decimal.Decimal
+		gasPrice      *types.SafeSuiBigInt[uint64]
 		epoch         *uint64
 		chain         *Client
 	}

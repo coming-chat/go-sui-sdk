@@ -19,7 +19,17 @@ type SequenceNumber = uint64
 
 type SuiBigInt = decimal.Decimal
 
-type SafeSuiBigInt[T ~int64 | ~uint64] struct {
+type SafeBigInt interface {
+	~int64 | ~uint64
+}
+
+func NewSafeSuiBigInt[T SafeBigInt](num T) SafeSuiBigInt[T] {
+	return SafeSuiBigInt[T]{
+		data: num,
+	}
+}
+
+type SafeSuiBigInt[T SafeBigInt] struct {
 	data T
 }
 

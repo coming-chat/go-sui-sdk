@@ -36,8 +36,8 @@ type OwnedObjectRef struct {
 }
 
 type TransactionEffectsModifiedAtVersions struct {
-	ObjectId       ObjectId       `json:"objectId"`
-	SequenceNumber SequenceNumber `json:"sequenceNumber"`
+	ObjectId       ObjectId        `json:"objectId"`
+	SequenceNumber decimal.Decimal `json:"sequenceNumber"`
 }
 
 type TransactionEffects struct {
@@ -160,52 +160,52 @@ type SuiTransactionBlock struct {
 
 type SuiObjectChange struct {
 	Published *struct {
-		PackageId ObjectId       `json:"packageId"`
-		Version   SequenceNumber `json:"version"`
-		Digest    ObjectDigest   `json:"digest"`
-		Nodules   []string       `json:"nodules"`
+		PackageId ObjectId        `json:"packageId"`
+		Version   decimal.Decimal `json:"version"`
+		Digest    ObjectDigest    `json:"digest"`
+		Nodules   []string        `json:"nodules"`
 	} `json:"published,omitempty"`
 	/// Transfer objects to new address / wrap in another object
 	Transferred *struct {
-		Sender     Address        `json:"sender"`
-		Recipient  ObjectOwner    `json:"recipient"`
-		ObjectType string         `json:"objectType"`
-		ObjectId   ObjectId       `json:"objectId"`
-		Version    SequenceNumber `json:"version"`
-		Digest     ObjectDigest   `json:"digest"`
+		Sender     Address         `json:"sender"`
+		Recipient  ObjectOwner     `json:"recipient"`
+		ObjectType string          `json:"objectType"`
+		ObjectId   ObjectId        `json:"objectId"`
+		Version    decimal.Decimal `json:"version"`
+		Digest     ObjectDigest    `json:"digest"`
 	} `json:"transferred,omitempty"`
 	/// Object mutated.
 	Mutated *struct {
-		Sender          Address        `json:"sender"`
-		Owner           ObjectOwner    `json:"owner"`
-		ObjectType      string         `json:"objectType"`
-		ObjectId        ObjectId       `json:"objectId"`
-		Version         SequenceNumber `json:"version"`
-		PreviousVersion SequenceNumber `json:"previousVersion"`
-		Digest          ObjectDigest   `json:"digest"`
+		Sender          Address         `json:"sender"`
+		Owner           ObjectOwner     `json:"owner"`
+		ObjectType      string          `json:"objectType"`
+		ObjectId        ObjectId        `json:"objectId"`
+		Version         decimal.Decimal `json:"version"`
+		PreviousVersion decimal.Decimal `json:"previousVersion"`
+		Digest          ObjectDigest    `json:"digest"`
 	} `json:"mutated,omitempty"`
 	/// Delete object j
 	Deleted *struct {
-		Sender     Address        `json:"sender"`
-		ObjectType string         `json:"objectType"`
-		ObjectId   ObjectId       `json:"objectId"`
-		Version    SequenceNumber `json:"version"`
+		Sender     Address         `json:"sender"`
+		ObjectType string          `json:"objectType"`
+		ObjectId   ObjectId        `json:"objectId"`
+		Version    decimal.Decimal `json:"version"`
 	} `json:"deleted,omitempty"`
 	/// Wrapped object
 	Wrapped *struct {
-		Sender     Address        `json:"sender"`
-		ObjectType string         `json:"objectType"`
-		ObjectId   ObjectId       `json:"objectId"`
-		Version    SequenceNumber `json:"version"`
+		Sender     Address         `json:"sender"`
+		ObjectType string          `json:"objectType"`
+		ObjectId   ObjectId        `json:"objectId"`
+		Version    decimal.Decimal `json:"version"`
 	} `json:"wrapped,omitempty"`
 	/// New object creation
 	Created *struct {
-		Sender     Address        `json:"sender"`
-		Owner      ObjectOwner    `json:"owner"`
-		ObjectType string         `json:"objectType"`
-		ObjectId   ObjectId       `json:"objectId"`
-		Version    SequenceNumber `json:"version"`
-		Digest     ObjectDigest   `json:"digest"`
+		Sender     Address         `json:"sender"`
+		Owner      ObjectOwner     `json:"owner"`
+		ObjectType string          `json:"objectType"`
+		ObjectId   ObjectId        `json:"objectId"`
+		Version    decimal.Decimal `json:"version"`
+		Digest     ObjectDigest    `json:"digest"`
 	} `json:"created,omitempty"`
 }
 
@@ -230,8 +230,8 @@ type SuiTransactionBlockResponse struct {
 	RawTransaction          []byte                     `json:"rawTransaction,omitempty"`
 	Effects                 *TransactionEffects        `json:"effects,omitempty"`
 	Events                  []SuiEvent                 `json:"events,omitempty"`
-	TimestampMs             *uint64                    `json:"timestampMs,omitempty"`
-	Checkpoint              *SequenceNumber            `json:"checkpoint,omitempty"`
+	TimestampMs             *decimal.Decimal           `json:"timestampMs,omitempty"`
+	Checkpoint              *decimal.Decimal           `json:"checkpoint,omitempty"`
 	ConfirmedLocalExecution *bool                      `json:"confirmedLocalExecution,omitempty"`
 	ObjectChanges           []TagJson[SuiObjectChange] `json:"objectChanges,omitempty"`
 	BalanceChanges          []BalanceChange            `json:"balanceChanges,omitempty"`

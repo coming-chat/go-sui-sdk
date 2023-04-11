@@ -63,10 +63,7 @@ func M1Account(t *testing.T) *account.Account {
 }
 
 func M1Address(t *testing.T) *types.Address {
-	a, err := account.NewAccountWithMnemonic(M1Mnemonic)
-	require.NoError(t, err)
-	addr, _ := types.NewAddressFromHex(a.Address)
-	return addr
+	return Address
 }
 
 func Signer(t *testing.T) *account.Account {

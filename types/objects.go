@@ -1,6 +1,9 @@
 package types
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/shopspring/decimal"
+)
 
 type ObjectDigest = string
 
@@ -84,9 +87,9 @@ type TypeOrigin struct {
 }
 
 type SuiObjectData struct {
-	ObjectId ObjectId       `json:"objectId"`
-	Version  SequenceNumber `json:"version"`
-	Digest   ObjectDigest   `json:"digest"`
+	ObjectId ObjectId        `json:"objectId"`
+	Version  decimal.Decimal `json:"version"`
+	Digest   ObjectDigest    `json:"digest"`
 	/**
 	 * Type of the object, default to be undefined unless SuiObjectDataOptions.showType is set to true
 	 */
@@ -114,7 +117,7 @@ type SuiObjectData struct {
 	 * the present storage gas price.
 	 * Default to be undefined unless SuiObjectDataOptions.showStorageRebate is set to true
 	 */
-	StorageRebate *int64 `json:"storageRebate,omitempty"`
+	StorageRebate *decimal.Decimal `json:"storageRebate,omitempty"`
 	/**
 	 * Display metadata for this object, default to be undefined unless SuiObjectDataOptions.showDisplay is set to true
 	 * This can also be None if the struct type does not have Display defined
@@ -149,7 +152,10 @@ type SuiObjectResponseError struct {
 		Version  SequenceNumber `json:"version"`
 		Digest   ObjectDigest   `json:"digest"`
 	} `json:"deleted,omitempty"`
-	UnKnown *struct{} `json:"unKnown"`
+	UnKnown      *struct{} `json:"unKnown"`
+	DisplayError *struct {
+		Error string `json:"error"`
+	} `json:"displayError"`
 }
 
 func (e SuiObjectResponseError) Tag() string {

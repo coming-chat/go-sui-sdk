@@ -23,12 +23,6 @@ type Coin struct {
 	PreviousTransaction TransactionDigest `json:"previousTransaction"`
 }
 
-type PaginatedCoins struct {
-	Data        []Coin    `json:"data"`
-	NextCursor  *ObjectId `json:"nextCursor,omitempty"`
-	HasNextPage bool      `json:"hasNextPage"`
-}
-
 type CoinPage = Page[Coin, ObjectId]
 
 type Balance struct {

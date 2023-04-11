@@ -29,7 +29,7 @@ func TestClient_GetAndCalculateRollingAverageApys(t *testing.T) {
 }
 
 func TestGetDelegatedStakes(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 
 	stakes, err := cli.GetStakes(context.Background(), *M1Address(t))
 	require.Nil(t, err)
@@ -42,7 +42,7 @@ func TestGetDelegatedStakes(t *testing.T) {
 }
 
 func TestGetStakesByIds(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 
 	id1, _ := types.NewHexData("0x4ad2f0a918a241d6a19573212aeb56947bb9255a14e921a7ec78b262536826f0")
 	stakes, err := cli.GetStakesByIds(context.Background(), []types.ObjectId{*id1})
@@ -71,7 +71,7 @@ func TestRequestAddDelegation(t *testing.T) {
 }
 
 func requestAddDelegation(t *testing.T, coinIds []string, amount uint64, validatorAddress string) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 	acc := M1Account(t)
 	addr, _ := types.NewAddressFromHex(acc.Address)
 
@@ -103,7 +103,7 @@ func TestRequestWithdrawDelegation(t *testing.T) {
 }
 
 func requestWithdrawDelegation(t *testing.T, stakedId, gasId string) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 	acc := M1Account(t)
 	addr, _ := types.NewAddressFromHex(acc.Address)
 

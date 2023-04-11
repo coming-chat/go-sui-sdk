@@ -47,8 +47,8 @@ func (c *Client) GetCoins(
 	coinType *string,
 	cursor *types.ObjectId,
 	limit uint,
-) (*types.PaginatedCoins, error) {
-	var resp types.PaginatedCoins
+) (*types.CoinPage, error) {
+	var resp types.CoinPage
 	return &resp, c.CallContext(ctx, &resp, getCoins, owner, coinType, cursor, limit)
 }
 

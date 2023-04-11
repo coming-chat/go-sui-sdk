@@ -12,7 +12,7 @@ import (
 )
 
 //func TestClient_BatchGetTransaction(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := ChainClient(t)
 //	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
 //	require.NoError(t, err)
 //	object, err := chain.GetObject(context.TODO(), coins.Data[0].CoinObjectId, nil)
@@ -53,7 +53,7 @@ import (
 //}
 
 func TestClient_DryRunTransaction(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
 	coin, err := coins.PickCoinNoLess(2000)
@@ -98,7 +98,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 // This test case will affect the real coin in the test case of account
 // temporary disabled
 //func TestClient_ExecuteTransactionSerializedSig(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := ChainClient(t)
 //	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 //	require.NoError(t, err)
 //	coin, err := coins.PickCoinNoLess(2000)
@@ -113,7 +113,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 //}
 
 //func TestClient_ExecuteTransaction(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := ChainClient(t)
 //	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 //	require.NoError(t, err)
 //	coin, err := coins.PickCoinNoLess(2000)
@@ -128,7 +128,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 //}
 
 func TestClient_BatchGetObjectsOwnedByAddress(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 
 	options := types.SuiObjectDataOptions{
 		ShowType:    true,
@@ -141,7 +141,7 @@ func TestClient_BatchGetObjectsOwnedByAddress(t *testing.T) {
 }
 
 func TestClient_GetSuiCoinsOwnedByAddress(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	type args struct {
 		ctx     context.Context
 		address types.Address
@@ -176,7 +176,7 @@ func TestClient_GetSuiCoinsOwnedByAddress(t *testing.T) {
 }
 
 func TestClient_GetCoinMetadata(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	metadata, err := chain.GetCoinMetadata(context.TODO(), types.SuiCoinType)
 	require.Nil(t, err)
 	t.Logf("%+v", metadata)
@@ -184,7 +184,7 @@ func TestClient_GetCoinMetadata(t *testing.T) {
 
 // TestClient_Pay need another coin type(not default sui coin)
 //func TestClient_Pay(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := ChainClient(t)
 //	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
 //	require.NoError(t, err)
 //	inputCoins := []types.ObjectId{coins.Data[0].CoinObjectId}
@@ -198,7 +198,7 @@ func TestClient_GetCoinMetadata(t *testing.T) {
 //}
 
 //func TestClient_PaySui(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := ChainClient(t)
 //
 //	recipients := []types.Address{*Address}
 //
@@ -235,7 +235,7 @@ func TestClient_GetBalance(t *testing.T) {
 }
 
 //func TestClient_DevInspectMoveCall(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := ChainClient(t)
 //
 //	packageId, err := types.NewHexData("0xb08873e9b44960657723604e4f6bc70c2d1c2b50")
 //	require.NoError(t, err)
@@ -261,7 +261,7 @@ func TestClient_GetBalance(t *testing.T) {
 //}
 
 //func TestClient_DevInspectTransactionBlock(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := ChainClient(t)
 //	packageId, err := types.NewAddressFromHex("0x2")
 //	require.NoError(t, err)
 //	require.NoError(t, err)
@@ -295,7 +295,7 @@ func TestClient_GetBalance(t *testing.T) {
 //}
 
 func TestClient_GetCoins(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	defaultCoinType := types.SuiCoinType
 	coins, err := chain.GetCoins(context.TODO(), *Address, &defaultCoinType, nil, 1)
 	require.NoError(t, err)
@@ -303,7 +303,7 @@ func TestClient_GetCoins(t *testing.T) {
 }
 
 func TestClient_GetAllCoins(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	type args struct {
 		ctx     context.Context
 		address types.Address
@@ -344,7 +344,7 @@ func TestClient_GetAllCoins(t *testing.T) {
 }
 
 //func TestClient_SplitCoin(t *testing.T) {
-//	cli := DevnetClient(t)
+//	cli := ChainClient(t)
 //
 //	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 //	require.NoError(t, err)
@@ -368,7 +368,7 @@ func TestClient_GetAllCoins(t *testing.T) {
 //}
 
 //func TestClient_SplitCoinEqual(t *testing.T) {
-//	cli := DevnetClient(t)
+//	cli := ChainClient(t)
 //
 //	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 //	require.NoError(t, err)
@@ -410,7 +410,7 @@ func TestClient_GetTransaction(t *testing.T) {
 }
 
 func TestBatchCall_GetObject(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 
 	if false {
 		// get sepcified object
@@ -443,7 +443,7 @@ func TestClient_GetObject(t *testing.T) {
 		ctx   context.Context
 		objID types.ObjectId
 	}
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
 	require.NoError(t, err)
 
@@ -480,7 +480,7 @@ func TestClient_GetObject(t *testing.T) {
 }
 
 func TestClient_MultiGetObjects(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
 	require.NoError(t, err)
 	if len(coins.Data) != 0 {
@@ -502,7 +502,7 @@ func TestClient_MultiGetObjects(t *testing.T) {
 }
 
 func TestClient_GetOwnedObjects(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 
 	obj, err := types.NewHexData("0x02")
 	require.Nil(t, err)
@@ -524,7 +524,7 @@ func TestClient_GetOwnedObjects(t *testing.T) {
 }
 
 func TestBatchGetObjectsOwnedByAddress(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 	require.NoError(t, err)
 
@@ -532,7 +532,7 @@ func TestBatchGetObjectsOwnedByAddress(t *testing.T) {
 }
 
 func TestClient_GetTotalSupply(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	type args struct {
 		ctx      context.Context
 		coinType string
@@ -568,14 +568,14 @@ func TestClient_GetTotalSupply(t *testing.T) {
 	}
 }
 func TestClient_GetTotalTransactionBlocks(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 	res, err := cli.GetTotalTransactionBlocks(context.Background())
 	require.Nil(t, err)
 	t.Log(res)
 }
 
 //func TestClient_Publish(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := ChainClient(t)
 //	dmens, err := types.NewBase64Data(DmensDmensB64)
 //	require.NoError(t, err)
 //	profile, err := types.NewBase64Data(DmensProfileB64)
@@ -631,7 +631,7 @@ func TestClient_GetTotalTransactionBlocks(t *testing.T) {
 //}
 
 func TestClient_TryGetPastObject(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 	objId, err := types.NewHexData("0x11462c88e74bb00079e3c043efb664482ee4551744ee691c7623b98503cb3f4d")
 	require.Nil(t, err)
 	data, err := cli.TryGetPastObject(context.Background(), *objId, 903, nil)
@@ -640,7 +640,7 @@ func TestClient_TryGetPastObject(t *testing.T) {
 }
 
 func TestClient_GetEvents(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 	digest := "bWEVPGbA81GDJ4655fFuiabV11Z2gSgJyqfURXyNL6G"
 	res, err := cli.GetEvents(context.Background(), digest)
 	require.NoError(t, err)
@@ -648,14 +648,14 @@ func TestClient_GetEvents(t *testing.T) {
 }
 
 func TestClient_GetReferenceGasPrice(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 	gasPrice, err := cli.GetReferenceGasPrice(context.Background())
 	require.Nil(t, err)
 	t.Logf("current gas price = %v", gasPrice)
 }
 
 func TestClient_DevInspectTransactionBlock(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	price, err := chain.GetReferenceGasPrice(context.TODO())
 	require.NoError(t, err)
 	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
@@ -713,7 +713,7 @@ func TestClient_DevInspectTransactionBlock(t *testing.T) {
 }
 
 func TestClient_QueryTransactionBlocks(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 	limit := uint(10)
 	type args struct {
 		ctx             context.Context
@@ -768,7 +768,7 @@ func TestClient_QueryTransactionBlocks(t *testing.T) {
 }
 
 func TestClient_QueryEvents(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 	limit := uint(10)
 	type args struct {
 		ctx             context.Context

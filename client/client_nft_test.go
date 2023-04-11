@@ -1,7 +1,7 @@
 package client
 
 //func TestMintNFT(t *testing.T) {
-//	cli := DevnetClient(t)
+//	cli := ChainClient(t)
 //
 //	var (
 //		timeNow = time.Now().Format("06-01-02 15:04")
@@ -28,7 +28,7 @@ package client
 //}
 //
 //func TestGetDevNFTs(t *testing.T) {
-//	cli := DevnetClient(t)
+//	cli := ChainClient(t)
 //
 //	nfts, err := cli.GetNFTsOwnedByAddress(context.TODO(), *Address)
 //	require.NoError(t, err)

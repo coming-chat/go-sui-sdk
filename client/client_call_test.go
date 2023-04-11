@@ -314,7 +314,7 @@ func TestClient_GetAllCoins(t *testing.T) {
 		name    string
 		chain   *Client
 		args    args
-		want    *types.PaginatedCoins
+		want    *types.CoinPage
 		wantErr bool
 	}{
 		{

@@ -394,11 +394,15 @@ func TestClient_GetAllCoins(t *testing.T) {
 //}
 
 func TestClient_GetTransaction(t *testing.T) {
-	cli := DevnetClient(t)
-	digest := "5rMRjX2HWFcWeeNUvMBmpBEa44zsVV7JSNayrGwhVRPy"
+	cli := TestnetClient(t)
+	digest := "8RxkAuuV4kfL2MXY4BSmazX3v2ihVdDM1HaMsU1SiV3J"
 	resp, err := cli.GetTransactionBlock(
 		context.Background(), digest, types.SuiTransactionBlockResponseOptions{
-			ShowInput: false,
+			ShowInput:          false,
+			ShowEffects:        true,
+			ShowObjectChanges:  true,
+			ShowBalanceChanges: true,
+			ShowEvents:         true,
 		},
 	)
 	require.NoError(t, err)

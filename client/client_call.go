@@ -4,8 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/shopspring/decimal"
-
 	"github.com/coming-chat/go-sui/types"
 )
 
@@ -165,8 +163,8 @@ func (c *Client) GetTransactionBlock(
 	return &resp, c.CallContext(ctx, &resp, getTransactionBlock, digest, options)
 }
 
-func (c *Client) GetReferenceGasPrice(ctx context.Context) (*decimal.Decimal, error) {
-	var resp decimal.Decimal
+func (c *Client) GetReferenceGasPrice(ctx context.Context) (*types.SafeSuiBigInt[uint64], error) {
+	var resp types.SafeSuiBigInt[uint64]
 	return &resp, c.CallContext(ctx, &resp, getReferenceGasPrice)
 }
 
@@ -189,7 +187,7 @@ func (c *Client) DevInspectTransactionBlock(
 	ctx context.Context,
 	senderAddress types.Address,
 	txByte types.Base64Data,
-	gasPrice *decimal.Decimal,
+	gasPrice *types.SafeSuiBigInt[uint64],
 	epoch *uint64,
 ) (*types.DevInspectResults, error) {
 	var resp types.DevInspectResults
@@ -218,7 +216,7 @@ func (c *Client) TransferObject(
 	signer, recipient types.Address,
 	objID types.ObjectId,
 	gas *types.ObjectId,
-	gasBudget decimal.Decimal,
+	gasBudget types.SafeSuiBigInt[uint64],
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, transferObject, signer, objID, gas, gasBudget, recipient)
@@ -227,7 +225,7 @@ func (c *Client) TransferObject(
 // TransferSui Create an unsigned transaction to send SUI coin object to a Sui address. The SUI object is also used as the gas object.
 func (c *Client) TransferSui(
 	ctx context.Context, signer, recipient types.Address, suiObjID types.ObjectId, amount,
-	gasBudget decimal.Decimal,
+	gasBudget types.SafeSuiBigInt[uint64],
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, transferSui, signer, suiObjID, gasBudget, recipient, amount)
@@ -238,7 +236,7 @@ func (c *Client) PayAllSui(
 	ctx context.Context,
 	signer, recipient types.Address,
 	inputCoins []types.ObjectId,
-	gasBudget decimal.Decimal,
+	gasBudget types.SafeSuiBigInt[uint64],
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, payAllSui, signer, inputCoins, recipient, gasBudget)
@@ -249,9 +247,9 @@ func (c *Client) Pay(
 	signer types.Address,
 	inputCoins []types.ObjectId,
 	recipients []types.Address,
-	amount []decimal.Decimal,
+	amount []types.SafeSuiBigInt[uint64],
 	gas *types.ObjectId,
-	gasBudget decimal.Decimal,
+	gasBudget types.SafeSuiBigInt[uint64],
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, pay, signer, inputCoins, recipients, amount, gas, gasBudget)
@@ -262,8 +260,8 @@ func (c *Client) PaySui(
 	signer types.Address,
 	inputCoins []types.ObjectId,
 	recipients []types.Address,
-	amount []decimal.Decimal,
-	gasBudget decimal.Decimal,
+	amount []types.SafeSuiBigInt[uint64],
+	gasBudget types.SafeSuiBigInt[uint64],
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, paySui, signer, inputCoins, recipients, amount, gasBudget)
@@ -274,9 +272,9 @@ func (c *Client) SplitCoin(
 	ctx context.Context,
 	signer types.Address,
 	Coin types.ObjectId,
-	splitAmounts []uint64,
+	splitAmounts []types.SafeSuiBigInt[uint64],
 	gas *types.ObjectId,
-	gasBudget uint64,
+	gasBudget types.SafeSuiBigInt[uint64],
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, splitCoin, signer, Coin, splitAmounts, gas, gasBudget)
@@ -287,9 +285,9 @@ func (c *Client) SplitCoinEqual(
 	ctx context.Context,
 	signer types.Address,
 	Coin types.ObjectId,
-	splitCount uint64,
+	splitCount types.SafeSuiBigInt[uint64],
 	gas *types.ObjectId,
-	gasBudget uint64,
+	gasBudget types.SafeSuiBigInt[uint64],
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, splitCoinEqual, signer, Coin, splitCount, gas, gasBudget)
@@ -301,7 +299,7 @@ func (c *Client) MergeCoins(
 	signer types.Address,
 	primaryCoin, coinToMerge types.ObjectId,
 	gas *types.ObjectId,
-	gasBudget uint64,
+	gasBudget types.SafeSuiBigInt[uint64],
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, mergeCoins, signer, primaryCoin, coinToMerge, gas, gasBudget)
@@ -331,7 +329,7 @@ func (c *Client) MoveCall(
 	typeArgs []string,
 	arguments []any,
 	gas *types.ObjectId,
-	gasBudget uint64,
+	gasBudget types.SafeSuiBigInt[uint64],
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(

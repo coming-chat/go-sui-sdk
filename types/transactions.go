@@ -11,7 +11,7 @@ const (
 	TxnRequestTypeWaitForLocalExecution ExecuteTransactionRequestType = "WaitForLocalExecution"
 )
 
-type EpochId = string
+type EpochId = uint64
 
 type GasCostSummary struct {
 	ComputationCost         decimal.Decimal `json:"computationCost"`

@@ -1,10 +1,8 @@
 package types
 
-import "github.com/shopspring/decimal"
-
 type EventId struct {
-	TxDigest TransactionDigest `json:"txDigest"`
-	EventSeq decimal.Decimal   `json:"eventSeq"`
+	TxDigest TransactionDigest     `json:"txDigest"`
+	EventSeq SafeSuiBigInt[uint64] `json:"eventSeq"`
 }
 
 type SuiEvent struct {
@@ -20,8 +18,8 @@ type SuiEvent struct {
 	// Parsed json value of the event
 	ParsedJson interface{} `json:"parsedJson,omitempty"`
 	// Base 58 encoded bcs bytes of the move event
-	Bcs         string           `json:"bcs"`
-	TimestampMs *decimal.Decimal `json:"timestampMs,omitempty"`
+	Bcs         string                 `json:"bcs"`
+	TimestampMs *SafeSuiBigInt[uint64] `json:"timestampMs,omitempty"`
 }
 
 type EventFilter struct {
@@ -49,9 +47,9 @@ type EventFilter struct {
 	/// Return events emitted in [start_time, end_time] interval
 	TimeRange *struct {
 		/// left endpoint of time interval, milliseconds since epoch, inclusive
-		StartTime uint64 `json:"startTime"`
+		StartTime SafeSuiBigInt[uint64] `json:"startTime"`
 		/// right endpoint of time interval, milliseconds since epoch, exclusive
-		EndTime uint64 `json:"endTime"`
+		EndTime SafeSuiBigInt[uint64] `json:"endTime"`
 	} `json:"TimeRange,omitempty"`
 
 	All *[]EventFilter `json:"All,omitempty"`

@@ -15,9 +15,48 @@ type TransactionEffectsDigest = string
 
 type TransactionEventDigest = string
 
-type SequenceNumber = decimal.Decimal
+type SequenceNumber = uint64
 
 type SuiBigInt = decimal.Decimal
+
+type SafeSuiBigInt[T ~int64 | ~uint64] struct {
+	data T
+}
+
+func (s *SafeSuiBigInt[T]) UnmarshalJSON(data []byte) error {
+	var numberString string
+	err := json.Unmarshal(data, &numberString)
+	if err != nil {
+		return err
+	}
+	num, err := decimal.NewFromString(numberString)
+	if err != nil {
+		return err
+	}
+
+	if num.BigInt().IsInt64() {
+		s.data = T(num.BigInt().Int64())
+		return nil
+	}
+
+	if num.BigInt().IsUint64() {
+		s.data = T(num.BigInt().Uint64())
+		return nil
+	}
+	return fmt.Errorf("json data [%s] is not T", string(data))
+}
+
+func (s SafeSuiBigInt[T]) MarshalJSON() ([]byte, error) {
+	return decimal.NewFromInt(int64(s.data)).MarshalJSON()
+}
+
+func (s SafeSuiBigInt[T]) Int64() int64 {
+	return int64(s.data)
+}
+
+func (s SafeSuiBigInt[T]) Uint64() uint64 {
+	return uint64(s.data)
+}
 
 // export const ObjectId = string();
 // export type ObjectId = Infer<typeof ObjectId>;
@@ -30,7 +69,7 @@ type ObjectOwnerInternal struct {
 	ObjectOwner  *Address `json:"ObjectOwner,omitempty"`
 	SingleOwner  *Address `json:"SingleOwner,omitempty"`
 	Shared       *struct {
-		InitialSharedVersion uint64 `json:"initial_shared_version"`
+		InitialSharedVersion SequenceNumber `json:"initial_shared_version"`
 	} `json:"Shared,omitempty"`
 }
 

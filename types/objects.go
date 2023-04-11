@@ -1,9 +1,5 @@
 package types
 
-import (
-	"github.com/shopspring/decimal"
-)
-
 type ObjectDigest = string
 
 type SuiObjectRef struct {
@@ -12,15 +8,15 @@ type SuiObjectRef struct {
 	/** Hex code as string representing the object id */
 	ObjectId string `json:"objectId"`
 	/** Object version */
-	Version int64 `json:"version"`
+	Version SequenceNumber `json:"version"`
 }
 
 type SuiGasData struct {
 	Payment []SuiObjectRef `json:"payment"`
 	/** Gas Object's owner */
-	Owner  string `json:"owner"`
-	Price  int64  `json:"price"`
-	Budget int64  `json:"budget"`
+	Owner  string                `json:"owner"`
+	Price  SafeSuiBigInt[uint64] `json:"price"`
+	Budget SafeSuiBigInt[uint64] `json:"budget"`
 }
 
 type SuiParsedData struct {
@@ -86,9 +82,9 @@ type TypeOrigin struct {
 }
 
 type SuiObjectData struct {
-	ObjectId ObjectId        `json:"objectId"`
-	Version  decimal.Decimal `json:"version"`
-	Digest   ObjectDigest    `json:"digest"`
+	ObjectId ObjectId                      `json:"objectId"`
+	Version  SafeSuiBigInt[SequenceNumber] `json:"version"`
+	Digest   ObjectDigest                  `json:"digest"`
 	/**
 	 * Type of the object, default to be undefined unless SuiObjectDataOptions.showType is set to true
 	 */
@@ -116,7 +112,7 @@ type SuiObjectData struct {
 	 * the present storage gas price.
 	 * Default to be undefined unless SuiObjectDataOptions.showStorageRebate is set to true
 	 */
-	StorageRebate *decimal.Decimal `json:"storageRebate,omitempty"`
+	StorageRebate *SafeSuiBigInt[uint64] `json:"storageRebate,omitempty"`
 	/**
 	 * Display metadata for this object, default to be undefined unless SuiObjectDataOptions.showDisplay is set to true
 	 * This can also be None if the struct type does not have Display defined
@@ -170,20 +166,15 @@ type SuiObjectResponse struct {
 	Error *TagJson[SuiObjectResponseError] `json:"error,omitempty"`
 }
 
+type CheckpointSequenceNumber = uint64
 type CheckpointedObjectId struct {
-	ObjectId     ObjectId `json:"objectId"`
-	AtCheckpoint *int     `json:"atCheckpoint"`
-}
-
-type PaginatedObjectsResponse struct {
-	Data []SuiObjectResponse `json:"data,omitempty"`
-	// NextCursor  *CheckpointedObjectId `json:"nextCursor,omitempty"`
-	NextCursor  interface{} `json:"nextCursor,omitempty"` // will update when testnet after 0.30.0
-	HasNextPage bool        `json:"hasNextPage"`
+	ObjectId     ObjectId                                 `json:"objectId"`
+	AtCheckpoint *SafeSuiBigInt[CheckpointSequenceNumber] `json:"atCheckpoint"`
 }
 
 type ObjectsPage = Page[SuiObjectResponse, ObjectId]
 
+// TODO need use Enum
 type SuiObjectDataFilter struct {
 	Package    *ObjectId   `json:"Package,omitempty"`
 	MoveModule *MoveModule `json:"MoveModule,omitempty"`
@@ -197,6 +188,7 @@ type SuiObjectResponseQuery struct {
 
 type SuiPastObjectResponse = TagJson[SuiPastObject]
 
+// TODO need test VersionNotFound
 type SuiPastObject struct {
 	/// The object exists and is found with this version
 	VersionFound *SuiObjectData `json:"VersionFound,omitempty"`

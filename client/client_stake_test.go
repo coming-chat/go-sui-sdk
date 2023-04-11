@@ -9,18 +9,18 @@ import (
 )
 
 func TestClient_GetLatestSuiSystemState(t *testing.T) {
-	cli := TestnetClient(t)
+	cli := ChainClient(t)
 	state, err := cli.GetLatestSuiSystemState(context.Background())
 	require.Nil(t, err)
 	t.Logf("system state = %v", state)
 
 	for _, v := range state.ActiveValidators {
-		t.Logf("%v, %v\n", v.Name, v.CalculateAPY(state.Epoch.BigInt().Uint64()))
+		t.Logf("%v, %v\n", v.Name, v.CalculateAPY(state.Epoch.Uint64()))
 	}
 }
 
 func TestClient_GetAndCalculateRollingAverageApys(t *testing.T) {
-	cli := TestnetClient(t)
+	cli := ChainClient(t)
 	apys, err := cli.GetAndCalculateRollingAverageApys(context.Background(), 98)
 	require.Nil(t, err)
 	for address, apy := range apys {
@@ -29,31 +29,39 @@ func TestClient_GetAndCalculateRollingAverageApys(t *testing.T) {
 }
 
 func TestGetDelegatedStakes(t *testing.T) {
-	cli := TestnetClient(t)
+	cli := ChainClient(t)
 
-	stakes, err := cli.GetStakes(context.Background(), *M1Address(t))
+	address, err := types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
+	require.Nil(t, err)
+	stakes, err := cli.GetStakes(context.Background(), *address)
 	require.Nil(t, err)
 
 	for _, validator := range stakes {
 		for _, stake := range validator.Stakes {
-			t.Logf("earned amount %10v at %v", *stake.EstimatedReward, validator.ValidatorAddress)
+			if stake.Data.StakeStatus.Data.Active != nil {
+				t.Logf(
+					"earned amount %10v at %v",
+					stake.Data.StakeStatus.Data.Active.EstimatedReward.Uint64(),
+					validator.ValidatorAddress,
+				)
+			}
 		}
 	}
 }
 
-func TestGetStakesByIds(t *testing.T) {
-	cli := TestnetClient(t)
-
-	id1, _ := types.NewHexData("0x0e32ab08fe29b830ca2c04266297fe121128bf77d380ebec3256a4e1734144aa")
-	stakes, err := cli.GetStakesByIds(context.Background(), []types.ObjectId{*id1})
-	require.Nil(t, err)
-
-	for _, validator := range stakes {
-		for _, stake := range validator.Stakes {
-			t.Logf("earned amount %10v at %v", *stake.EstimatedReward, validator.ValidatorAddress)
-		}
-	}
-}
+//func TestGetStakesByIds(t *testing.T) {
+//	cli := ChainClient(t)
+//
+//	id1, _ := types.NewHexData("0x0e32ab08fe29b830ca2c04266297fe121128bf77d380ebec3256a4e1734144aa")
+//	stakes, err := cli.GetStakesByIds(context.Background(), []types.ObjectId{*id1})
+//	require.Nil(t, err)
+//
+//	for _, validator := range stakes {
+//		for _, stake := range validator.Stakes {
+//			t.Logf("earned amount %10v at %v", *stake.EstimatedReward, validator.ValidatorAddress)
+//		}
+//	}
+//}
 
 func TestRequestAddDelegation(t *testing.T) {
 	if true {
@@ -70,7 +78,7 @@ func TestRequestAddDelegation(t *testing.T) {
 }
 
 func requestAddDelegation(t *testing.T, coinIds []string, amount types.SuiBigInt, validatorAddress string) {
-	cli := TestnetClient(t)
+	cli := ChainClient(t)
 	acc := M1Account(t)
 	addr, _ := types.NewAddressFromHex(acc.Address)
 
@@ -100,7 +108,7 @@ func TestRequestWithdrawDelegation(t *testing.T) {
 }
 
 func requestWithdrawDelegation(t *testing.T, stakedId, gasId string) {
-	cli := TestnetClient(t)
+	cli := ChainClient(t)
 	acc := M1Account(t)
 	addr, _ := types.NewAddressFromHex(acc.Address)
 

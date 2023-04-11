@@ -654,7 +654,7 @@ func TestClient_TryGetPastObject(t *testing.T) {
 
 func TestClient_GetEvents(t *testing.T) {
 	cli := ChainClient(t)
-	digest := "bWEVPGbA81GDJ4655fFuiabV11Z2gSgJyqfURXyNL6G"
+	digest := "8WvqRRZ96u3UjY24WcjmZtUZyugXUagiQNkpRe97aKRR"
 	res, err := cli.GetEvents(context.Background(), digest)
 	require.NoError(t, err)
 	t.Log(res)

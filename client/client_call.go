@@ -238,7 +238,7 @@ func (c *Client) PayAllSui(
 	ctx context.Context,
 	signer, recipient types.Address,
 	inputCoins []types.ObjectId,
-	gasBudget uint64,
+	gasBudget decimal.Decimal,
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, payAllSui, signer, inputCoins, recipient, gasBudget)

@@ -64,6 +64,10 @@ func (s SafeSuiBigInt[T]) Uint64() uint64 {
 	return uint64(s.data)
 }
 
+func (s *SafeSuiBigInt[T]) Decimal() decimal.Decimal {
+	return decimal.NewFromInt(s.Int64())
+}
+
 // export const ObjectId = string();
 // export type ObjectId = Infer<typeof ObjectId>;
 

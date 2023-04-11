@@ -221,7 +221,7 @@ func (c *Client) TransferObject(
 	signer, recipient types.Address,
 	objID types.ObjectId,
 	gas *types.ObjectId,
-	gasBudget uint64,
+	gasBudget decimal.Decimal,
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, transferObject, signer, objID, gas, gasBudget, recipient)
@@ -230,7 +230,7 @@ func (c *Client) TransferObject(
 // TransferSui Create an unsigned transaction to send SUI coin object to a Sui address. The SUI object is also used as the gas object.
 func (c *Client) TransferSui(
 	ctx context.Context, signer, recipient types.Address, suiObjID types.ObjectId, amount,
-	gasBudget uint64,
+	gasBudget decimal.Decimal,
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, transferSui, signer, suiObjID, gasBudget, recipient, amount)

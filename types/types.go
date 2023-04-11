@@ -240,9 +240,3 @@ func IsSameStringAddress(addr1, addr2 string) bool {
 	addr1 = strings.TrimLeft(addr1, "0")
 	return strings.TrimLeft(addr1, "0") == strings.TrimLeft(addr2, "0")
 }
-
-type Page[T SuiTransactionBlockResponse | SuiEvent, C TransactionDigest | EventId] struct {
-	Data        []T  `json:"data"`
-	NextCursor  *C   `json:"nextCursor,omitempty"`
-	HasNextPage bool `json:"hasNextPage"`
-}

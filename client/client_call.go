@@ -204,9 +204,6 @@ func (c *Client) DryRunTransaction(
 	return &resp, c.CallContext(ctx, &resp, dryRunTransactionBlock, tx.TxBytes)
 }
 
-// MARK - Write Function
-
-// TODO
 func (c *Client) ExecuteTransactionBlock(
 	ctx context.Context, txBytes types.Base64Data, signatures []any,
 	options *types.SuiTransactionBlockResponseOptions, requestType types.ExecuteTransactionRequestType,

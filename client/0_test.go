@@ -42,6 +42,20 @@ func DevnetClient(t *testing.T) *Client {
 	return c
 }
 
+func ChainClient(t *testing.T) *Client {
+	suiEnv := os.Getenv("SUI_NETWORK")
+	switch suiEnv {
+	case "testnet":
+		return TestnetClient(t)
+	case "devnet":
+		return DevnetClient(t)
+	case "":
+		fallthrough
+	default:
+		return TestnetClient(t)
+	}
+}
+
 func M1Account(t *testing.T) *account.Account {
 	a, err := account.NewAccountWithMnemonic(M1Mnemonic)
 	require.NoError(t, err)

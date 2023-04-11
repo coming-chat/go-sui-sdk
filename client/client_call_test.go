@@ -221,14 +221,14 @@ func TestClient_GetCoinMetadata(t *testing.T) {
 //}
 
 func TestClient_GetAllBalances(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	balances, err := chain.GetAllBalances(context.TODO(), *Address)
 	require.NoError(t, err)
 	t.Logf("%#v", balances)
 }
 
 func TestClient_GetBalance(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	balance, err := chain.GetBalance(context.TODO(), *Address, "")
 	require.NoError(t, err)
 	t.Logf("%#v", balance)

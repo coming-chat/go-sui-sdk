@@ -59,8 +59,8 @@ func (c *Client) GetAllCoins(
 	owner types.Address,
 	cursor *types.ObjectId,
 	limit uint,
-) (*types.PaginatedCoins, error) {
-	var resp types.PaginatedCoins
+) (*types.CoinPage, error) {
+	var resp types.CoinPage
 	return &resp, c.CallContext(ctx, &resp, getAllCoins, owner, cursor, limit)
 }
 

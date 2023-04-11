@@ -1,8 +1,10 @@
 package types
 
+import "github.com/shopspring/decimal"
+
 type EventId struct {
 	TxDigest TransactionDigest `json:"txDigest"`
-	EventSeq SequenceNumber    `json:"eventSeq"`
+	EventSeq decimal.Decimal   `json:"eventSeq"`
 }
 
 type SuiEvent struct {
@@ -18,8 +20,8 @@ type SuiEvent struct {
 	// Parsed json value of the event
 	ParsedJson interface{} `json:"parsedJson,omitempty"`
 	// Base 58 encoded bcs bytes of the move event
-	Bcs         string `json:"bcs"`
-	TimestampMs *int64 `json:"timestampMs,omitempty"`
+	Bcs         string           `json:"bcs"`
+	TimestampMs *decimal.Decimal `json:"timestampMs,omitempty"`
 }
 
 type EventFilter struct {

@@ -24,12 +24,8 @@ type SafeSuiBigInt[T ~int64 | ~uint64] struct {
 }
 
 func (s *SafeSuiBigInt[T]) UnmarshalJSON(data []byte) error {
-	var numberString string
-	err := json.Unmarshal(data, &numberString)
-	if err != nil {
-		return err
-	}
-	num, err := decimal.NewFromString(numberString)
+	num := decimal.NewFromInt(0)
+	err := num.UnmarshalJSON(data)
 	if err != nil {
 		return err
 	}

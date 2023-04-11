@@ -2,6 +2,7 @@ package types
 
 import (
 	"errors"
+	"github.com/shopspring/decimal"
 	"math/big"
 	"sort"
 )
@@ -28,11 +29,11 @@ type PaginatedCoins struct {
 	HasNextPage bool         `json:"hasNextPage"`
 }
 
-type CoinBalance struct {
-	CoinType        string      `json:"coinType"`
-	CoinObjectCount uint64      `json:"coinObjectCount"`
-	TotalBalance    uint64      `json:"totalBalance"`
-	LockedBalance   interface{} `json:"lockedBalance"`
+type Balance struct {
+	CoinType        string                              `json:"coinType"`
+	CoinObjectCount uint64                              `json:"coinObjectCount"`
+	TotalBalance    decimal.Decimal                     `json:"totalBalance"`
+	LockedBalance   map[decimal.Decimal]decimal.Decimal `json:"lockedBalance"`
 }
 
 type CoinSupply struct {
@@ -142,13 +143,15 @@ func (cs Coins) PickCoins(amount *big.Int, pickMethod int) (Coins, error) {
 	} else {
 		sortedCoins = make(Coins, len(cs))
 		copy(sortedCoins, cs)
-		sort.Slice(sortedCoins, func(i, j int) bool {
-			if pickMethod == PickSmaller {
-				return sortedCoins[i].Balance < sortedCoins[j].Balance
-			} else {
-				return sortedCoins[i].Balance >= sortedCoins[j].Balance
-			}
-		})
+		sort.Slice(
+			sortedCoins, func(i, j int) bool {
+				if pickMethod == PickSmaller {
+					return sortedCoins[i].Balance < sortedCoins[j].Balance
+				} else {
+					return sortedCoins[i].Balance >= sortedCoins[j].Balance
+				}
+			},
+		)
 	}
 
 	result := make(Coins, 0)

@@ -46,7 +46,7 @@ func TestClient_TransferObject(t *testing.T) {
 	)
 	require.Nil(t, err)
 
-	t.Log(simulateCheck(t, cli, txnBytes, M1Account(t)))
+	t.Log(simulateCheck(t, cli, txnBytes))
 }
 
 func TestClient_TransferSui(t *testing.T) {
@@ -64,22 +64,27 @@ func TestClient_TransferSui(t *testing.T) {
 	)
 	require.Nil(t, err)
 
-	t.Log(simulateCheck(t, cli, txnBytes, M1Account(t)))
+	t.Log(simulateCheck(t, cli, txnBytes))
 }
 
 func TestClient_PayAllSui(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
 	recipient := signer
-	objId, err := types.NewHexData(M1Coin1)
+	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *signer)
 	require.NoError(t, err)
-	coin2, err := types.NewHexData(M1Coin2)
+	coin, err := coins.PickCoinNoLess(1000)
+	require.NoError(t, err)
+	coin1, err := coins.PickCoinNoLess(50000)
 	require.NoError(t, err)
 
-	txnBytes, err := cli.PayAllSui(context.Background(), *signer, *recipient, []types.ObjectId{*objId, *coin2}, 10000)
+	txnBytes, err := cli.PayAllSui(
+		context.Background(), *signer, *recipient, []types.ObjectId{coin.CoinObjectId, coin1.CoinObjectId},
+		decimal.NewFromInt(100000000),
+	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, M1Account(t))
+	t.Log(simulateCheck(t, cli, txnBytes))
 }
 
 func TestClient_Pay(t *testing.T) {
@@ -101,7 +106,7 @@ func TestClient_Pay(t *testing.T) {
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, M1Account(t))
+	simulateCheck(t, cli, txnBytes)
 }
 
 func TestClient_PaySui(t *testing.T) {
@@ -122,7 +127,7 @@ func TestClient_PaySui(t *testing.T) {
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, M1Account(t))
+	simulateCheck(t, cli, txnBytes)
 }
 
 func TestClient_SplitCoin(t *testing.T) {
@@ -135,7 +140,7 @@ func TestClient_SplitCoin(t *testing.T) {
 	txnBytes, err := cli.SplitCoin(context.Background(), *signer, *objId, splitCoins, nil, 10000)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, M1Account(t))
+	simulateCheck(t, cli, txnBytes)
 }
 
 func TestClient_SplitCoinEqual(t *testing.T) {
@@ -162,7 +167,7 @@ func TestClient_MergeCoins(t *testing.T) {
 	txnBytes, err := cli.MergeCoins(context.Background(), *signer, *coin1, *coin2, nil, 10000)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, M1Account(t))
+	simulateCheck(t, cli, txnBytes)
 }
 
 func TestClient_Publish(t *testing.T) {
@@ -199,7 +204,6 @@ func simulateCheck(
 	t *testing.T,
 	cli *Client,
 	txn *types.TransactionBytes,
-	acc *account.Account,
 ) *types.DryRunTransactionBlockResponse {
 	simulate, err := cli.DryRunTransaction(context.Background(), txn)
 	require.Nil(t, err)

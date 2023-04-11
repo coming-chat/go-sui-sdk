@@ -90,7 +90,7 @@ func requestAddDelegation(t *testing.T, coinIds []string, amount uint64, validat
 	txn, err := cli.RequestAddStake(context.Background(), *addr, coins, amount, *validator, gas, 20000)
 	require.Nil(t, err)
 
-	resp := simulateCheck(t, cli, txn, acc)
+	resp := simulateCheck(t, cli, txn)
 	t.Log(resp)
 }
 
@@ -116,6 +116,6 @@ func requestWithdrawDelegation(t *testing.T, stakedId, gasId string) {
 	txn, err := cli.RequestWithdrawStake(context.Background(), *addr, *stakedID, nil, 20000)
 	require.Nil(t, err)
 
-	resp := simulateCheck(t, cli, txn, acc)
+	resp := simulateCheck(t, cli, txn)
 	t.Log(resp)
 }

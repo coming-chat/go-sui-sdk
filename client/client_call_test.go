@@ -58,7 +58,10 @@ func TestClient_DryRunTransaction(t *testing.T) {
 	require.NoError(t, err)
 	coin, err := coins.PickCoinNoLess(2000)
 	require.NoError(t, err)
-	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coin.CoinObjectId, 1000, 1000)
+	tx, err := chain.TransferSui(
+		context.TODO(), *Address, *Address, coin.CoinObjectId, decimal.NewFromInt(1000),
+		decimal.NewFromInt(100000000),
+	)
 	require.NoError(t, err)
 	type args struct {
 		ctx context.Context
@@ -675,7 +678,10 @@ func TestClient_DevInspectTransactionBlock(t *testing.T) {
 	require.NoError(t, err)
 	coin, err := coins.PickCoinNoLess(1000)
 	require.NoError(t, err)
-	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coin.CoinObjectId, 1000, 1000)
+	tx, err := chain.TransferSui(
+		context.TODO(), *Address, *Address, coin.CoinObjectId, decimal.NewFromInt(1000),
+		decimal.NewFromInt(100000000),
+	)
 	require.NoError(t, err)
 	type args struct {
 		ctx           context.Context

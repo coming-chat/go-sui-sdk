@@ -35,26 +35,36 @@ func TestClient_TransferObject(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
 	recipient := signer
-	objId, err := types.NewHexData(M1Coin1)
+	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *signer)
+	require.NoError(t, err)
+	coin, err := coins.PickCoinNoLess(20000)
 	require.NoError(t, err)
 
-	txnBytes, err := cli.TransferObject(context.Background(), *signer, *recipient, *objId, nil, 10000)
+	txnBytes, err := cli.TransferObject(
+		context.Background(), *signer, *recipient, coin.CoinObjectId, nil,
+		decimal.NewFromInt(100000000),
+	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, M1Account(t))
+	t.Log(simulateCheck(t, cli, txnBytes, M1Account(t)))
 }
 
 func TestClient_TransferSui(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
 	recipient := signer
-	objId, err := types.NewHexData(M1Coin1)
+	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *signer)
+	require.NoError(t, err)
+	coin, err := coins.PickCoinNoLess(100000)
 	require.NoError(t, err)
 
-	txnBytes, err := cli.TransferSui(context.Background(), *signer, *recipient, *objId, 100000, 10000)
+	txnBytes, err := cli.TransferSui(
+		context.Background(), *signer, *recipient, coin.CoinObjectId, decimal.NewFromInt(100000),
+		decimal.NewFromInt(100000000),
+	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, M1Account(t))
+	t.Log(simulateCheck(t, cli, txnBytes, M1Account(t)))
 }
 
 func TestClient_PayAllSui(t *testing.T) {
@@ -191,13 +201,10 @@ func simulateCheck(
 	txn *types.TransactionBytes,
 	acc *account.Account,
 ) *types.DryRunTransactionBlockResponse {
-	if shouldSimulate() {
-		simulate, err := cli.DryRunTransaction(context.Background(), txn)
-		require.Nil(t, err)
-		require.True(t, simulate.Effects.IsSuccess())
-		return simulate
-	}
-	return nil
+	simulate, err := cli.DryRunTransaction(context.Background(), txn)
+	require.Nil(t, err)
+	require.True(t, simulate.Effects.IsSuccess(), simulate.Effects.Status.Error)
+	return simulate
 }
 
 func simulateAndSendTxn(

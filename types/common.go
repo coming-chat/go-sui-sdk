@@ -45,7 +45,7 @@ type TagJson[T TagJsonType] struct {
 }
 
 func (t *TagJson[T]) UnmarshalJSON(data []byte) error {
-	tmp := make(map[string]interface{})
+	tmp := make(map[string]json.RawMessage)
 	err := json.Unmarshal(data, &tmp)
 	if err != nil {
 		return err
@@ -55,8 +55,13 @@ func (t *TagJson[T]) UnmarshalJSON(data []byte) error {
 	if !ok {
 		return fmt.Errorf("no such tag: %s in json data %v", t.Data.Tag(), tmp)
 	}
+	var subType string
+	err = json.Unmarshal(v, &subType)
+	if err != nil {
+		return fmt.Errorf("the tag [%s] value is not string", t.Data.Tag())
+	}
 	for i := 0; i < rv.Type().NumField(); i++ {
-		if !strings.Contains(rv.Type().Field(i).Tag.Get("json"), v.(string)) {
+		if !strings.Contains(rv.Type().Field(i).Tag.Get("json"), subType) {
 			continue
 		}
 		if rv.Field(i).Kind() != reflect.Pointer {
@@ -67,13 +72,9 @@ func (t *TagJson[T]) UnmarshalJSON(data []byte) error {
 		}
 		jsonData := data
 		if t.Data.Content() != "" {
-			value, has := tmp[t.Data.Content()]
-			if !has {
+			jsonData, ok = tmp[t.Data.Content()]
+			if !ok {
 				return fmt.Errorf("json data [%v] get content key [%s] failed", tmp, t.Data.Content())
-			}
-			jsonData, err = json.Marshal(value)
-			if err != nil {
-				return err
 			}
 		}
 		err = json.Unmarshal(jsonData, rv.Field(i).Interface())

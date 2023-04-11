@@ -32,8 +32,8 @@ type Balance struct {
 	LockedBalance   map[decimal.Decimal]decimal.Decimal `json:"lockedBalance"`
 }
 
-type CoinSupply struct {
-	Value uint64 `json:"value"`
+type Supply struct {
+	Value decimal.Decimal `json:"value"`
 }
 
 var ErrCoinsNotMatchRequest error

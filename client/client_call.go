@@ -102,8 +102,8 @@ func (c *Client) GetOwnedObjects(
 	return &resp, c.CallContext(ctx, &resp, getOwnedObjects, address, query, cursor, limit)
 }
 
-func (c *Client) GetTotalSupply(ctx context.Context, coinType string) (*types.CoinSupply, error) {
-	var resp types.CoinSupply
+func (c *Client) GetTotalSupply(ctx context.Context, coinType string) (*types.Supply, error) {
+	var resp types.Supply
 	return &resp, c.CallContext(ctx, &resp, getTotalSupply, coinType)
 }
 

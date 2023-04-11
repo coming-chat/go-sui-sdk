@@ -1,7 +1,6 @@
 package types
 
 import (
-	"encoding/json"
 	"github.com/shopspring/decimal"
 )
 
@@ -183,21 +182,7 @@ type PaginatedObjectsResponse struct {
 	HasNextPage bool        `json:"hasNextPage"`
 }
 
-func (p *PaginatedObjectsResponse) ReadNextCursor() string {
-	if c, ok := p.NextCursor.(string); ok {
-		return c
-	}
-	data, err := json.Marshal(p.NextCursor)
-	if err != nil {
-		return ""
-	}
-	var cpo CheckpointedObjectId
-	err = json.Unmarshal(data, &cpo)
-	if err != nil {
-		return ""
-	}
-	return cpo.ObjectId.String()
-}
+type ObjectsPage = Page[SuiObjectResponse, ObjectId]
 
 type SuiObjectDataFilter struct {
 	Package    *ObjectId   `json:"Package,omitempty"`

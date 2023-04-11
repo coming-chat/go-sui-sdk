@@ -86,7 +86,7 @@ func (t *TagJson[T]) UnmarshalJSON(data []byte) error {
 	return fmt.Errorf("no tag[%s] value <%s> in struct fields", t.Data.Tag(), v)
 }
 
-type Page[T SuiTransactionBlockResponse | SuiEvent | Coin, C TransactionDigest | EventId | ObjectId] struct {
+type Page[T SuiTransactionBlockResponse | SuiEvent | Coin | SuiObjectResponse, C TransactionDigest | EventId | ObjectId] struct {
 	Data        []T  `json:"data"`
 	NextCursor  *C   `json:"nextCursor,omitempty"`
 	HasNextPage bool `json:"hasNextPage"`

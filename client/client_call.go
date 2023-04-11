@@ -96,14 +96,10 @@ func (c *Client) GetOwnedObjects(
 	address types.Address,
 	query *types.SuiObjectResponseQuery,
 	cursor *types.CheckpointedObjectId,
-	limit uint,
-) (*types.PaginatedObjectsResponse, error) {
-	var resp types.PaginatedObjectsResponse
-	if limit > 0 {
-		return &resp, c.CallContext(ctx, &resp, getOwnedObjects, address, query, cursor, limit)
-	} else {
-		return &resp, c.CallContext(ctx, &resp, getOwnedObjects, address, query, cursor)
-	}
+	limit *uint,
+) (*types.ObjectsPage, error) {
+	var resp types.ObjectsPage
+	return &resp, c.CallContext(ctx, &resp, getOwnedObjects, address, query, cursor, limit)
 }
 
 func (c *Client) GetTotalSupply(ctx context.Context, coinType string) (*types.CoinSupply, error) {
@@ -142,7 +138,8 @@ func (c *Client) BatchGetFilteredObjectsOwnedByAddress(
 			ShowType: true,
 		},
 	}
-	filteringObjs, err := c.GetOwnedObjects(ctx, address, &query, nil, 0)
+	limit := uint(0)
+	filteringObjs, err := c.GetOwnedObjects(ctx, address, &query, nil, &limit)
 	if err != nil {
 		return nil, err
 	}

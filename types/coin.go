@@ -4,8 +4,6 @@ import (
 	"errors"
 	"math/big"
 	"sort"
-
-	"github.com/shopspring/decimal"
 )
 
 // type LockedBalance struct {
@@ -34,7 +32,7 @@ type Balance struct {
 }
 
 type Supply struct {
-	Value decimal.Decimal `json:"value"`
+	Value SafeSuiBigInt[uint64] `json:"value"`
 }
 
 var ErrCoinsNotMatchRequest error

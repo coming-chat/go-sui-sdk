@@ -1,8 +1,6 @@
 package types
 
-import (
-	"github.com/shopspring/decimal"
-)
+import "github.com/shopspring/decimal"
 
 type ExecuteTransactionRequestType string
 
@@ -14,10 +12,10 @@ const (
 type EpochId = uint64
 
 type GasCostSummary struct {
-	ComputationCost         decimal.Decimal `json:"computationCost"`
-	StorageCost             decimal.Decimal `json:"storageCost"`
-	StorageRebate           decimal.Decimal `json:"storageRebate"`
-	NonRefundableStorageFee decimal.Decimal `json:"nonRefundableStorageFee"`
+	ComputationCost         SafeSuiBigInt[uint64] `json:"computationCost"`
+	StorageCost             SafeSuiBigInt[uint64] `json:"storageCost"`
+	StorageRebate           SafeSuiBigInt[uint64] `json:"storageRebate"`
+	NonRefundableStorageFee SafeSuiBigInt[uint64] `json:"nonRefundableStorageFee"`
 }
 
 const (
@@ -35,21 +33,19 @@ type OwnedObjectRef struct {
 	Reference SuiObjectRef `json:"reference"`
 }
 
-type TransactionEffectsModifiedAtVersions struct {
-	ObjectId       ObjectId        `json:"objectId"`
-	SequenceNumber decimal.Decimal `json:"sequenceNumber"`
+type SuiTransactionBlockEffectsModifiedAtVersions struct {
+	ObjectId       ObjectId                      `json:"objectId"`
+	SequenceNumber SafeSuiBigInt[SequenceNumber] `json:"sequenceNumber"`
 }
 
-type TransactionEffects struct {
-	MessageVersion string `json:"messageVersion"`
-
+type SuiTransactionBlockEffectsV1 struct {
 	/** The status of the execution */
 	Status ExecutionStatus `json:"status"`
 	/** The epoch when this transaction was executed */
-	ExecutedEpoch EpochId `json:"executedEpoch"`
+	ExecutedEpoch SafeSuiBigInt[EpochId] `json:"executedEpoch"`
 	/** The version that every modified (mutated or deleted) object had before it was modified by this transaction. **/
-	ModifiedAtVersions []TransactionEffectsModifiedAtVersions `json:"modifiedAtVersions,omitempty"`
-	GasUsed            GasCostSummary                         `json:"gasUsed"`
+	ModifiedAtVersions []SuiTransactionBlockEffectsModifiedAtVersions `json:"modifiedAtVersions,omitempty"`
+	GasUsed            GasCostSummary                                 `json:"gasUsed"`
 	/** The object references of the shared objects used in this transaction. Empty if no shared objects were used. */
 	SharedObjects []SuiObjectRef `json:"sharedObjects,omitempty"`
 	/** The transaction digest */
@@ -81,13 +77,33 @@ type TransactionEffects struct {
 	Dependencies []TransactionDigest `json:"dependencies,omitempty"`
 }
 
-func (te *TransactionEffects) GasFee() uint64 {
-	feeInt := te.GasUsed.StorageCost.Sub(te.GasUsed.StorageRebate).Add(te.GasUsed.ComputationCost)
+type SuiTransactionBlockEffects struct {
+	V1 *SuiTransactionBlockEffectsV1 `json:"v1"`
+}
+
+func (t SuiTransactionBlockEffects) Tag() string {
+	return "messageVersion"
+}
+
+func (t SuiTransactionBlockEffects) Content() string {
+	return ""
+}
+
+func (t SuiTransactionBlockEffects) GasFee() uint64 {
+	feeInt := decimal.NewFromInt(t.V1.GasUsed.StorageCost.Int64()).Sub(
+		decimal.NewFromInt(t.V1.GasUsed.StorageRebate.Int64()).
+			Add(
+				decimal.NewFromInt(
+					t.V1.GasUsed.
+						ComputationCost.Int64(),
+				),
+			),
+	)
 	return feeInt.BigInt().Uint64()
 }
 
-func (te *TransactionEffects) IsSuccess() bool {
-	return te.Status.Status == ExecutionStatusSuccess
+func (t SuiTransactionBlockEffects) IsSuccess() bool {
+	return t.V1.Status.Status == ExecutionStatusSuccess
 }
 
 const (
@@ -122,11 +138,11 @@ func (t TransactionBlockKind) Content() string {
 }
 
 type SuiChangeEpoch struct {
-	Epoch                 decimal.Decimal `json:"epoch"`
-	StorageCharge         uint64          `json:"storage_charge"`
-	ComputationCharge     uint64          `json:"computation_charge"`
-	StorageRebate         uint64          `json:"storage_rebate"`
-	EpochStartTimestampMs uint64          `json:"epoch_start_timestamp_ms"`
+	Epoch                 SafeSuiBigInt[EpochId] `json:"epoch"`
+	StorageCharge         uint64                 `json:"storage_charge"`
+	ComputationCharge     uint64                 `json:"computation_charge"`
+	StorageRebate         uint64                 `json:"storage_rebate"`
+	EpochStartTimestampMs uint64                 `json:"epoch_start_timestamp_ms"`
 }
 
 type SuiGenesisTransaction struct {
@@ -146,11 +162,22 @@ type SuiProgrammableTransactionBlock struct {
 	Commands []interface{} `json:"transactions"`
 }
 
+type SuiTransactionBlockDataV1 struct {
+	Transaction SuiTransactionBlockKind `json:"transaction"`
+	Sender      Address                 `json:"sender"`
+	GasData     SuiGasData              `json:"gasData"`
+}
+
 type SuiTransactionBlockData struct {
-	MessageVersion string                  `json:"messageVersion"`
-	Transaction    SuiTransactionBlockKind `json:"transaction"`
-	Sender         Address                 `json:"sender"`
-	GasData        SuiGasData              `json:"gasData"`
+	V1 *SuiTransactionBlockDataV1 `json:"v1,omitempty"`
+}
+
+func (t SuiTransactionBlockData) Tag() string {
+	return "messageVersion"
+}
+
+func (t SuiTransactionBlockData) Content() string {
+	return ""
 }
 
 type SuiTransactionBlock struct {
@@ -158,62 +185,62 @@ type SuiTransactionBlock struct {
 	TxSignatures []string                `json:"txSignatures"`
 }
 
-type SuiObjectChange struct {
+type ObjectChange struct {
 	Published *struct {
-		PackageId ObjectId        `json:"packageId"`
-		Version   decimal.Decimal `json:"version"`
-		Digest    ObjectDigest    `json:"digest"`
-		Nodules   []string        `json:"nodules"`
+		PackageId ObjectId                      `json:"packageId"`
+		Version   SafeSuiBigInt[SequenceNumber] `json:"version"`
+		Digest    ObjectDigest                  `json:"digest"`
+		Nodules   []string                      `json:"nodules"`
 	} `json:"published,omitempty"`
 	/// Transfer objects to new address / wrap in another object
 	Transferred *struct {
-		Sender     Address         `json:"sender"`
-		Recipient  ObjectOwner     `json:"recipient"`
-		ObjectType string          `json:"objectType"`
-		ObjectId   ObjectId        `json:"objectId"`
-		Version    decimal.Decimal `json:"version"`
-		Digest     ObjectDigest    `json:"digest"`
+		Sender     Address                       `json:"sender"`
+		Recipient  ObjectOwner                   `json:"recipient"`
+		ObjectType string                        `json:"objectType"`
+		ObjectId   ObjectId                      `json:"objectId"`
+		Version    SafeSuiBigInt[SequenceNumber] `json:"version"`
+		Digest     ObjectDigest                  `json:"digest"`
 	} `json:"transferred,omitempty"`
 	/// Object mutated.
 	Mutated *struct {
-		Sender          Address         `json:"sender"`
-		Owner           ObjectOwner     `json:"owner"`
-		ObjectType      string          `json:"objectType"`
-		ObjectId        ObjectId        `json:"objectId"`
-		Version         decimal.Decimal `json:"version"`
-		PreviousVersion decimal.Decimal `json:"previousVersion"`
-		Digest          ObjectDigest    `json:"digest"`
+		Sender          Address                       `json:"sender"`
+		Owner           ObjectOwner                   `json:"owner"`
+		ObjectType      string                        `json:"objectType"`
+		ObjectId        ObjectId                      `json:"objectId"`
+		Version         SafeSuiBigInt[SequenceNumber] `json:"version"`
+		PreviousVersion SafeSuiBigInt[SequenceNumber] `json:"previousVersion"`
+		Digest          ObjectDigest                  `json:"digest"`
 	} `json:"mutated,omitempty"`
 	/// Delete object j
 	Deleted *struct {
-		Sender     Address         `json:"sender"`
-		ObjectType string          `json:"objectType"`
-		ObjectId   ObjectId        `json:"objectId"`
-		Version    decimal.Decimal `json:"version"`
+		Sender     Address                       `json:"sender"`
+		ObjectType string                        `json:"objectType"`
+		ObjectId   ObjectId                      `json:"objectId"`
+		Version    SafeSuiBigInt[SequenceNumber] `json:"version"`
 	} `json:"deleted,omitempty"`
 	/// Wrapped object
 	Wrapped *struct {
-		Sender     Address         `json:"sender"`
-		ObjectType string          `json:"objectType"`
-		ObjectId   ObjectId        `json:"objectId"`
-		Version    decimal.Decimal `json:"version"`
+		Sender     Address                       `json:"sender"`
+		ObjectType string                        `json:"objectType"`
+		ObjectId   ObjectId                      `json:"objectId"`
+		Version    SafeSuiBigInt[SequenceNumber] `json:"version"`
 	} `json:"wrapped,omitempty"`
 	/// New object creation
 	Created *struct {
-		Sender     Address         `json:"sender"`
-		Owner      ObjectOwner     `json:"owner"`
-		ObjectType string          `json:"objectType"`
-		ObjectId   ObjectId        `json:"objectId"`
-		Version    decimal.Decimal `json:"version"`
-		Digest     ObjectDigest    `json:"digest"`
+		Sender     Address                       `json:"sender"`
+		Owner      ObjectOwner                   `json:"owner"`
+		ObjectType string                        `json:"objectType"`
+		ObjectId   ObjectId                      `json:"objectId"`
+		Version    SafeSuiBigInt[SequenceNumber] `json:"version"`
+		Digest     ObjectDigest                  `json:"digest"`
 	} `json:"created,omitempty"`
 }
 
-func (o SuiObjectChange) Tag() string {
+func (o ObjectChange) Tag() string {
 	return "type"
 }
 
-func (o SuiObjectChange) Content() string {
+func (o ObjectChange) Content() string {
 	return ""
 }
 
@@ -225,16 +252,16 @@ type BalanceChange struct {
 }
 
 type SuiTransactionBlockResponse struct {
-	Digest                  TransactionDigest          `json:"digest"`
-	Transaction             *SuiTransactionBlock       `json:"transaction,omitempty"`
-	RawTransaction          []byte                     `json:"rawTransaction,omitempty"`
-	Effects                 *TransactionEffects        `json:"effects,omitempty"`
-	Events                  []SuiEvent                 `json:"events,omitempty"`
-	TimestampMs             *decimal.Decimal           `json:"timestampMs,omitempty"`
-	Checkpoint              *decimal.Decimal           `json:"checkpoint,omitempty"`
-	ConfirmedLocalExecution *bool                      `json:"confirmedLocalExecution,omitempty"`
-	ObjectChanges           []TagJson[SuiObjectChange] `json:"objectChanges,omitempty"`
-	BalanceChanges          []BalanceChange            `json:"balanceChanges,omitempty"`
+	Digest                  TransactionDigest                        `json:"digest"`
+	Transaction             *SuiTransactionBlock                     `json:"transaction,omitempty"`
+	RawTransaction          []byte                                   `json:"rawTransaction,omitempty"`
+	Effects                 *TagJson[SuiTransactionBlockEffects]     `json:"effects,omitempty"`
+	Events                  []SuiEvent                               `json:"events,omitempty"`
+	TimestampMs             *SafeSuiBigInt[uint64]                   `json:"timestampMs,omitempty"`
+	Checkpoint              *SafeSuiBigInt[CheckpointSequenceNumber] `json:"checkpoint,omitempty"`
+	ConfirmedLocalExecution *bool                                    `json:"confirmedLocalExecution,omitempty"`
+	ObjectChanges           []TagJson[ObjectChange]                  `json:"objectChanges,omitempty"`
+	BalanceChanges          []BalanceChange                          `json:"balanceChanges,omitempty"`
 	/* Errors that occurred in fetching/serializing the transaction. */
 	Errors []string `json:"errors,omitempty"`
 }
@@ -247,10 +274,10 @@ type ExecutionResultType struct {
 }
 
 type DevInspectResults struct {
-	Effects TransactionEffects    `json:"effects"`
-	Events  []SuiEvent            `json:"events"`
-	Results []ExecutionResultType `json:"results,omitempty"`
-	Error   *string               `json:"error,omitempty"`
+	Effects TagJson[SuiTransactionBlockEffects] `json:"effects"`
+	Events  []SuiEvent                          `json:"events"`
+	Results []ExecutionResultType               `json:"results,omitempty"`
+	Error   *string                             `json:"error,omitempty"`
 }
 
 type TransactionFilter struct {
@@ -292,8 +319,9 @@ type SuiTransactionBlockResponseQuery struct {
 type TransactionBlocksPage = Page[SuiTransactionBlockResponse, TransactionDigest]
 
 type DryRunTransactionBlockResponse struct {
-	Effects        TransactionEffects         `json:"effects"`
-	Events         []SuiEvent                 `json:"events"`
-	ObjectChanges  []TagJson[SuiObjectChange] `json:"objectChanges"`
-	BalanceChanges []BalanceChange            `json:"balanceChanges"`
+	Effects        TagJson[SuiTransactionBlockEffects] `json:"effects"`
+	Events         []SuiEvent                          `json:"events"`
+	ObjectChanges  []TagJson[ObjectChange]             `json:"objectChanges"`
+	BalanceChanges []BalanceChange                     `json:"balanceChanges"`
+	Input          TagJson[SuiTransactionBlockData]    `json:"input"`
 }

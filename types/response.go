@@ -15,8 +15,8 @@ type ParsedTransactionResponse interface{}
 type ExecuteTransactionEffects struct {
 	TransactionEffectsDigest string `json:"transactionEffectsDigest"`
 
-	Effects      TransactionEffects `json:"effects"`
-	AuthSignInfo *AuthSignInfo      `json:"authSignInfo"`
+	Effects      TagJson[SuiTransactionBlockEffects] `json:"effects"`
+	AuthSignInfo *AuthSignInfo                       `json:"authSignInfo"`
 }
 
 type ExecuteTransactionResponse struct {

@@ -12,22 +12,24 @@ import (
 // 	Number  int64 `json:"number"`
 // }
 
-type CoinStruct struct {
+type Coin struct {
 	CoinType     string            `json:"coinType"`
 	CoinObjectId ObjectId          `json:"coinObjectId"`
-	Version      uint64            `json:"version"`
+	Version      decimal.Decimal   `json:"version"`
 	Digest       TransactionDigest `json:"digest"`
-	Balance      int64             `json:"balance"`
+	Balance      decimal.Decimal   `json:"balance"`
 
-	LockedUntilEpoch    *int              `json:"lockedUntilEpoch"`
+	LockedUntilEpoch    *decimal.Decimal  `json:"lockedUntilEpoch,omitempty"`
 	PreviousTransaction TransactionDigest `json:"previousTransaction"`
 }
 
 type PaginatedCoins struct {
-	Data        []CoinStruct `json:"data"`
-	NextCursor  *ObjectId    `json:"nextCursor,omitempty"`
-	HasNextPage bool         `json:"hasNextPage"`
+	Data        []Coin    `json:"data"`
+	NextCursor  *ObjectId `json:"nextCursor,omitempty"`
+	HasNextPage bool      `json:"hasNextPage"`
 }
+
+type CoinPage = Page[Coin, ObjectId]
 
 type Balance struct {
 	CoinType        string                              `json:"coinType"`
@@ -56,12 +58,10 @@ const (
 // 	Reference *ObjectRef `json:"reference"`
 // }
 
-type Coin = CoinStruct
-
 func (c *Coin) Reference() *ObjectRef {
 	return &ObjectRef{
 		Digest:   c.Digest,
-		Version:  c.Version,
+		Version:  c.Version.BigInt().Uint64(),
 		ObjectId: c.CoinObjectId,
 	}
 }
@@ -76,14 +76,14 @@ func init() {
 func (cs Coins) TotalBalance() *big.Int {
 	total := big.NewInt(0)
 	for _, coin := range cs {
-		total = total.Add(total, big.NewInt(coin.Balance))
+		total = total.Add(total, coin.Balance.BigInt())
 	}
 	return total
 }
 
 func (cs Coins) PickCoinNoLess(amount uint64) (*Coin, error) {
 	for _, coin := range cs {
-		if uint64(coin.Balance) >= amount {
+		if coin.Balance.BigInt().Uint64() >= amount {
 			return &coin, nil
 		}
 	}
@@ -113,11 +113,11 @@ func (cs Coins) PickSUICoinsWithGas(amount *big.Int, gasAmount uint64, pickMetho
 	var gasCoin *Coin
 	var selectIndex int
 	for i := range cs {
-		if uint64(cs[i].Balance) < gasAmount {
+		if cs[i].Balance.BigInt().Uint64() < gasAmount {
 			continue
 		}
 
-		if nil == gasCoin || gasCoin.Balance > cs[i].Balance {
+		if nil == gasCoin || gasCoin.Balance.GreaterThan(cs[i].Balance) {
 			gasCoin = &cs[i]
 			selectIndex = i
 		}
@@ -146,9 +146,9 @@ func (cs Coins) PickCoins(amount *big.Int, pickMethod int) (Coins, error) {
 		sort.Slice(
 			sortedCoins, func(i, j int) bool {
 				if pickMethod == PickSmaller {
-					return sortedCoins[i].Balance < sortedCoins[j].Balance
+					return sortedCoins[i].Balance.LessThan(sortedCoins[j].Balance)
 				} else {
-					return sortedCoins[i].Balance >= sortedCoins[j].Balance
+					return sortedCoins[i].Balance.GreaterThanOrEqual(sortedCoins[j].Balance)
 				}
 			},
 		)
@@ -158,7 +158,7 @@ func (cs Coins) PickCoins(amount *big.Int, pickMethod int) (Coins, error) {
 	total := big.NewInt(0)
 	for _, coin := range sortedCoins {
 		result = append(result, coin)
-		total = new(big.Int).Add(total, big.NewInt(coin.Balance))
+		total = new(big.Int).Add(total, coin.Balance.BigInt())
 		if total.Cmp(amount) >= 0 {
 			return result, nil
 		}

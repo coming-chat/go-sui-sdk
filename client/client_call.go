@@ -15,8 +15,8 @@ const QUERY_MAX_RESULT_LIMIT = 1000
 // MARK - Getter Function
 
 // GetBalance to use default sui coin(0x2::sui::SUI) when coinType is empty
-func (c *Client) GetBalance(ctx context.Context, owner types.Address, coinType string) (*types.CoinBalance, error) {
-	resp := types.CoinBalance{}
+func (c *Client) GetBalance(ctx context.Context, owner types.Address, coinType string) (*types.Balance, error) {
+	resp := types.Balance{}
 	if coinType == "" {
 		return &resp, c.CallContext(ctx, &resp, getBalance, owner)
 	} else {
@@ -24,8 +24,8 @@ func (c *Client) GetBalance(ctx context.Context, owner types.Address, coinType s
 	}
 }
 
-func (c *Client) GetAllBalances(ctx context.Context, owner types.Address) ([]types.CoinBalance, error) {
-	var resp []types.CoinBalance
+func (c *Client) GetAllBalances(ctx context.Context, owner types.Address) ([]types.Balance, error) {
+	var resp []types.Balance
 	return resp, c.CallContext(ctx, &resp, getAllBalances, owner)
 }
 

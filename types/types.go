@@ -74,14 +74,6 @@ type ObjectRef struct {
 	Digest   TransactionDigest `json:"digest"`
 }
 
-type SignedTransactionSerializedSig struct {
-	// transaction data bytes
-	TxBytes *Base64Data `json:"tx_bytes"`
-
-	// transaction signature
-	Signature *Base64Data `json:"signature"`
-}
-
 type TransferObject struct {
 	Recipient Address   `json:"recipient"`
 	ObjectRef ObjectRef `json:"object_ref"`
@@ -185,50 +177,6 @@ func (o *ObjectOwner) UnmarshalJSON(data []byte) error {
 	}
 	return errors.New("value not json")
 }
-
-type ObjectReadDetail struct {
-	Data  map[string]interface{} `json:"data"`
-	Owner *ObjectOwner           `json:"owner"`
-
-	PreviousTransaction string     `json:"previousTransaction"`
-	StorageRebate       int        `json:"storageRebate"`
-	Reference           *ObjectRef `json:"reference"`
-}
-
-type ObjectStatus string
-
-const (
-	// ObjectStatusExists ObjectStatusNotExists ObjectStatusDeleted
-	// status for sui_getObject
-	ObjectStatusExists    ObjectStatus = "Exists"
-	ObjectStatusNotExists ObjectStatus = "NotExists"
-	ObjectStatusDeleted   ObjectStatus = "Deleted"
-	// ObjectDeleted VersionFound VersionTooHigh VersionNotFound
-	//status for sui_tryGetPastObject
-	ObjectDeleted   ObjectStatus = "ObjectDeleted"
-	VersionFound    ObjectStatus = "VersionFound"
-	VersionTooHigh  ObjectStatus = "VersionTooHigh"
-	VersionNotFound ObjectStatus = "VersionNotFound"
-)
-
-type ObjectRead struct {
-	Details *SuiObjectData `json:"details"`
-	Status  ObjectStatus   `json:"status"`
-}
-
-type ObjectInfo struct {
-	ObjectId *ObjectId    `json:"objectId"`
-	Version  int          `json:"version"`
-	Digest   string       `json:"digest"`
-	Type     string       `json:"type"`
-	Owner    *ObjectOwner `json:"owner"`
-
-	PreviousTransaction string `json:"previousTransaction"`
-}
-
-type Base64String = string
-
-type SerializedSignature = Base64String
 
 func IsSameStringAddress(addr1, addr2 string) bool {
 	if strings.HasPrefix(addr1, "0x") {

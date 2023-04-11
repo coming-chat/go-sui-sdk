@@ -138,8 +138,7 @@ func (c *Client) BatchGetFilteredObjectsOwnedByAddress(
 			ShowType: true,
 		},
 	}
-	limit := uint(0)
-	filteringObjs, err := c.GetOwnedObjects(ctx, address, &query, nil, &limit)
+	filteringObjs, err := c.GetOwnedObjects(ctx, address, &query, nil, nil)
 	if err != nil {
 		return nil, err
 	}

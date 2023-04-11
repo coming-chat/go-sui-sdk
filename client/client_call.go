@@ -251,7 +251,7 @@ func (c *Client) Pay(
 	recipients []types.Address,
 	amount []decimal.Decimal,
 	gas *types.ObjectId,
-	gasBudget uint64,
+	gasBudget decimal.Decimal,
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, pay, signer, inputCoins, recipients, amount, gas, gasBudget)
@@ -263,7 +263,7 @@ func (c *Client) PaySui(
 	inputCoins []types.ObjectId,
 	recipients []types.Address,
 	amount []decimal.Decimal,
-	gasBudget uint64,
+	gasBudget decimal.Decimal,
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, paySui, signer, inputCoins, recipients, amount, gasBudget)

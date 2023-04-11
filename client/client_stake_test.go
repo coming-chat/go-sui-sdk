@@ -15,7 +15,7 @@ func TestClient_GetLatestSuiSystemState(t *testing.T) {
 	t.Logf("system state = %v", state)
 
 	for _, v := range state.ActiveValidators {
-		t.Logf("%v, %v\n", v.Name, v.CalculateAPY(state.Epoch))
+		t.Logf("%v, %v\n", v.Name, v.CalculateAPY(state.Epoch.BigInt().Uint64()))
 	}
 }
 
@@ -29,7 +29,7 @@ func TestClient_GetAndCalculateRollingAverageApys(t *testing.T) {
 }
 
 func TestGetDelegatedStakes(t *testing.T) {
-	cli := ChainClient(t)
+	cli := TestnetClient(t)
 
 	stakes, err := cli.GetStakes(context.Background(), *M1Address(t))
 	require.Nil(t, err)
@@ -42,9 +42,9 @@ func TestGetDelegatedStakes(t *testing.T) {
 }
 
 func TestGetStakesByIds(t *testing.T) {
-	cli := ChainClient(t)
+	cli := TestnetClient(t)
 
-	id1, _ := types.NewHexData("0x4ad2f0a918a241d6a19573212aeb56947bb9255a14e921a7ec78b262536826f0")
+	id1, _ := types.NewHexData("0x0e32ab08fe29b830ca2c04266297fe121128bf77d380ebec3256a4e1734144aa")
 	stakes, err := cli.GetStakesByIds(context.Background(), []types.ObjectId{*id1})
 	require.Nil(t, err)
 
@@ -58,20 +58,19 @@ func TestGetStakesByIds(t *testing.T) {
 func TestRequestAddDelegation(t *testing.T) {
 	if true {
 		coins := []string{
-			"0x0501ebf5518912e380e8b3b68f93548418fb1bce59ed025f68ad6d236f012f92",
-			"0x0d19d099213c23af5a6562034ce2772555f6945920913e18809369d738042b91",
+			"0x0153883d60e0df7052b12bc04454dd2eec1c3723ee12145ca73522c6a3917523",
+			"0x21d6e05e77325cbca6bf73410763b216c5614a1184c0efc414de68ebb80b842b",
 		}
-		amount := uint64(1000000000) // 1 SUI
+		amount := SUI(1).Decimal()
 		validatorAddress := "0x8ce890590fed55c37d44a043e781ad94254b413ee079a53fb5c037f7a6311304"
 		// gasId := "0x11ce8b45348f6db3f46a8a54a5d06ab91d8381bbc3cb67d66bef8c7ce2b5a7c5"
 
 		requestAddDelegation(t, coins, amount, validatorAddress)
-		// ✅ https://explorer.sui.io/transaction/EcH9dK1wSLzgv15CNNHr2KvDEpARUW5mSeug3LHeFqGB?network=testnet
 	}
 }
 
-func requestAddDelegation(t *testing.T, coinIds []string, amount uint64, validatorAddress string) {
-	cli := ChainClient(t)
+func requestAddDelegation(t *testing.T, coinIds []string, amount types.SuiBigInt, validatorAddress string) {
+	cli := TestnetClient(t)
 	acc := M1Account(t)
 	addr, _ := types.NewAddressFromHex(acc.Address)
 
@@ -85,9 +84,8 @@ func requestAddDelegation(t *testing.T, coinIds []string, amount uint64, validat
 	validator, err := types.NewAddressFromHex(validatorAddress)
 	require.Nil(t, err)
 
-	gasId := "0x11ce8b45348f6db3f46a8a54a5d06ab91d8381bbc3cb67d66bef8c7ce2b5a7c5"
-	gas, _ := types.NewHexData(gasId)
-	txn, err := cli.RequestAddStake(context.Background(), *addr, coins, amount, *validator, gas, 20000)
+	gasBudget := SUI(0.02).Decimal()
+	txn, err := cli.RequestAddStake(context.Background(), *addr, coins, amount, *validator, nil, gasBudget)
 	require.Nil(t, err)
 
 	resp := simulateCheck(t, cli, txn)
@@ -96,24 +94,21 @@ func requestAddDelegation(t *testing.T, coinIds []string, amount uint64, validat
 
 func TestRequestWithdrawDelegation(t *testing.T) {
 	if true {
-		stakedSuiId := "0x4ad2f0a918a241d6a19573212aeb56947bb9255a14e921a7ec78b262536826f0"
+		stakedSuiId := "0x0e32ab08fe29b830ca2c04266297fe121128bf77d380ebec3256a4e1734144aa"
 		requestWithdrawDelegation(t, stakedSuiId, "")
-		// ✅ https://explorer.sui.io/transaction/DVpYBQ8Djg7jtHhcAwy8hgeWCjRpTaTYkNzpNigco5HP?network=testnet
 	}
 }
 
 func requestWithdrawDelegation(t *testing.T, stakedId, gasId string) {
-	cli := ChainClient(t)
+	cli := TestnetClient(t)
 	acc := M1Account(t)
 	addr, _ := types.NewAddressFromHex(acc.Address)
 
 	stakedID, err := types.NewHexData(stakedId) // status.StakedSuiId
 	require.Nil(t, err)
 
-	// gas, err := types.NewHexData(gasId)
-	// require.Nil(t, err)
-
-	txn, err := cli.RequestWithdrawStake(context.Background(), *addr, *stakedID, nil, 20000)
+	gasBudget := SUI(0.02).Decimal()
+	txn, err := cli.RequestWithdrawStake(context.Background(), *addr, *stakedID, nil, gasBudget)
 	require.Nil(t, err)
 
 	resp := simulateCheck(t, cli, txn)

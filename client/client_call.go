@@ -178,7 +178,7 @@ func (c *Client) GetEvents(ctx context.Context, digest types.TransactionDigest) 
 func (c *Client) TryGetPastObject(
 	ctx context.Context,
 	objectId types.ObjectId,
-	version types.SequenceNumber,
+	version uint64,
 	options *types.SuiObjectDataOptions,
 ) (*types.SuiPastObjectResponse, error) {
 	var resp types.SuiPastObjectResponse

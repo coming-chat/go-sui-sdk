@@ -205,10 +205,14 @@ func simulateCheck(
 	cli *Client,
 	txn *types.TransactionBytes,
 ) *types.DryRunTransactionBlockResponse {
-	simulate, err := cli.DryRunTransaction(context.Background(), txn)
-	require.Nil(t, err)
-	require.True(t, simulate.Effects.IsSuccess(), simulate.Effects.Status.Error)
-	return simulate
+	if shouldSimulate() {
+		simulate, err := cli.DryRunTransaction(context.Background(), txn)
+		require.Nil(t, err)
+		require.Equal(t, simulate.Effects.Status.Error, "")
+		require.True(t, simulate.Effects.IsSuccess())
+		return simulate
+	}
+	return nil
 }
 
 func simulateAndSendTxn(

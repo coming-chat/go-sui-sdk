@@ -70,7 +70,7 @@ type TransactionBytes struct {
 // ObjectRef for BCS, need to keep this order
 type ObjectRef struct {
 	ObjectId ObjectId          `json:"objectId"`
-	Version  uint64            `json:"version"`
+	Version  SuiBigInt         `json:"version"`
 	Digest   TransactionDigest `json:"digest"`
 }
 

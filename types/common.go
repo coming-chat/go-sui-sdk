@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 type TransactionDigest = string
@@ -13,7 +15,9 @@ type TransactionEffectsDigest = string
 
 type TransactionEventDigest = string
 
-type SequenceNumber = uint64
+type SequenceNumber = decimal.Decimal
+
+type SuiBigInt = decimal.Decimal
 
 // export const ObjectId = string();
 // export type ObjectId = Infer<typeof ObjectId>;

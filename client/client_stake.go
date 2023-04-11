@@ -26,12 +26,12 @@ func (c *Client) GetStakesByIds(ctx context.Context, stakedSuiIds []types.Object
 	return resp, c.CallContext(ctx, &resp, getStakesByIds, stakedSuiIds)
 }
 
-func (c *Client) RequestAddStake(ctx context.Context, signer types.Address, coins []types.ObjectId, amount uint64, validator types.Address, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) RequestAddStake(ctx context.Context, signer types.Address, coins []types.ObjectId, amount types.SuiBigInt, validator types.Address, gas *types.ObjectId, gasBudget types.SuiBigInt) (*types.TransactionBytes, error) {
 	var resp types.TransactionBytes
 	return &resp, c.CallContext(ctx, &resp, requestAddStake, signer, coins, amount, validator, gas, gasBudget)
 }
 
-func (c *Client) RequestWithdrawStake(ctx context.Context, signer types.Address, stakedSuiId types.ObjectId, gas *types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) RequestWithdrawStake(ctx context.Context, signer types.Address, stakedSuiId types.ObjectId, gas *types.ObjectId, gasBudget types.SuiBigInt) (*types.TransactionBytes, error) {
 	var resp types.TransactionBytes
 	return &resp, c.CallContext(ctx, &resp, requestWithdrawStake, signer, stakedSuiId, gas, gasBudget)
 }

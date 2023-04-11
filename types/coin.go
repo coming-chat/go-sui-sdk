@@ -2,9 +2,10 @@ package types
 
 import (
 	"errors"
-	"github.com/shopspring/decimal"
 	"math/big"
 	"sort"
+
+	"github.com/shopspring/decimal"
 )
 
 // type LockedBalance struct {
@@ -15,11 +16,11 @@ import (
 type Coin struct {
 	CoinType     string            `json:"coinType"`
 	CoinObjectId ObjectId          `json:"coinObjectId"`
-	Version      decimal.Decimal   `json:"version"`
+	Version      SuiBigInt         `json:"version"`
 	Digest       TransactionDigest `json:"digest"`
-	Balance      decimal.Decimal   `json:"balance"`
+	Balance      SuiBigInt         `json:"balance"`
 
-	LockedUntilEpoch    *decimal.Decimal  `json:"lockedUntilEpoch,omitempty"`
+	LockedUntilEpoch    *SuiBigInt        `json:"lockedUntilEpoch,omitempty"`
 	PreviousTransaction TransactionDigest `json:"previousTransaction"`
 }
 
@@ -55,7 +56,7 @@ const (
 func (c *Coin) Reference() *ObjectRef {
 	return &ObjectRef{
 		Digest:   c.Digest,
-		Version:  c.Version.BigInt().Uint64(),
+		Version:  c.Version,
 		ObjectId: c.CoinObjectId,
 	}
 }
@@ -138,15 +139,13 @@ func (cs Coins) PickCoins(amount *big.Int, pickMethod int) (Coins, error) {
 	} else {
 		sortedCoins = make(Coins, len(cs))
 		copy(sortedCoins, cs)
-		sort.Slice(
-			sortedCoins, func(i, j int) bool {
-				if pickMethod == PickSmaller {
-					return sortedCoins[i].Balance.LessThan(sortedCoins[j].Balance)
-				} else {
-					return sortedCoins[i].Balance.GreaterThanOrEqual(sortedCoins[j].Balance)
-				}
-			},
-		)
+		sort.Slice(sortedCoins, func(i, j int) bool {
+			if pickMethod == PickSmaller {
+				return sortedCoins[i].Balance.LessThan(sortedCoins[j].Balance)
+			} else {
+				return sortedCoins[i].Balance.GreaterThanOrEqual(sortedCoins[j].Balance)
+			}
+		})
 	}
 
 	result := make(Coins, 0)

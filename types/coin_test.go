@@ -4,25 +4,27 @@ import (
 	"math/big"
 	"reflect"
 	"testing"
+
+	"github.com/shopspring/decimal"
 )
 
 func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 	// coins 1,2,3,4,5
 	testCoins := Coins{
 		{
-			Balance: 3,
+			Balance: decimal.NewFromInt(3),
 		},
 		{
-			Balance: 5,
+			Balance: decimal.NewFromInt(5),
 		},
 		{
-			Balance: 1,
+			Balance: decimal.NewFromInt(1),
 		},
 		{
-			Balance: 4,
+			Balance: decimal.NewFromInt(4),
 		},
 		{
-			Balance: 2,
+			Balance: decimal.NewFromInt(2),
 		},
 	}
 	type args struct {
@@ -58,8 +60,8 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 				gasAmount:  2,
 				pickMethod: PickSmaller,
 			},
-			want:    Coins{{Balance: 1}},
-			want1:   &Coin{Balance: 2},
+			want:    Coins{{Balance: decimal.NewFromInt(1)}},
+			want1:   &Coin{Balance: decimal.NewFromInt(2)},
 			wantErr: false,
 		},
 		{
@@ -70,8 +72,8 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 				gasAmount:  2,
 				pickMethod: PickSmaller,
 			},
-			want:    Coins{{Balance: 1}, {Balance: 3}},
-			want1:   &Coin{Balance: 2},
+			want:    Coins{{Balance: decimal.NewFromInt(1)}, {Balance: decimal.NewFromInt(3)}},
+			want1:   &Coin{Balance: decimal.NewFromInt(2)},
 			wantErr: false,
 		},
 		{
@@ -82,8 +84,8 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 				gasAmount:  2,
 				pickMethod: PickSmaller,
 			},
-			want:    Coins{{Balance: 1}, {Balance: 3}, {Balance: 4}},
-			want1:   &Coin{Balance: 2},
+			want:    Coins{{Balance: decimal.NewFromInt(1)}, {Balance: decimal.NewFromInt(3)}, {Balance: decimal.NewFromInt(4)}},
+			want1:   &Coin{Balance: decimal.NewFromInt(2)},
 			wantErr: false,
 		},
 		{
@@ -107,7 +109,7 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 				pickMethod: PickSmaller,
 			},
 			want:    Coins{},
-			want1:   &Coin{Balance: 3},
+			want1:   &Coin{Balance: decimal.NewFromInt(3)},
 			wantErr: true,
 		},
 		{
@@ -118,8 +120,8 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 				gasAmount:  3,
 				pickMethod: PickBigger,
 			},
-			want:    Coins{{Balance: 5}},
-			want1:   &Coin{Balance: 3},
+			want:    Coins{{Balance: decimal.NewFromInt(5)}},
+			want1:   &Coin{Balance: decimal.NewFromInt(3)},
 			wantErr: false,
 		},
 		{
@@ -130,8 +132,8 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 				gasAmount:  3,
 				pickMethod: PickByOrder,
 			},
-			want:    Coins{{Balance: 5}},
-			want1:   &Coin{Balance: 3},
+			want:    Coins{{Balance: decimal.NewFromInt(5)}},
+			want1:   &Coin{Balance: decimal.NewFromInt(3)},
 			wantErr: false,
 		},
 	}
@@ -158,19 +160,19 @@ func TestCoins_PickCoins(t *testing.T) {
 	// coins 1,2,3,4,5
 	testCoins := Coins{
 		{
-			Balance: 3,
+			Balance: decimal.NewFromInt(3),
 		},
 		{
-			Balance: 5,
+			Balance: decimal.NewFromInt(5),
 		},
 		{
-			Balance: 1,
+			Balance: decimal.NewFromInt(1),
 		},
 		{
-			Balance: 4,
+			Balance: decimal.NewFromInt(4),
 		},
 		{
-			Balance: 2,
+			Balance: decimal.NewFromInt(2),
 		},
 	}
 	type args struct {
@@ -188,35 +190,35 @@ func TestCoins_PickCoins(t *testing.T) {
 			name:    "smaller 1",
 			cs:      testCoins,
 			args:    args{amount: big.NewInt(2), pickMethod: PickSmaller},
-			want:    Coins{{Balance: 1}, {Balance: 2}},
+			want:    Coins{{Balance: decimal.NewFromInt(1)}, {Balance: decimal.NewFromInt(2)}},
 			wantErr: false,
 		},
 		{
 			name:    "smaller 2",
 			cs:      testCoins,
 			args:    args{amount: big.NewInt(4), pickMethod: PickSmaller},
-			want:    Coins{{Balance: 1}, {Balance: 2}, {Balance: 3}},
+			want:    Coins{{Balance: decimal.NewFromInt(1)}, {Balance: decimal.NewFromInt(2)}, {Balance: decimal.NewFromInt(3)}},
 			wantErr: false,
 		},
 		{
 			name:    "bigger 1",
 			cs:      testCoins,
 			args:    args{amount: big.NewInt(2), pickMethod: PickBigger},
-			want:    Coins{{Balance: 5}},
+			want:    Coins{{Balance: decimal.NewFromInt(5)}},
 			wantErr: false,
 		},
 		{
 			name:    "bigger 2",
 			cs:      testCoins,
 			args:    args{amount: big.NewInt(6), pickMethod: PickBigger},
-			want:    Coins{{Balance: 5}, {Balance: 4}},
+			want:    Coins{{Balance: decimal.NewFromInt(5)}, {Balance: decimal.NewFromInt(4)}},
 			wantErr: false,
 		},
 		{
 			name:    "pick by order 1",
 			cs:      testCoins,
 			args:    args{amount: big.NewInt(6), pickMethod: PickByOrder},
-			want:    Coins{{Balance: 3}, {Balance: 5}},
+			want:    Coins{{Balance: decimal.NewFromInt(3)}, {Balance: decimal.NewFromInt(5)}},
 			wantErr: false,
 		},
 		{

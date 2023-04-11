@@ -4,10 +4,12 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/coming-chat/go-sui/types"
+	"github.com/shopspring/decimal"
 
 	"github.com/coming-chat/go-sui/account"
 	"github.com/stretchr/testify/require"
@@ -68,4 +70,16 @@ func M1Address(t *testing.T) *types.Address {
 
 func Signer(t *testing.T) *account.Account {
 	return M1Account(t)
+}
+
+type SUI float64
+
+func (s SUI) Int64() int64 {
+	return int64(s * 1e9)
+}
+func (s SUI) Decimal() decimal.Decimal {
+	return decimal.NewFromInt(s.Int64())
+}
+func (s SUI) String() string {
+	return strconv.FormatInt(s.Int64(), 10)
 }

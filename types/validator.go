@@ -18,9 +18,9 @@ type StakeObject struct {
 	StakedSuiId       ObjectId    `json:"stakedSuiId"`
 	StakeRequestEpoch EpochId     `json:"stakeRequestEpoch"`
 	StakeActiveEpoch  EpochId     `json:"stakeActiveEpoch"`
-	Principal         uint64      `json:"principal"`
+	Principal         SuiBigInt   `json:"principal"`
 	Status            StakeStatus `json:"status"`
-	EstimatedReward   *uint64     `json:"estimatedReward,omitempty"`
+	EstimatedReward   *SuiBigInt  `json:"estimatedReward,omitempty"`
 }
 
 type DelegatedStake struct {
@@ -54,25 +54,25 @@ type SuiValidatorSummary struct {
 	NextEpochPrimaryAddress      string `json:"nextEpochPrimaryAddress"`
 	NextEpochWorkerAddress       string `json:"nextEpochWorkerAddress"`
 
-	VotingPower             int64           `json:"votingPower"`
-	GasPrice                int64           `json:"gasPrice"`
-	CommissionRate          int64           `json:"commissionRate"`
-	NextEpochStake          decimal.Decimal `json:"nextEpochStake"`
-	NextEpochGasPrice       int64           `json:"nextEpochGasPrice"`
-	NextEpochCommissionRate int64           `json:"nextEpochCommissionRate"`
-	StakingPoolId           string          `json:"stakingPoolId"`
+	VotingPower             SuiBigInt `json:"votingPower"`
+	GasPrice                SuiBigInt `json:"gasPrice"`
+	CommissionRate          SuiBigInt `json:"commissionRate"`
+	NextEpochStake          SuiBigInt `json:"nextEpochStake"`
+	NextEpochGasPrice       SuiBigInt `json:"nextEpochGasPrice"`
+	NextEpochCommissionRate SuiBigInt `json:"nextEpochCommissionRate"`
+	StakingPoolId           string    `json:"stakingPoolId"`
 
-	StakingPoolActivationEpoch   uint64 `json:"stakingPoolActivationEpoch"`
-	StakingPoolDeactivationEpoch int64  `json:"stakingPoolDeactivationEpoch"`
+	StakingPoolActivationEpoch   *SuiBigInt `json:"stakingPoolActivationEpoch,omitempty"`
+	StakingPoolDeactivationEpoch *SuiBigInt `json:"stakingPoolDeactivationEpoch,omitempty"`
 
-	StakingPoolSuiBalance    decimal.Decimal `json:"stakingPoolSuiBalance"`
-	RewardsPool              decimal.Decimal `json:"rewardsPool"`
-	PoolTokenBalance         decimal.Decimal `json:"poolTokenBalance"`
-	PendingStake             decimal.Decimal `json:"pendingStake"`
-	PendingPoolTokenWithdraw decimal.Decimal `json:"pendingPoolTokenWithdraw"`
-	PendingTotalSuiWithdraw  decimal.Decimal `json:"pendingTotalSuiWithdraw"`
-	ExchangeRatesId          string          `json:"exchangeRatesId"`
-	ExchangeRatesSize        int64           `json:"exchangeRatesSize"`
+	StakingPoolSuiBalance    SuiBigInt `json:"stakingPoolSuiBalance"`
+	RewardsPool              SuiBigInt `json:"rewardsPool"`
+	PoolTokenBalance         SuiBigInt `json:"poolTokenBalance"`
+	PendingStake             SuiBigInt `json:"pendingStake"`
+	PendingPoolTokenWithdraw SuiBigInt `json:"pendingPoolTokenWithdraw"`
+	PendingTotalSuiWithdraw  SuiBigInt `json:"pendingTotalSuiWithdraw"`
+	ExchangeRatesId          string    `json:"exchangeRatesId"`
+	ExchangeRatesSize        SuiBigInt `json:"exchangeRatesSize"`
 }
 
 func (v *SuiValidatorSummary) CalculateAPY(epoch uint64) float64 {
@@ -83,8 +83,8 @@ func (v *SuiValidatorSummary) CalculateAPY(epoch uint64) float64 {
 	)
 
 	// If the staking pool is active then we calculate its APY. Or if staking started in epoch 0
-	if stakingPoolActivationEpoch == 0 {
-		numEpochsParticipated := epoch - stakingPoolActivationEpoch
+	if stakingPoolActivationEpoch.IsZero() {
+		numEpochsParticipated := epoch - stakingPoolActivationEpoch.BigInt().Uint64()
 		pow1, _ := stakingPoolSuiBalance.Sub(poolTokenBalance).Div(poolTokenBalance).Add(decimal.NewFromInt(1)).Float64()
 		pow2, _ := decimal.NewFromInt(365).Div(decimal.NewFromInt(int64(numEpochsParticipated))).Float64()
 		apy := (math.Pow(pow1, pow2) - 1) * 100
@@ -99,41 +99,41 @@ func (v *SuiValidatorSummary) CalculateAPY(epoch uint64) float64 {
 }
 
 type SuiSystemStateSummary struct {
-	Epoch                                 uint64                `json:"epoch"`
-	ProtocolVersion                       uint64                `json:"protocolVersion"`
-	SystemStateVersion                    uint64                `json:"systemStateVersion"`
-	StorageFundTotalObjectStorageRebates  uint64                `json:"storageFundTotalObjectStorageRebates"`
-	StorageFundNonRefundableBalance       uint64                `json:"storageFundNonRefundableBalance"`
-	ReferenceGasPrice                     uint64                `json:"referenceGasPrice"`
+	Epoch                                 SuiBigInt             `json:"epoch"`
+	ProtocolVersion                       SuiBigInt             `json:"protocolVersion"`
+	SystemStateVersion                    SuiBigInt             `json:"systemStateVersion"`
+	StorageFundTotalObjectStorageRebates  SuiBigInt             `json:"storageFundTotalObjectStorageRebates"`
+	StorageFundNonRefundableBalance       SuiBigInt             `json:"storageFundNonRefundableBalance"`
+	ReferenceGasPrice                     SuiBigInt             `json:"referenceGasPrice"`
 	SafeMode                              bool                  `json:"safeMode"`
-	SafeModeStorageRewards                uint64                `json:"safeModeStorageRewards"`
-	SafeModeComputationRewards            uint64                `json:"safeModeComputationRewards"`
-	SafeModeStorageRebates                uint64                `json:"safeModeStorageRebates"`
-	SafeModeNonRefundableStorageFee       uint64                `json:"safeModeNonRefundableStorageFee"`
-	EpochStartTimestampMs                 uint64                `json:"epochStartTimestampMs"`
-	EpochDurationMs                       uint64                `json:"epochDurationMs"`
-	StakeSubsidyStartEpoch                uint64                `json:"stakeSubsidyStartEpoch"`
-	MaxValidatorCount                     uint64                `json:"maxValidatorCount"`
-	MinValidatorJoiningStake              uint64                `json:"minValidatorJoiningStake"`
-	ValidatorLowStakeThreshold            uint64                `json:"validatorLowStakeThreshold"`
-	ValidatorVeryLowStakeThreshold        uint64                `json:"validatorVeryLowStakeThreshold"`
-	ValidatorLowStakeGracePeriod          uint64                `json:"validatorLowStakeGracePeriod"`
-	StakeSubsidyBalance                   uint64                `json:"stakeSubsidyBalance"`
-	StakeSubsidyDistributionCounter       uint64                `json:"stakeSubsidyDistributionCounter"`
-	StakeSubsidyCurrentDistributionAmount uint64                `json:"stakeSubsidyCurrentDistributionAmount"`
-	StakeSubsidyPeriodLength              uint64                `json:"stakeSubsidyPeriodLength"`
+	SafeModeStorageRewards                SuiBigInt             `json:"safeModeStorageRewards"`
+	SafeModeComputationRewards            SuiBigInt             `json:"safeModeComputationRewards"`
+	SafeModeStorageRebates                SuiBigInt             `json:"safeModeStorageRebates"`
+	SafeModeNonRefundableStorageFee       SuiBigInt             `json:"safeModeNonRefundableStorageFee"`
+	EpochStartTimestampMs                 SuiBigInt             `json:"epochStartTimestampMs"`
+	EpochDurationMs                       SuiBigInt             `json:"epochDurationMs"`
+	StakeSubsidyStartEpoch                SuiBigInt             `json:"stakeSubsidyStartEpoch"`
+	MaxValidatorCount                     SuiBigInt             `json:"maxValidatorCount"`
+	MinValidatorJoiningStake              SuiBigInt             `json:"minValidatorJoiningStake"`
+	ValidatorLowStakeThreshold            SuiBigInt             `json:"validatorLowStakeThreshold"`
+	ValidatorVeryLowStakeThreshold        SuiBigInt             `json:"validatorVeryLowStakeThreshold"`
+	ValidatorLowStakeGracePeriod          SuiBigInt             `json:"validatorLowStakeGracePeriod"`
+	StakeSubsidyBalance                   SuiBigInt             `json:"stakeSubsidyBalance"`
+	StakeSubsidyDistributionCounter       SuiBigInt             `json:"stakeSubsidyDistributionCounter"`
+	StakeSubsidyCurrentDistributionAmount SuiBigInt             `json:"stakeSubsidyCurrentDistributionAmount"`
+	StakeSubsidyPeriodLength              SuiBigInt             `json:"stakeSubsidyPeriodLength"`
 	StakeSubsidyDecreaseRate              uint16                `json:"stakeSubsidyDecreaseRate"`
-	TotalStake                            uint64                `json:"totalStake"`
+	TotalStake                            SuiBigInt             `json:"totalStake"`
 	ActiveValidators                      []SuiValidatorSummary `json:"activeValidators"`
-	PendingActiveValidatorsId             string                `json:"pendingActiveValidatorsId"`
-	PendingActiveValidatorsSize           uint64                `json:"pendingActiveValidatorsSize"`
+	PendingActiveValidatorsId             ObjectId              `json:"pendingActiveValidatorsId"`
+	PendingActiveValidatorsSize           SuiBigInt             `json:"pendingActiveValidatorsSize"`
 	PendingRemovals                       []uint64              `json:"pendingRemovals"`
-	StakingPoolMappingsId                 string                `json:"stakingPoolMappingsId"`
-	StakingPoolMappingsSize               uint64                `json:"stakingPoolMappingsSize"`
-	InactivePoolsId                       string                `json:"inactivePoolsId"`
-	InactivePoolsSize                     uint64                `json:"inactivePoolsSize"`
-	ValidatorCandidatesId                 string                `json:"validatorCandidatesId"`
-	ValidatorCandidatesSize               uint64                `json:"validatorCandidatesSize"`
+	StakingPoolMappingsId                 ObjectId              `json:"stakingPoolMappingsId"`
+	StakingPoolMappingsSize               SuiBigInt             `json:"stakingPoolMappingsSize"`
+	InactivePoolsId                       ObjectId              `json:"inactivePoolsId"`
+	InactivePoolsSize                     SuiBigInt             `json:"inactivePoolsSize"`
+	ValidatorCandidatesId                 ObjectId              `json:"validatorCandidatesId"`
+	ValidatorCandidatesSize               SuiBigInt             `json:"validatorCandidatesSize"`
 	AtRiskValidators                      []interface{}         `json:"atRiskValidators"`
 	ValidatorReportRecords                []interface{}         `json:"validatorReportRecords"`
 }

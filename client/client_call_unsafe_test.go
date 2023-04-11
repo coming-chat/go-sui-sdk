@@ -91,43 +91,47 @@ func TestClient_Pay(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
 	recipient := Address
-	objId, err := types.NewHexData(M1Coin1)
+	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *signer)
+	require.NoError(t, err)
+	coin, err := coins.PickCoinNoLess(10000)
 	require.NoError(t, err)
 
 	amount := decimal.NewFromInt(10000)
 	txnBytes, err := cli.Pay(
 		context.Background(),
 		*signer,
-		[]types.ObjectId{*objId},
+		[]types.ObjectId{coin.CoinObjectId},
 		[]types.Address{*recipient},
 		[]decimal.Decimal{amount},
 		nil,
-		10000,
+		decimal.NewFromInt(100000000),
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes)
+	t.Log(simulateCheck(t, cli, txnBytes))
 }
 
 func TestClient_PaySui(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
 	recipient := Address
-	objId, err := types.NewHexData(M1Coin1)
+	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *signer)
+	require.NoError(t, err)
+	coin, err := coins.PickCoinNoLess(10000)
 	require.NoError(t, err)
 
 	amount := decimal.NewFromInt(10000)
 	txnBytes, err := cli.PaySui(
 		context.Background(),
 		*signer,
-		[]types.ObjectId{*objId},
+		[]types.ObjectId{coin.CoinObjectId},
 		[]types.Address{*recipient},
 		[]decimal.Decimal{amount},
-		10000,
+		decimal.NewFromInt(100000000),
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes)
+	t.Log(simulateCheck(t, cli, txnBytes))
 }
 
 func TestClient_SplitCoin(t *testing.T) {

@@ -1,12 +1,32 @@
 package types
 
 import (
+	"encoding/json"
+	"fmt"
 	"math"
+	"reflect"
+	"strings"
 
 	"github.com/shopspring/decimal"
 )
 
-type StakeStatus = string
+type StakeStatus = TagJson[Status]
+
+type Status struct {
+	Pending *struct{} `json:"Pending,omitempty"`
+	Active  *struct {
+		EstimatedReward SafeSuiBigInt[uint64] `json:"estimatedReward"`
+	} `json:"Active,omitempty"`
+	Unstaked *struct{} `json:"Unstaked,omitempty"`
+}
+
+func (s Status) Tag() string {
+	return "status"
+}
+
+func (s Status) Content() string {
+	return ""
+}
 
 const (
 	StakeStatusActive   = "Active"
@@ -14,65 +34,92 @@ const (
 	StakeStatusUnstaked = "Unstaked"
 )
 
-type StakeObject struct {
-	StakedSuiId       ObjectId    `json:"stakedSuiId"`
-	StakeRequestEpoch EpochId     `json:"stakeRequestEpoch"`
-	StakeActiveEpoch  EpochId     `json:"stakeActiveEpoch"`
-	Principal         SuiBigInt   `json:"principal"`
-	Status            StakeStatus `json:"status"`
-	EstimatedReward   *SuiBigInt  `json:"estimatedReward,omitempty"`
+type Stake struct {
+	StakedSuiId       ObjectId               `json:"stakedSuiId"`
+	StakeRequestEpoch SafeSuiBigInt[EpochId] `json:"stakeRequestEpoch"`
+	StakeActiveEpoch  SafeSuiBigInt[EpochId] `json:"stakeActiveEpoch"`
+	Principal         SafeSuiBigInt[uint64]  `json:"principal"`
+	StakeStatus       *StakeStatus           `json:"-,flatten"`
+}
+
+type JsonFlatten[T Stake] struct {
+	Data T
+}
+
+func (s *JsonFlatten[T]) UnmarshalJSON(data []byte) error {
+	err := json.Unmarshal(data, &s.Data)
+	if err != nil {
+		return err
+	}
+	rv := reflect.ValueOf(s).Elem().Field(0)
+	for i := 0; i < rv.Type().NumField(); i++ {
+		tag := rv.Type().Field(i).Tag.Get("json")
+		if strings.Contains(tag, "flatten") {
+			if rv.Field(i).Kind() != reflect.Pointer {
+				return fmt.Errorf("field %s not pointer", rv.Field(i).Type().Name())
+			}
+			if rv.Field(i).IsNil() {
+				rv.Field(i).Set(reflect.New(rv.Field(i).Type().Elem()))
+			}
+			err = json.Unmarshal(data, rv.Field(i).Interface())
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 type DelegatedStake struct {
-	ValidatorAddress Address       `json:"validatorAddress"`
-	StakingPool      ObjectId      `json:"stakingPool"`
-	Stakes           []StakeObject `json:"stakes"`
+	ValidatorAddress Address              `json:"validatorAddress"`
+	StakingPool      ObjectId             `json:"stakingPool"`
+	Stakes           []JsonFlatten[Stake] `json:"stakes"`
 }
 
 type SuiValidatorSummary struct {
-	SuiAddress             Address `json:"suiAddress"`
-	ProtocolPubkeyBytes    string  `json:"protocolPubkeyBytes"`
-	NetworkPubkeyBytes     string  `json:"networkPubkeyBytes"`
-	WorkerPubkeyBytes      string  `json:"workerPubkeyBytes"`
-	ProofOfPossessionBytes string  `json:"proofOfPossessionBytes"`
-	OperationCapId         string  `json:"operationCapId"`
-	Name                   string  `json:"name"`
-	Description            string  `json:"description"`
-	ImageUrl               string  `json:"imageUrl"`
-	ProjectUrl             string  `json:"projectUrl"`
-	P2pAddress             string  `json:"p2pAddress"`
-	NetAddress             string  `json:"netAddress"`
-	PrimaryAddress         string  `json:"primaryAddress"`
-	WorkerAddress          string  `json:"workerAddress"`
+	SuiAddress             Address    `json:"suiAddress"`
+	ProtocolPubkeyBytes    Base64Data `json:"protocolPubkeyBytes"`
+	NetworkPubkeyBytes     Base64Data `json:"networkPubkeyBytes"`
+	WorkerPubkeyBytes      Base64Data `json:"workerPubkeyBytes"`
+	ProofOfPossessionBytes Base64Data `json:"proofOfPossessionBytes"`
+	OperationCapId         ObjectId   `json:"operationCapId"`
+	Name                   string     `json:"name"`
+	Description            string     `json:"description"`
+	ImageUrl               string     `json:"imageUrl"`
+	ProjectUrl             string     `json:"projectUrl"`
+	P2pAddress             string     `json:"p2pAddress"`
+	NetAddress             string     `json:"netAddress"`
+	PrimaryAddress         string     `json:"primaryAddress"`
+	WorkerAddress          string     `json:"workerAddress"`
 
-	NextEpochProtocolPubkeyBytes string `json:"nextEpochProtocolPubkeyBytes"`
-	NextEpochProofOfPossession   string `json:"nextEpochProofOfPossession"`
-	NextEpochNetworkPubkeyBytes  string `json:"nextEpochNetworkPubkeyBytes"`
-	NextEpochWorkerPubkeyBytes   string `json:"nextEpochWorkerPubkeyBytes"`
-	NextEpochNetAddress          string `json:"nextEpochNetAddress"`
-	NextEpochP2pAddress          string `json:"nextEpochP2pAddress"`
-	NextEpochPrimaryAddress      string `json:"nextEpochPrimaryAddress"`
-	NextEpochWorkerAddress       string `json:"nextEpochWorkerAddress"`
+	NextEpochProtocolPubkeyBytes Base64Data `json:"nextEpochProtocolPubkeyBytes"`
+	NextEpochProofOfPossession   Base64Data `json:"nextEpochProofOfPossession"`
+	NextEpochNetworkPubkeyBytes  Base64Data `json:"nextEpochNetworkPubkeyBytes"`
+	NextEpochWorkerPubkeyBytes   Base64Data `json:"nextEpochWorkerPubkeyBytes"`
+	NextEpochNetAddress          string     `json:"nextEpochNetAddress"`
+	NextEpochP2pAddress          string     `json:"nextEpochP2pAddress"`
+	NextEpochPrimaryAddress      string     `json:"nextEpochPrimaryAddress"`
+	NextEpochWorkerAddress       string     `json:"nextEpochWorkerAddress"`
 
-	VotingPower             SuiBigInt `json:"votingPower"`
-	GasPrice                SuiBigInt `json:"gasPrice"`
-	CommissionRate          SuiBigInt `json:"commissionRate"`
-	NextEpochStake          SuiBigInt `json:"nextEpochStake"`
-	NextEpochGasPrice       SuiBigInt `json:"nextEpochGasPrice"`
-	NextEpochCommissionRate SuiBigInt `json:"nextEpochCommissionRate"`
-	StakingPoolId           string    `json:"stakingPoolId"`
+	VotingPower             SafeSuiBigInt[uint64] `json:"votingPower"`
+	GasPrice                SafeSuiBigInt[uint64] `json:"gasPrice"`
+	CommissionRate          SafeSuiBigInt[uint64] `json:"commissionRate"`
+	NextEpochStake          SafeSuiBigInt[uint64] `json:"nextEpochStake"`
+	NextEpochGasPrice       SafeSuiBigInt[uint64] `json:"nextEpochGasPrice"`
+	NextEpochCommissionRate SafeSuiBigInt[uint64] `json:"nextEpochCommissionRate"`
+	StakingPoolId           ObjectId              `json:"stakingPoolId"`
 
-	StakingPoolActivationEpoch   *SuiBigInt `json:"stakingPoolActivationEpoch,omitempty"`
-	StakingPoolDeactivationEpoch *SuiBigInt `json:"stakingPoolDeactivationEpoch,omitempty"`
+	StakingPoolActivationEpoch   SafeSuiBigInt[uint64] `json:"stakingPoolActivationEpoch"`
+	StakingPoolDeactivationEpoch SafeSuiBigInt[uint64] `json:"stakingPoolDeactivationEpoch"`
 
-	StakingPoolSuiBalance    SuiBigInt `json:"stakingPoolSuiBalance"`
-	RewardsPool              SuiBigInt `json:"rewardsPool"`
-	PoolTokenBalance         SuiBigInt `json:"poolTokenBalance"`
-	PendingStake             SuiBigInt `json:"pendingStake"`
-	PendingPoolTokenWithdraw SuiBigInt `json:"pendingPoolTokenWithdraw"`
-	PendingTotalSuiWithdraw  SuiBigInt `json:"pendingTotalSuiWithdraw"`
-	ExchangeRatesId          string    `json:"exchangeRatesId"`
-	ExchangeRatesSize        SuiBigInt `json:"exchangeRatesSize"`
+	StakingPoolSuiBalance    SafeSuiBigInt[uint64] `json:"stakingPoolSuiBalance"`
+	RewardsPool              SafeSuiBigInt[uint64] `json:"rewardsPool"`
+	PoolTokenBalance         SafeSuiBigInt[uint64] `json:"poolTokenBalance"`
+	PendingStake             SafeSuiBigInt[uint64] `json:"pendingStake"`
+	PendingPoolTokenWithdraw SafeSuiBigInt[uint64] `json:"pendingPoolTokenWithdraw"`
+	PendingTotalSuiWithdraw  SafeSuiBigInt[uint64] `json:"pendingTotalSuiWithdraw"`
+	ExchangeRatesId          ObjectId              `json:"exchangeRatesId"`
+	ExchangeRatesSize        SafeSuiBigInt[uint64] `json:"exchangeRatesSize"`
 }
 
 func (v *SuiValidatorSummary) CalculateAPY(epoch uint64) float64 {
@@ -83,9 +130,13 @@ func (v *SuiValidatorSummary) CalculateAPY(epoch uint64) float64 {
 	)
 
 	// If the staking pool is active then we calculate its APY. Or if staking started in epoch 0
-	if stakingPoolActivationEpoch.IsZero() {
-		numEpochsParticipated := epoch - stakingPoolActivationEpoch.BigInt().Uint64()
-		pow1, _ := stakingPoolSuiBalance.Sub(poolTokenBalance).Div(poolTokenBalance).Add(decimal.NewFromInt(1)).Float64()
+	if stakingPoolActivationEpoch.Uint64() == 0 {
+		numEpochsParticipated := epoch - stakingPoolActivationEpoch.Uint64()
+		pow1, _ := decimal.NewFromInt(stakingPoolSuiBalance.Int64()).Sub(decimal.NewFromInt(stakingPoolSuiBalance.Int64())).
+			Div(decimal.NewFromInt(poolTokenBalance.Int64())).Add(
+			decimal.
+				NewFromInt(1),
+		).Float64()
 		pow2, _ := decimal.NewFromInt(365).Div(decimal.NewFromInt(int64(numEpochsParticipated))).Float64()
 		apy := (math.Pow(pow1, pow2) - 1) * 100
 		if apy > 100000 {
@@ -98,42 +149,43 @@ func (v *SuiValidatorSummary) CalculateAPY(epoch uint64) float64 {
 	}
 }
 
+type TypeName []Address
 type SuiSystemStateSummary struct {
-	Epoch                                 SuiBigInt             `json:"epoch"`
-	ProtocolVersion                       SuiBigInt             `json:"protocolVersion"`
-	SystemStateVersion                    SuiBigInt             `json:"systemStateVersion"`
-	StorageFundTotalObjectStorageRebates  SuiBigInt             `json:"storageFundTotalObjectStorageRebates"`
-	StorageFundNonRefundableBalance       SuiBigInt             `json:"storageFundNonRefundableBalance"`
-	ReferenceGasPrice                     SuiBigInt             `json:"referenceGasPrice"`
-	SafeMode                              bool                  `json:"safeMode"`
-	SafeModeStorageRewards                SuiBigInt             `json:"safeModeStorageRewards"`
-	SafeModeComputationRewards            SuiBigInt             `json:"safeModeComputationRewards"`
-	SafeModeStorageRebates                SuiBigInt             `json:"safeModeStorageRebates"`
-	SafeModeNonRefundableStorageFee       SuiBigInt             `json:"safeModeNonRefundableStorageFee"`
-	EpochStartTimestampMs                 SuiBigInt             `json:"epochStartTimestampMs"`
-	EpochDurationMs                       SuiBigInt             `json:"epochDurationMs"`
-	StakeSubsidyStartEpoch                SuiBigInt             `json:"stakeSubsidyStartEpoch"`
-	MaxValidatorCount                     SuiBigInt             `json:"maxValidatorCount"`
-	MinValidatorJoiningStake              SuiBigInt             `json:"minValidatorJoiningStake"`
-	ValidatorLowStakeThreshold            SuiBigInt             `json:"validatorLowStakeThreshold"`
-	ValidatorVeryLowStakeThreshold        SuiBigInt             `json:"validatorVeryLowStakeThreshold"`
-	ValidatorLowStakeGracePeriod          SuiBigInt             `json:"validatorLowStakeGracePeriod"`
-	StakeSubsidyBalance                   SuiBigInt             `json:"stakeSubsidyBalance"`
-	StakeSubsidyDistributionCounter       SuiBigInt             `json:"stakeSubsidyDistributionCounter"`
-	StakeSubsidyCurrentDistributionAmount SuiBigInt             `json:"stakeSubsidyCurrentDistributionAmount"`
-	StakeSubsidyPeriodLength              SuiBigInt             `json:"stakeSubsidyPeriodLength"`
-	StakeSubsidyDecreaseRate              uint16                `json:"stakeSubsidyDecreaseRate"`
-	TotalStake                            SuiBigInt             `json:"totalStake"`
-	ActiveValidators                      []SuiValidatorSummary `json:"activeValidators"`
-	PendingActiveValidatorsId             ObjectId              `json:"pendingActiveValidatorsId"`
-	PendingActiveValidatorsSize           SuiBigInt             `json:"pendingActiveValidatorsSize"`
-	PendingRemovals                       []uint64              `json:"pendingRemovals"`
-	StakingPoolMappingsId                 ObjectId              `json:"stakingPoolMappingsId"`
-	StakingPoolMappingsSize               SuiBigInt             `json:"stakingPoolMappingsSize"`
-	InactivePoolsId                       ObjectId              `json:"inactivePoolsId"`
-	InactivePoolsSize                     SuiBigInt             `json:"inactivePoolsSize"`
-	ValidatorCandidatesId                 ObjectId              `json:"validatorCandidatesId"`
-	ValidatorCandidatesSize               SuiBigInt             `json:"validatorCandidatesSize"`
-	AtRiskValidators                      []interface{}         `json:"atRiskValidators"`
-	ValidatorReportRecords                []interface{}         `json:"validatorReportRecords"`
+	Epoch                                 SafeSuiBigInt[uint64]   `json:"epoch"`
+	ProtocolVersion                       SafeSuiBigInt[uint64]   `json:"protocolVersion"`
+	SystemStateVersion                    SafeSuiBigInt[uint64]   `json:"systemStateVersion"`
+	StorageFundTotalObjectStorageRebates  SafeSuiBigInt[uint64]   `json:"storageFundTotalObjectStorageRebates"`
+	StorageFundNonRefundableBalance       SafeSuiBigInt[uint64]   `json:"storageFundNonRefundableBalance"`
+	ReferenceGasPrice                     SafeSuiBigInt[uint64]   `json:"referenceGasPrice"`
+	SafeMode                              bool                    `json:"safeMode"`
+	SafeModeStorageRewards                SafeSuiBigInt[uint64]   `json:"safeModeStorageRewards"`
+	SafeModeComputationRewards            SafeSuiBigInt[uint64]   `json:"safeModeComputationRewards"`
+	SafeModeStorageRebates                SafeSuiBigInt[uint64]   `json:"safeModeStorageRebates"`
+	SafeModeNonRefundableStorageFee       SafeSuiBigInt[uint64]   `json:"safeModeNonRefundableStorageFee"`
+	EpochStartTimestampMs                 SafeSuiBigInt[uint64]   `json:"epochStartTimestampMs"`
+	EpochDurationMs                       SafeSuiBigInt[uint64]   `json:"epochDurationMs"`
+	StakeSubsidyStartEpoch                SafeSuiBigInt[uint64]   `json:"stakeSubsidyStartEpoch"`
+	MaxValidatorCount                     SafeSuiBigInt[uint64]   `json:"maxValidatorCount"`
+	MinValidatorJoiningStake              SafeSuiBigInt[uint64]   `json:"minValidatorJoiningStake"`
+	ValidatorLowStakeThreshold            SafeSuiBigInt[uint64]   `json:"validatorLowStakeThreshold"`
+	ValidatorVeryLowStakeThreshold        SafeSuiBigInt[uint64]   `json:"validatorVeryLowStakeThreshold"`
+	ValidatorLowStakeGracePeriod          SafeSuiBigInt[uint64]   `json:"validatorLowStakeGracePeriod"`
+	StakeSubsidyBalance                   SafeSuiBigInt[uint64]   `json:"stakeSubsidyBalance"`
+	StakeSubsidyDistributionCounter       SafeSuiBigInt[uint64]   `json:"stakeSubsidyDistributionCounter"`
+	StakeSubsidyCurrentDistributionAmount SafeSuiBigInt[uint64]   `json:"stakeSubsidyCurrentDistributionAmount"`
+	StakeSubsidyPeriodLength              SafeSuiBigInt[uint64]   `json:"stakeSubsidyPeriodLength"`
+	StakeSubsidyDecreaseRate              uint16                  `json:"stakeSubsidyDecreaseRate"`
+	TotalStake                            SafeSuiBigInt[uint64]   `json:"totalStake"`
+	ActiveValidators                      []SuiValidatorSummary   `json:"activeValidators"`
+	PendingActiveValidatorsId             ObjectId                `json:"pendingActiveValidatorsId"`
+	PendingActiveValidatorsSize           SafeSuiBigInt[uint64]   `json:"pendingActiveValidatorsSize"`
+	PendingRemovals                       []SafeSuiBigInt[uint64] `json:"pendingRemovals"`
+	StakingPoolMappingsId                 ObjectId                `json:"stakingPoolMappingsId"`
+	StakingPoolMappingsSize               SafeSuiBigInt[uint64]   `json:"stakingPoolMappingsSize"`
+	InactivePoolsId                       ObjectId                `json:"inactivePoolsId"`
+	InactivePoolsSize                     SafeSuiBigInt[uint64]   `json:"inactivePoolsSize"`
+	ValidatorCandidatesId                 ObjectId                `json:"validatorCandidatesId"`
+	ValidatorCandidatesSize               SafeSuiBigInt[uint64]   `json:"validatorCandidatesSize"`
+	AtRiskValidators                      interface{}             `json:"atRiskValidators"`
+	ValidatorReportRecords                interface{}             `json:"validatorReportRecords"`
 }

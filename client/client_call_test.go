@@ -468,7 +468,17 @@ func TestClient_GetObject(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(
 			tt.name, func(t *testing.T) {
-				got, err := tt.chain.GetObject(tt.args.ctx, tt.args.objID, nil)
+				got, err := tt.chain.GetObject(
+					tt.args.ctx, tt.args.objID, &types.SuiObjectDataOptions{
+						ShowType:                true,
+						ShowOwner:               true,
+						ShowContent:             true,
+						ShowDisplay:             true,
+						ShowBcs:                 true,
+						ShowPreviousTransaction: true,
+						ShowStorageRebate:       true,
+					},
+				)
 				if (err != nil) != tt.wantErr {
 					t.Errorf("GetObject() error = %v, wantErr %v", err, tt.wantErr)
 					return
@@ -483,7 +493,7 @@ func TestClient_MultiGetObjects(t *testing.T) {
 	chain := ChainClient(t)
 	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
 	require.NoError(t, err)
-	if len(coins.Data) != 0 {
+	if len(coins.Data) == 0 {
 		t.Log("Warning: No Object Id for test.")
 		return
 	}
@@ -492,8 +502,13 @@ func TestClient_MultiGetObjects(t *testing.T) {
 	objs := []types.ObjectId{obj, obj}
 	resp, err := chain.MultiGetObjects(
 		context.Background(), objs, &types.SuiObjectDataOptions{
-			ShowType:  true,
-			ShowOwner: true,
+			ShowType:                true,
+			ShowOwner:               true,
+			ShowContent:             true,
+			ShowDisplay:             true,
+			ShowBcs:                 true,
+			ShowPreviousTransaction: true,
+			ShowStorageRebate:       true,
 		},
 	)
 	require.Nil(t, err)

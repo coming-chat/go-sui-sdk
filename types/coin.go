@@ -76,8 +76,9 @@ func (cs Coins) TotalBalance() *big.Int {
 }
 
 func (cs Coins) PickCoinNoLess(amount uint64) (*Coin, error) {
-	for _, coin := range cs {
+	for i, coin := range cs {
 		if coin.Balance.BigInt().Uint64() >= amount {
+			cs = append(cs[:i], cs[i+1:]...)
 			return &coin, nil
 		}
 	}

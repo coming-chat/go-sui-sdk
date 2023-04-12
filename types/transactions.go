@@ -181,8 +181,8 @@ func (t SuiTransactionBlockData) Content() string {
 }
 
 type SuiTransactionBlock struct {
-	Data         SuiTransactionBlockData `json:"data"`
-	TxSignatures []string                `json:"txSignatures"`
+	Data         TagJson[SuiTransactionBlockData] `json:"data"`
+	TxSignatures []string                         `json:"txSignatures"`
 }
 
 type ObjectChange struct {

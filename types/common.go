@@ -33,6 +33,10 @@ type SafeSuiBigInt[T SafeBigInt] struct {
 	data T
 }
 
+func (s *SafeSuiBigInt[T]) UnmarshalText(data []byte) error {
+	return s.UnmarshalJSON(data)
+}
+
 func (s *SafeSuiBigInt[T]) UnmarshalJSON(data []byte) error {
 	num := decimal.NewFromInt(0)
 	err := num.UnmarshalJSON(data)

@@ -397,7 +397,7 @@ func TestClient_GetAllCoins(t *testing.T) {
 
 func TestClient_GetTransaction(t *testing.T) {
 	cli := TestnetClient(t)
-	digest := "FD4onoYMKTNC4f7UFS4UmeaeDKsqt73eaRciDm7UcEdZ"
+	digest := "5y9at3Wu68RsN41agHxNtCoVHJLdNauGgCvk9HWTKYft"
 	resp, err := cli.GetTransactionBlock(
 		context.Background(), digest, types.SuiTransactionBlockResponseOptions{
 			ShowInput:          true,
@@ -409,6 +409,8 @@ func TestClient_GetTransaction(t *testing.T) {
 	)
 	require.NoError(t, err)
 	t.Logf("%#v", resp)
+
+	require.Equal(t, int64(-762386), resp.Effects.Data.GasFee())
 }
 
 func TestBatchCall_GetObject(t *testing.T) {

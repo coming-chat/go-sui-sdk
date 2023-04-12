@@ -1,7 +1,5 @@
 package types
 
-import "github.com/shopspring/decimal"
-
 type ExecuteTransactionRequestType string
 
 const (
@@ -89,17 +87,14 @@ func (t SuiTransactionBlockEffects) Content() string {
 	return ""
 }
 
-func (t SuiTransactionBlockEffects) GasFee() uint64 {
-	feeInt := decimal.NewFromInt(t.V1.GasUsed.StorageCost.Int64()).Sub(
-		decimal.NewFromInt(t.V1.GasUsed.StorageRebate.Int64()).
-			Add(
-				decimal.NewFromInt(
-					t.V1.GasUsed.
-						ComputationCost.Int64(),
-				),
-			),
-	)
-	return feeInt.BigInt().Uint64()
+func (t SuiTransactionBlockEffects) GasFee() int64 {
+	if t.V1 == nil {
+		return 0
+	}
+	fee := t.V1.GasUsed.StorageCost.Int64() -
+		t.V1.GasUsed.StorageRebate.Int64() +
+		t.V1.GasUsed.ComputationCost.Int64()
+	return fee
 }
 
 func (t SuiTransactionBlockEffects) IsSuccess() bool {

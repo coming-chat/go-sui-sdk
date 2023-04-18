@@ -69,7 +69,7 @@ func init() {
 func (cs Coins) TotalBalance() *big.Int {
 	total := big.NewInt(0)
 	for _, coin := range cs {
-		total = total.Add(total, big.NewInt(coin.Balance.Int64()))
+		total = total.Add(total, big.NewInt(0).SetUint64(coin.Balance.Uint64()))
 	}
 	return total
 }
@@ -152,7 +152,7 @@ func (cs Coins) PickCoins(amount *big.Int, pickMethod int) (Coins, error) {
 	total := big.NewInt(0)
 	for _, coin := range sortedCoins {
 		result = append(result, coin)
-		total = new(big.Int).Add(total, big.NewInt(coin.Balance.Int64()))
+		total = new(big.Int).Add(total, big.NewInt(0).SetUint64(coin.Balance.Uint64()))
 		if total.Cmp(amount) >= 0 {
 			return result, nil
 		}

@@ -6,6 +6,11 @@ import (
 	"sort"
 )
 
+const SUI_COIN_TYPE = "0x2::sui::SUI"
+
+const MAX_INPUT_COUNT_MERGE = 256 - 1
+const MAX_INPUT_COUNT_STAKE = 512 - 1
+
 // type LockedBalance struct {
 // 	EpochId int64 `json:"epochId"`
 // 	Number  int64 `json:"number"`
@@ -22,6 +27,14 @@ type Coin struct {
 	PreviousTransaction TransactionDigest      `json:"previousTransaction"`
 }
 
+func (c *Coin) Reference() *ObjectRef {
+	return &ObjectRef{
+		Digest:   c.Digest,
+		Version:  c.Version,
+		ObjectId: c.CoinObjectId,
+	}
+}
+
 type CoinPage = Page[Coin, ObjectId]
 
 type Balance struct {
@@ -35,36 +48,101 @@ type Supply struct {
 	Value SafeSuiBigInt[uint64] `json:"value"`
 }
 
-var ErrCoinsNotMatchRequest error
-var ErrCoinsNeedMoreObject error
+type PickedCoins struct {
+	Coins        []Coin
+	TotalAmount  big.Int
+	TargetAmount big.Int
+}
 
-const (
-	PickSmaller = iota // pick smaller coins to match amount
-	PickBigger         // pick bigger coins to match amount
-	PickByOrder        // pick coins by coins order to match amount
-)
+func (cs *PickedCoins) Count() int {
+	return len(cs.Coins)
+}
 
-// type Coin struct {
-// 	Balance   uint64     `json:"balance"`
-// 	Type      string     `json:"type"`
-// 	Owner     *Address   `json:"owner"`
-// 	Reference *ObjectRef `json:"reference"`
-// }
+// Only have one coin, and the coin's amount is equal to the target amount
+func (cs *PickedCoins) OnlyOneAndAmountMatch() bool {
+	return len(cs.Coins) == 1 && cs.TotalAmount.Cmp(&cs.TargetAmount) == 0
+}
 
-func (c *Coin) Reference() *ObjectRef {
-	return &ObjectRef{
-		Digest:   c.Digest,
-		Version:  c.Version,
-		ObjectId: c.CoinObjectId,
+func (cs *PickedCoins) CoinIds() []ObjectId {
+	coinIds := make([]ObjectId, len(cs.Coins))
+	for idx, coin := range cs.Coins {
+		coinIds[idx] = coin.CoinObjectId
 	}
+	return coinIds
+}
+
+// PickupCoins
+// Select coins that match the target amount.
+// @param inputCoins queried page coin datas
+// @param targetAmount total amount of coins to be selected from inputCoins
+// @param limit the max number of coins selected, default is `MAX_INPUT_COUNT_MERGE`
+// @param reserveGasCoin Only valid when coin is SUI, Do we need to keep at least one coin unselected?
+// @throw ErrNoCoinsFound If the count of input coins is 0.
+// @throw ErrInsufficientBalance If the input coins are all that is left and the total amount is less than the target amount.
+// @throw ErrNeedMergeCoin If there are many coins, but the total amount of coins limited is less than the target amount.
+// @throw ErrNeedSplitGasCoin If the coin to be selected is SUI, the total amount of left all coins is greater than the target amount, but cannot reserved another gas coin.
+func PickupCoins(inputCoins *CoinPage, targetAmount big.Int, limit int, reserveGasCoin bool) (*PickedCoins, error) {
+	inputCount := len(inputCoins.Data)
+	if inputCount <= 0 {
+		return nil, ErrNoCoinsFound
+	}
+	if limit == 0 {
+		limit = MAX_INPUT_COUNT_MERGE
+	}
+	coins := inputCoins.Data
+	// sort by balance descend
+	sort.Slice(coins, func(i, j int) bool {
+		return coins[i].Balance.Uint64() > coins[j].Balance.Uint64()
+	})
+
+	// First find a coin with a value that is exactly equal to the target amount.
+	for _, coin := range coins {
+		if coin.Balance.Uint64() == targetAmount.Uint64() {
+			return &PickedCoins{
+				Coins:        Coins{coin},
+				TotalAmount:  targetAmount,
+				TargetAmount: targetAmount,
+			}, nil
+		}
+		if coin.Balance.Uint64() < targetAmount.Uint64() {
+			break
+		}
+	}
+
+	total := big.NewInt(0)
+	pickedCoins := []Coin{}
+	for _, coin := range coins {
+		total = total.Add(total, big.NewInt(0).SetUint64(coin.Balance.Uint64()))
+		pickedCoins = append(pickedCoins, coin)
+		if total.Cmp(&targetAmount) >= 0 {
+			break
+		}
+	}
+
+	if total.Cmp(&targetAmount) < 0 {
+		if inputCoins.HasNextPage {
+			return nil, ErrNeedMergeCoin
+		} else {
+			return nil, ErrInsufficientBalance
+		}
+	}
+	if limit < len(pickedCoins) {
+		return nil, ErrNeedMergeCoin
+	}
+	isLeftCoin := inputCoins.HasNextPage || inputCount > len(pickedCoins)
+	isSUI := coins[0].CoinType == SUI_COIN_TYPE
+	if isSUI && reserveGasCoin && !isLeftCoin {
+		return nil, ErrNeedSplitGasCoin
+	}
+
+	return &PickedCoins{
+		Coins:        pickedCoins,
+		TotalAmount:  *total,
+		TargetAmount: targetAmount,
+	}, nil
 }
 
 type Coins []Coin
-
-func init() {
-	ErrCoinsNotMatchRequest = errors.New("coins not match request")
-	ErrCoinsNeedMoreObject = errors.New("you should get more SUI coins and try again")
-}
 
 func (cs Coins) TotalBalance() *big.Int {
 	total := big.NewInt(0)
@@ -86,6 +164,12 @@ func (cs Coins) PickCoinNoLess(amount uint64) (*Coin, error) {
 	}
 	return nil, errors.New("no coin is enough to cover the gas")
 }
+
+const (
+	PickSmaller = iota // pick smaller coins to match amount
+	PickBigger         // pick bigger coins to match amount
+	PickByOrder        // pick coins by coins order to match amount
+)
 
 // PickSUICoinsWithGas pick coins, which sum >= amount, and pick a gas coin >= gasAmount which not in coins
 // if not satisfated amount/gasAmount, an ErrCoinsNotMatchRequest/ErrCoinsNeedMoreObject error will return

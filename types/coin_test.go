@@ -4,6 +4,8 @@ import (
 	"math/big"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func balanceObject(val uint64) SafeSuiBigInt[uint64] {
@@ -227,6 +229,119 @@ func TestCoins_PickCoins(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Coins.PickCoins() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPickupCoins(t *testing.T) {
+	coin := func(n uint64) Coin {
+		return Coin{Balance: balanceObject(n)}
+	}
+
+	type args struct {
+		inputCoins     *CoinPage
+		targetAmount   big.Int
+		limit          int
+		reserveGasCoin bool
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *PickedCoins
+		wantErr error
+	}{
+		{
+			name: "need sort",
+			args: args{
+				inputCoins: &Page[Coin, HexData]{
+					Data: []Coin{
+						coin(1e3), coin(1e5), coin(1e2), coin(1e4),
+					},
+				},
+				targetAmount: *big.NewInt(101000),
+				limit:        100,
+			},
+			want: &PickedCoins{
+				Coins: []Coin{
+					coin(1e5), coin(1e4),
+				},
+				TotalAmount:  *big.NewInt(110000),
+				TargetAmount: *big.NewInt(101000),
+			},
+		},
+		{
+			name: "ErrNoCoinsFound",
+			args: args{
+				inputCoins: &Page[Coin, HexData]{
+					Data: []Coin{},
+				},
+				targetAmount: *big.NewInt(101000),
+			},
+			wantErr: ErrNoCoinsFound,
+		},
+		{
+			name: "ErrInsufficientBalance",
+			args: args{
+				inputCoins: &Page[Coin, HexData]{
+					Data: []Coin{
+						coin(1e5), coin(1e6), coin(1e4),
+					},
+				},
+				targetAmount: *big.NewInt(1e9),
+			},
+			wantErr: ErrInsufficientBalance,
+		},
+		{
+			name: "ErrNeedMergeCoin 1",
+			args: args{
+				inputCoins: &Page[Coin, HexData]{
+					Data: []Coin{
+						coin(1e5), coin(1e6), coin(1e4),
+					},
+					HasNextPage: true,
+				},
+				targetAmount: *big.NewInt(1e9),
+			},
+			wantErr: ErrNeedMergeCoin,
+		},
+		{
+			name: "ErrNeedMergeCoin 2",
+			args: args{
+				inputCoins: &Page[Coin, HexData]{
+					Data: []Coin{
+						coin(1e5), coin(1e6), coin(1e4), coin(1e5),
+					},
+					HasNextPage: false,
+				},
+				targetAmount: *big.NewInt(1201000),
+				limit:        3,
+			},
+			wantErr: ErrNeedMergeCoin,
+		},
+		{
+			name: "ErrNeedSplitGasCoin",
+			args: args{
+				inputCoins: &Page[Coin, HexData]{
+					Data: []Coin{
+						{Balance: balanceObject(1e5), CoinType: SUI_COIN_TYPE},
+						{Balance: balanceObject(1e5), CoinType: SUI_COIN_TYPE},
+					},
+					HasNextPage: false,
+				},
+				targetAmount:   *big.NewInt(110000),
+				reserveGasCoin: true,
+			},
+			wantErr: ErrNeedSplitGasCoin,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := PickupCoins(tt.args.inputCoins, tt.args.targetAmount, tt.args.limit, tt.args.reserveGasCoin)
+			if tt.wantErr != nil {
+				require.Equal(t, err, tt.wantErr)
+			} else {
+				require.Equal(t, got, tt.want)
 			}
 		})
 	}

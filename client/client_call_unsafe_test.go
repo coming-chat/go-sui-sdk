@@ -2,6 +2,8 @@ package client
 
 import (
 	"context"
+	"encoding/json"
+	"math/big"
 	"testing"
 
 	"github.com/coming-chat/go-sui/sui_types"
@@ -11,182 +13,185 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func shouldSimulate() bool {
-	if whoami == "gg" {
-		return true
-	}
-	return false
-}
-
-func shouldExecute() bool {
-	if whoami == "gg" {
-		return true
-	}
-	return false
-}
-
-const (
-	M1Coin1 = "0x0501ebf5518912e380e8b3b68f93548418fb1bce59ed025f68ad6d236f012f92"
-	M1Coin2 = "0x0d19d099213c23af5a6562034ce2772555f6945920913e18809369d738042b91"
-)
-
 func TestClient_TransferObject(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
 	recipient := signer
-	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *signer)
+	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(20000)
-	require.NoError(t, err)
+	require.GreaterOrEqual(t, len(coins.Data), 2)
+	coin := coins.Data[0]
 
-	txnBytes, err := cli.TransferObject(
-		context.Background(), *signer, *recipient, coin.CoinObjectId, nil,
-		types.NewSafeSuiBigInt(uint64(100000000)),
+	txnBytes, err := cli.TransferObject(context.Background(), *signer, *recipient,
+		coin.CoinObjectId, nil, types.NewSafeSuiBigInt(SUI(0.01).Uint64()),
 	)
 	require.Nil(t, err)
 
-	t.Log(simulateCheck(t, cli, txnBytes))
+	simulateCheck(t, cli, txnBytes, true)
 }
 
 func TestClient_TransferSui(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
 	recipient := signer
-	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *signer)
-	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(100000)
+	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.NoError(t, err)
 
+	amount := SUI(0.0001).Uint64()
+	gasBudget := SUI(0.01).Uint64()
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 1, false)
+	require.Nil(t, err)
+
 	txnBytes, err := cli.TransferSui(
-		context.Background(), *signer, *recipient, coin.CoinObjectId, types.NewSafeSuiBigInt(uint64(100000)),
-		types.NewSafeSuiBigInt(uint64(100000000)),
+		context.Background(), *signer, *recipient,
+		pickedCoins.Coins[0].CoinObjectId,
+		types.NewSafeSuiBigInt(amount),
+		types.NewSafeSuiBigInt(gasBudget),
 	)
 	require.Nil(t, err)
 
-	t.Log(simulateCheck(t, cli, txnBytes))
+	simulateCheck(t, cli, txnBytes, true)
 }
 
 func TestClient_PayAllSui(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
 	recipient := signer
-	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *signer)
-	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(1000)
-	require.NoError(t, err)
-	coin1, err := coins.PickCoinNoLess(50000)
+	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.NoError(t, err)
 
+	amount := SUI(0.001).Uint64()
+	gasBudget := SUI(0.01).Uint64()
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, false)
+	require.Nil(t, err)
+
 	txnBytes, err := cli.PayAllSui(
-		context.Background(), *signer, *recipient, []types.ObjectId{coin.CoinObjectId, coin1.CoinObjectId},
-		types.NewSafeSuiBigInt(uint64(100000000)),
+		context.Background(), *signer, *recipient,
+		pickedCoins.CoinIds(),
+		types.NewSafeSuiBigInt(gasBudget),
 	)
 	require.Nil(t, err)
 
-	t.Log(simulateCheck(t, cli, txnBytes))
+	simulateCheck(t, cli, txnBytes, true)
 }
 
 func TestClient_Pay(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
 	recipient := Address
-	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *signer)
+	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(10000)
+
+	amount := SUI(0.001).Uint64()
+	gasBudget := SUI(0.01).Uint64()
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, true)
 	require.NoError(t, err)
 
 	txnBytes, err := cli.Pay(
-		context.Background(),
-		*signer,
-		[]types.ObjectId{coin.CoinObjectId},
+		context.Background(), *signer,
+		pickedCoins.CoinIds(),
 		[]types.Address{*recipient},
 		[]types.SafeSuiBigInt[uint64]{
-			types.NewSafeSuiBigInt(uint64(10000)),
+			types.NewSafeSuiBigInt(amount),
 		},
 		nil,
-		types.NewSafeSuiBigInt(uint64(100000000)),
+		types.NewSafeSuiBigInt(gasBudget),
 	)
 	require.Nil(t, err)
 
-	t.Log(simulateCheck(t, cli, txnBytes))
+	simulateCheck(t, cli, txnBytes, true)
 }
 
 func TestClient_PaySui(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
 	recipient := Address
-	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *signer)
+	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(10000)
+
+	amount := SUI(0.001).Uint64()
+	gasBudget := SUI(0.01).Uint64()
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, false)
 	require.NoError(t, err)
 
 	txnBytes, err := cli.PaySui(
-		context.Background(),
-		*signer,
-		[]types.ObjectId{coin.CoinObjectId},
+		context.Background(), *signer,
+		pickedCoins.CoinIds(),
 		[]types.Address{*recipient},
 		[]types.SafeSuiBigInt[uint64]{
-			types.NewSafeSuiBigInt(uint64(1000)),
+			types.NewSafeSuiBigInt(amount),
 		},
-		types.NewSafeSuiBigInt(uint64(100000000)),
+		types.NewSafeSuiBigInt(gasBudget),
 	)
 	require.Nil(t, err)
 
-	t.Log(simulateCheck(t, cli, txnBytes))
+	simulateCheck(t, cli, txnBytes, true)
 }
 
 func TestClient_SplitCoin(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
-	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(1e7)
+
+	amount := SUI(0.01).Uint64()
+	gasBudget := SUI(0.01).Uint64()
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), 1, true)
 	require.NoError(t, err)
-	splitCoins := []types.SafeSuiBigInt[uint64]{types.NewSafeSuiBigInt(uint64(1e7))} // 1SUI
+	splitCoins := []types.SafeSuiBigInt[uint64]{types.NewSafeSuiBigInt(amount / 2)}
 
 	txnBytes, err := cli.SplitCoin(
-		context.Background(), *signer, coin.CoinObjectId, splitCoins, nil,
-		types.NewSafeSuiBigInt(uint64(100000000)),
+		context.Background(), *signer,
+		pickedCoins.Coins[0].CoinObjectId,
+		splitCoins,
+		nil, types.NewSafeSuiBigInt(gasBudget),
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes)
+	simulateCheck(t, cli, txnBytes, false)
 }
 
 func TestClient_SplitCoinEqual(t *testing.T) {
 	cli := ChainClient(t)
 	signer := M1Address(t)
-	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(100000)
-	require.Nil(t, err)
+
+	amount := SUI(0.01).Uint64()
+	gasBudget := SUI(0.01).Uint64()
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), 1, true)
+	require.NoError(t, err)
 
 	txnBytes, err := cli.SplitCoinEqual(
-		context.Background(), *signer, coin.CoinObjectId, types.NewSafeSuiBigInt(uint64(2)),
-		nil, types.NewSafeSuiBigInt(uint64(100000000)),
+		context.Background(), *signer,
+		pickedCoins.Coins[0].CoinObjectId,
+		types.NewSafeSuiBigInt(uint64(2)),
+		nil, types.NewSafeSuiBigInt(gasBudget),
 	)
 	require.Nil(t, err)
 
-	t.Log(simulateCheck(t, cli, txnBytes))
+	simulateCheck(t, cli, txnBytes, true)
 }
 
 func TestClient_MergeCoins(t *testing.T) {
 	cli := ChainClient(t)
 	signer := Address
-	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.NoError(t, err)
-	coin1, err := coins.PickCoinNoLess(1000)
-	require.NoError(t, err)
-	coin2, err := coins.PickCoinNoLess(20000)
-	require.NoError(t, err)
+	require.GreaterOrEqual(t, len(coins.Data), 3)
+
+	coin1 := coins.Data[0]
+	coin2 := coins.Data[1]
+	coin3 := coins.Data[2] // gas coin
 
 	txnBytes, err := cli.MergeCoins(
-		context.Background(), *signer, coin1.CoinObjectId, coin2.CoinObjectId, nil,
-		types.NewSafeSuiBigInt(uint64(100000000)),
+		context.Background(), *signer,
+		coin1.CoinObjectId, coin2.CoinObjectId,
+		&coin3.CoinObjectId, coin3.Balance,
 	)
 	require.Nil(t, err)
 
-	t.Log(simulateCheck(t, cli, txnBytes))
+	simulateCheck(t, cli, txnBytes, true)
 }
 
 func TestClient_Publish(t *testing.T) {
@@ -216,45 +221,47 @@ func TestClient_BatchTransaction(t *testing.T) {
 	// simulateCheck(t, cli, txnBytes, M1Account(t))
 }
 
-// params & return like `func simulateAndSendTxn`
-// @param acc Never use
 // @return types.DryRunTransactionBlockResponse
 func simulateCheck(
 	t *testing.T,
 	cli *Client,
 	txn *types.TransactionBytes,
+	showJson bool,
 ) *types.DryRunTransactionBlockResponse {
 	simulate, err := cli.DryRunTransaction(context.Background(), txn)
 	require.Nil(t, err)
 	require.Equal(t, simulate.Effects.Data.V1.Status.Error, "")
 	require.True(t, simulate.Effects.Data.IsSuccess())
+	if showJson {
+		data, err := json.Marshal(simulate)
+		require.Nil(t, err)
+		t.Log(string(data))
+	}
 	return simulate
 }
 
-func simulateAndSendTxn(
+func executeTxn(
 	t *testing.T,
 	cli *Client,
 	txn *types.TransactionBytes,
 	acc *account.Account,
 ) *types.SuiTransactionBlockResponse {
-	if shouldExecute() || shouldSimulate() {
-		simulate, err := cli.DryRunTransaction(context.Background(), txn)
-		require.Nil(t, err)
-		require.True(t, simulate.Effects.Data.IsSuccess())
+	// First of all, make sure that there are no problems with simulated trading.
+	simulate, err := cli.DryRunTransaction(context.Background(), txn)
+	require.Nil(t, err)
+	require.True(t, simulate.Effects.Data.IsSuccess())
+
+	// sign and send
+	signature, err := acc.SignSecureWithoutEncode(txn.TxBytes, sui_types.DefaultIntent())
+	require.NoError(t, err)
+	options := types.SuiTransactionBlockResponseOptions{
+		ShowEffects: true,
 	}
-	if shouldExecute() {
-		signature, err := acc.SignSecureWithoutEncode(txn.TxBytes, sui_types.DefaultIntent())
-		require.NoError(t, err)
-		options := types.SuiTransactionBlockResponseOptions{
-			ShowEffects: true,
-		}
-		resp, err := cli.ExecuteTransactionBlock(
-			context.TODO(), txn.TxBytes, []any{signature}, &options,
-			types.TxnRequestTypeWaitForLocalExecution,
-		)
-		require.NoError(t, err)
-		t.Log(resp)
-		return resp
-	}
-	return nil
+	resp, err := cli.ExecuteTransactionBlock(
+		context.TODO(), txn.TxBytes, []any{signature}, &options,
+		types.TxnRequestTypeWaitForLocalExecution,
+	)
+	require.NoError(t, err)
+	t.Log(resp)
+	return resp
 }

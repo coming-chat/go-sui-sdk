@@ -3,6 +3,7 @@ package account
 import (
 	"encoding/base64"
 	"encoding/hex"
+
 	"github.com/coming-chat/go-aptos/crypto/derivation"
 	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/coming-chat/go-sui/types"
@@ -70,7 +71,7 @@ func (a *Account) Sign(data []byte) []byte {
 }
 
 func (a *Account) SignSecureWithoutEncode(msg types.Base64Data, intent sui_types.Intent) (sui_types.Signature, error) {
-	signature, err := sui_types.NewSignatureSecure[types.Base64Data](
+	signature, err := sui_types.NewSignatureSecure(
 		sui_types.NewIntentMessage(intent, msg), &a.KeyPair,
 	)
 	if err != nil {

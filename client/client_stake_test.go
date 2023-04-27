@@ -2,10 +2,16 @@ package client
 
 import (
 	"context"
+	"math/big"
 	"testing"
 
 	"github.com/coming-chat/go-sui/types"
+	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
+)
+
+const (
+	ComingChatValidatorAddress = "0x520289e77c838bae8501ae92b151b99a54407288fdd20dee6e5416bfe943eb7a"
 )
 
 func TestClient_GetLatestSuiSystemState(t *testing.T) {
@@ -49,76 +55,63 @@ func TestGetDelegatedStakes(t *testing.T) {
 	}
 }
 
-//func TestGetStakesByIds(t *testing.T) {
-//	cli := ChainClient(t)
-//
-//	id1, _ := types.NewHexData("0x0e32ab08fe29b830ca2c04266297fe121128bf77d380ebec3256a4e1734144aa")
-//	stakes, err := cli.GetStakesByIds(context.Background(), []types.ObjectId{*id1})
-//	require.Nil(t, err)
-//
-//	for _, validator := range stakes {
-//		for _, stake := range validator.Stakes {
-//			t.Logf("earned amount %10v at %v", *stake.EstimatedReward, validator.ValidatorAddress)
-//		}
-//	}
-//}
+func TestGetStakesByIds(t *testing.T) {
+	cli := TestnetClient(t)
+	owner, err := types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
+	stakes, err := cli.GetStakes(context.Background(), *owner)
+	require.Nil(t, err)
+	require.GreaterOrEqual(t, len(stakes), 1)
 
-func TestRequestAddDelegation(t *testing.T) {
-	if true {
-		coins := []string{
-			"0x0153883d60e0df7052b12bc04454dd2eec1c3723ee12145ca73522c6a3917523",
-			"0x21d6e05e77325cbca6bf73410763b216c5614a1184c0efc414de68ebb80b842b",
-		}
-		amount := SUI(1).Decimal()
-		validatorAddress := "0x8ce890590fed55c37d44a043e781ad94254b413ee079a53fb5c037f7a6311304"
-		// gasId := "0x11ce8b45348f6db3f46a8a54a5d06ab91d8381bbc3cb67d66bef8c7ce2b5a7c5"
+	stake1 := stakes[0].Stakes[0].Data
+	stakeId := stake1.StakedSuiId
+	stakesFromId, err := cli.GetStakesByIds(context.Background(), []types.ObjectId{stakeId})
+	require.Nil(t, err)
+	require.GreaterOrEqual(t, len(stakesFromId), 1)
 
-		requestAddDelegation(t, coins, amount, validatorAddress)
-	}
+	queriedStake := stakesFromId[0].Stakes[0].Data
+	require.Equal(t, stake1, queriedStake)
+	t.Log(stakesFromId)
 }
 
-func requestAddDelegation(t *testing.T, coinIds []string, amount types.SuiBigInt, validatorAddress string) {
-	cli := ChainClient(t)
-	acc := M1Account(t)
-	addr, _ := types.NewAddressFromHex(acc.Address)
+func TestRequestAddDelegation(t *testing.T) {
+	cli := TestnetClient(t)
+	signer := Address
 
-	var coins = []types.ObjectId{}
-	for _, id := range coinIds {
-		coin, err := types.NewHexData(id)
-		require.Nil(t, err)
-		coins = append(coins, *coin)
-	}
+	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
+	require.Nil(t, err)
 
+	amount := SUI(1).Int64()
+	gasBudget := SUI(0.01).Int64()
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(amount), 0, true)
+	require.Nil(t, err)
+
+	validatorAddress := ComingChatValidatorAddress
 	validator, err := types.NewAddressFromHex(validatorAddress)
 	require.Nil(t, err)
 
-	gasBudget := SUI(0.02).Decimal()
-	txn, err := cli.RequestAddStake(context.Background(), *addr, coins, amount, *validator, nil, gasBudget)
+	amountInt := decimal.NewFromInt(amount)
+	txn, err := cli.RequestAddStake(context.Background(), *signer,
+		pickedCoins.CoinIds(), amountInt, *validator,
+		nil, decimal.NewFromInt(gasBudget))
 	require.Nil(t, err)
 
-	resp := simulateCheck(t, cli, txn)
-	t.Log(resp)
+	simulateCheck(t, cli, txn, true)
 }
 
 func TestRequestWithdrawDelegation(t *testing.T) {
-	if true {
-		stakedSuiId := "0x0e32ab08fe29b830ca2c04266297fe121128bf77d380ebec3256a4e1734144aa"
-		requestWithdrawDelegation(t, stakedSuiId, "")
-	}
-}
+	cli := TestnetClient(t)
 
-func requestWithdrawDelegation(t *testing.T, stakedId, gasId string) {
-	cli := ChainClient(t)
-	acc := M1Account(t)
-	addr, _ := types.NewAddressFromHex(acc.Address)
-
-	stakedID, err := types.NewHexData(stakedId) // status.StakedSuiId
+	signer, err := types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
 	require.Nil(t, err)
+	stakes, err := cli.GetStakes(context.Background(), *signer)
+	require.Nil(t, err)
+	require.GreaterOrEqual(t, len(stakes), 1)
+
+	stakeId := stakes[0].Stakes[0].Data.StakedSuiId
 
 	gasBudget := SUI(0.02).Decimal()
-	txn, err := cli.RequestWithdrawStake(context.Background(), *addr, *stakedID, nil, gasBudget)
+	txn, err := cli.RequestWithdrawStake(context.Background(), *signer, stakeId, nil, gasBudget)
 	require.Nil(t, err)
 
-	resp := simulateCheck(t, cli, txn)
-	t.Log(resp)
+	simulateCheck(t, cli, txn, true)
 }

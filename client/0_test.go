@@ -3,9 +3,7 @@ package client
 import (
 	"context"
 	"os"
-	"os/exec"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/coming-chat/go-sui/types"
@@ -20,11 +18,6 @@ var (
 	Address, _ = types.NewAddressFromHex("0x7e875ea78ee09f08d72e2676cf84e0f1c8ac61d94fa339cc8e37cace85bebc6e")
 )
 
-var (
-	out, _ = exec.Command("whoami").Output()
-	whoami = strings.TrimSpace(string(out))
-)
-
 func TestnetClient(t *testing.T) *Client {
 	c, err := Dial(types.TestnetRpcUrl)
 	require.NoError(t, err)
@@ -35,9 +28,9 @@ func DevnetClient(t *testing.T) *Client {
 	c, err := Dial(types.DevNetRpcUrl)
 	require.NoError(t, err)
 
-	coins, err := c.GetCoins(context.TODO(), *Address, nil, nil, 1)
+	balance, err := c.GetBalance(context.Background(), *Address, types.SUI_COIN_TYPE)
 	require.NoError(t, err)
-	if len(coins.Data) == 0 {
+	if balance.TotalBalance.BigInt().Uint64() < SUI(0.3).Uint64() {
 		_, err = FaucetFundAccount(Address.String(), DevNetFaucetUrl)
 		require.NoError(t, err)
 	}
@@ -76,6 +69,9 @@ type SUI float64
 
 func (s SUI) Int64() int64 {
 	return int64(s * 1e9)
+}
+func (s SUI) Uint64() uint64 {
+	return uint64(s * 1e9)
 }
 func (s SUI) Decimal() decimal.Decimal {
 	return decimal.NewFromInt(s.Int64())

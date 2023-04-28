@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"github.com/coming-chat/go-sui/sui_types"
 	"math/big"
 	"testing"
 
@@ -61,9 +62,11 @@ func TestClient_DryRunTransaction(t *testing.T) {
 	gasBudget := SUI(0.01).Uint64()
 	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, false)
 	require.NoError(t, err)
-	tx, err := cli.PayAllSui(context.Background(), *signer, *signer,
+	tx, err := cli.PayAllSui(
+		context.Background(), *signer, *signer,
 		pickedCoins.CoinIds(),
-		types.NewSafeSuiBigInt(gasBudget))
+		types.NewSafeSuiBigInt(gasBudget),
+	)
 	require.NoError(t, err)
 
 	resp, err := cli.DryRunTransaction(context.Background(), tx)
@@ -130,9 +133,11 @@ func TestClient_GetAllBalances(t *testing.T) {
 	balances, err := chain.GetAllBalances(context.TODO(), *Address)
 	require.NoError(t, err)
 	for _, balance := range balances {
-		t.Logf("Coin Name: %v, Count: %v, Total: %v, Locked: %v",
+		t.Logf(
+			"Coin Name: %v, Count: %v, Total: %v, Locked: %v",
 			balance.CoinType, balance.CoinObjectCount,
-			balance.TotalBalance.String(), balance.LockedBalance)
+			balance.TotalBalance.String(), balance.LockedBalance,
+		)
 	}
 }
 
@@ -140,9 +145,11 @@ func TestClient_GetBalance(t *testing.T) {
 	chain := ChainClient(t)
 	balance, err := chain.GetBalance(context.TODO(), *Address, "")
 	require.NoError(t, err)
-	t.Logf("Coin Name: %v, Count: %v, Total: %v, Locked: %v",
+	t.Logf(
+		"Coin Name: %v, Count: %v, Total: %v, Locked: %v",
 		balance.CoinType, balance.CoinObjectCount,
-		balance.TotalBalance.String(), balance.LockedBalance)
+		balance.TotalBalance.String(), balance.LockedBalance,
+	)
 }
 
 func TestClient_GetCoins(t *testing.T) {
@@ -584,6 +591,88 @@ func TestClient_QueryEvents(t *testing.T) {
 					return
 				}
 				t.Log(got)
+			},
+		)
+	}
+}
+
+func TestClient_GetDynamicFields(t *testing.T) {
+	chain := ChainClient(t)
+	parentObjectId, err := types.NewHexData("0x1719957d7a2bf9d72459ff0eab8e600cbb1991ef41ddd5b4a8c531035933d256")
+	require.NoError(t, err)
+	limit := uint(5)
+	type args struct {
+		ctx            context.Context
+		parentObjectId types.ObjectId
+		cursor         *types.ObjectId
+		limit          *uint
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *types.DynamicFieldPage
+		wantErr bool
+	}{
+		{
+			name: "case 1",
+			args: args{
+				ctx:            context.TODO(),
+				parentObjectId: *parentObjectId,
+				cursor:         nil,
+				limit:          &limit,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := chain.GetDynamicFields(tt.args.ctx, tt.args.parentObjectId, tt.args.cursor, tt.args.limit)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("GetDynamicFields() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Log(got)
+			},
+		)
+	}
+}
+
+func TestClient_GetDynamicFieldObject(t *testing.T) {
+	chain := ChainClient(t)
+	parentObjectId, err := types.NewHexData("0x1719957d7a2bf9d72459ff0eab8e600cbb1991ef41ddd5b4a8c531035933d256")
+	require.NoError(t, err)
+	type args struct {
+		ctx            context.Context
+		parentObjectId types.ObjectId
+		name           sui_types.DynamicFieldName
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *types.SuiObjectResponse
+		wantErr bool
+	}{
+		{
+			name: "case 1",
+			args: args{
+				ctx:            context.TODO(),
+				parentObjectId: *parentObjectId,
+				name: sui_types.DynamicFieldName{
+					Type:  "address",
+					Value: "0xf9ed7d8de1a6c44d703b64318a1cc687c324fdec35454281035a53ea3ba1a95a",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := chain.GetDynamicFieldObject(tt.args.ctx, tt.args.parentObjectId, tt.args.name)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("GetDynamicFieldObject() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Logf("%#v", got)
 			},
 		)
 	}

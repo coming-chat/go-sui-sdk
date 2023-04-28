@@ -376,18 +376,18 @@ func (c *Client) QueryEvents(
 	return &resp, c.CallContext(ctx, &resp, queryEvents, query, cursor, limit, descendingOrder)
 }
 
-func (c *Client) GetDynamicFieldObject(
+func (c *Client) GetDynamicFields(
 	ctx context.Context, parentObjectId types.ObjectId, cursor *types.ObjectId,
 	limit *uint,
 ) (*types.DynamicFieldPage, error) {
 	var resp types.DynamicFieldPage
-	return &resp, c.CallContext(ctx, &resp, getDynamicFieldObject, parentObjectId, cursor, limit)
+	return &resp, c.CallContext(ctx, &resp, getDynamicFields, parentObjectId, cursor, limit)
 }
 
-func (c *Client) GetDynamicFields(
+func (c *Client) GetDynamicFieldObject(
 	ctx context.Context, parentObjectId types.ObjectId,
 	name sui_types.DynamicFieldName,
 ) (*types.SuiObjectResponse, error) {
 	var resp types.SuiObjectResponse
-	return &resp, c.CallContext(ctx, &resp, getDynamicFields, parentObjectId, name)
+	return &resp, c.CallContext(ctx, &resp, getDynamicFieldObject, parentObjectId, name)
 }

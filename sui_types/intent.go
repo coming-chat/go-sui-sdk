@@ -56,7 +56,8 @@ func DefaultIntent() Intent {
 }
 
 type IntentValue interface {
-	~[]byte | TransactionData
+	// | TransactionData
+	~[]byte
 	MarshalBCS() ([]byte, error)
 }
 

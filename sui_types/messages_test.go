@@ -1,15 +1,9 @@
 package sui_types
 
-import (
-	"os"
-
-	"github.com/coming-chat/go-sui/types"
-)
-
-var (
-	Address, _ = types.NewAddressFromHex("0xb08ae4d187ca0057baa1666fe43fb9d7f3693a9a")
-	M1Mnemonic = os.Getenv("WalletSdkTestM1")
-)
+//var (
+//	Address, _ = types.NewAddressFromHex("0xb08ae4d187ca0057baa1666fe43fb9d7f3693a9a")
+//	M1Mnemonic = os.Getenv("WalletSdkTestM1")
+//)
 
 // func Test_BCSEncodeTransactionData(t *testing.T) {
 // 	chain, err := client.Dial(types.DevNetRpcUrl)

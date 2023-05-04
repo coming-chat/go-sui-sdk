@@ -189,3 +189,19 @@ type SuiSystemStateSummary struct {
 	AtRiskValidators                      interface{}             `json:"atRiskValidators"`
 	ValidatorReportRecords                interface{}             `json:"validatorReportRecords"`
 }
+
+type ValidatorsApy struct {
+	Epoch SafeSuiBigInt[EpochId] `json:"epoch"`
+	Apys  []struct {
+		Address string  `json:"address"`
+		Apy     float64 `json:"apy"`
+	} `json:"apys"`
+}
+
+func (apys *ValidatorsApy) ApyMap() map[string]float64 {
+	res := make(map[string]float64)
+	for _, apy := range apys.Apys {
+		res[apy.Address] = apy.Apy
+	}
+	return res
+}

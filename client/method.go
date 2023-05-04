@@ -66,6 +66,7 @@ const (
 	getStakes                         SuiXMethod   = "getStakes"
 	getStakesByIds                    SuiXMethod   = "getStakesByIds"
 	getTotalSupply                    SuiXMethod   = "getTotalSupply"
+	getValidatorsApy                  SuiXMethod   = "getValidatorsApy"
 	queryEvents                       SuiXMethod   = "queryEvents"
 	queryObjects                      SuiXMethod   = "queryObjects"
 	queryTransactionBlocks            SuiXMethod   = "queryTransactionBlocks"

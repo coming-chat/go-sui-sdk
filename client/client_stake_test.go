@@ -25,13 +25,13 @@ func TestClient_GetLatestSuiSystemState(t *testing.T) {
 	}
 }
 
-func TestClient_GetAndCalculateRollingAverageApys(t *testing.T) {
-	cli := MainnetClient(t)
-	apys, err := cli.GetAndCalculateRollingAverageApys(context.Background(), 98)
+func TestClient_GetValidatorsApy(t *testing.T) {
+	cli := ChainClient(t)
+	apys, err := cli.GetValidatorsApy(context.Background())
 	require.Nil(t, err)
-	for address, apy := range apys {
-		t.Logf("%v apy = %v", address, apy)
-	}
+	t.Logf("current gas price = %v", apys)
+	apyMap := apys.ApyMap()
+	t.Log(apyMap)
 }
 
 func TestGetDelegatedStakes(t *testing.T) {

@@ -18,6 +18,12 @@ var (
 	Address, _ = types.NewAddressFromHex("0x7e875ea78ee09f08d72e2676cf84e0f1c8ac61d94fa339cc8e37cace85bebc6e")
 )
 
+func MainnetClient(t *testing.T) *Client {
+	c, err := Dial(types.MainnetRpcUrl)
+	require.NoError(t, err)
+	return c
+}
+
 func TestnetClient(t *testing.T) *Client {
 	c, err := Dial(types.TestnetRpcUrl)
 	require.NoError(t, err)

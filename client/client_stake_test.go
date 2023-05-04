@@ -15,7 +15,7 @@ const (
 )
 
 func TestClient_GetLatestSuiSystemState(t *testing.T) {
-	cli := ChainClient(t)
+	cli := MainnetClient(t)
 	state, err := cli.GetLatestSuiSystemState(context.Background())
 	require.Nil(t, err)
 	t.Logf("system state = %v", state)
@@ -26,7 +26,7 @@ func TestClient_GetLatestSuiSystemState(t *testing.T) {
 }
 
 func TestClient_GetAndCalculateRollingAverageApys(t *testing.T) {
-	cli := ChainClient(t)
+	cli := MainnetClient(t)
 	apys, err := cli.GetAndCalculateRollingAverageApys(context.Background(), 98)
 	require.Nil(t, err)
 	for address, apy := range apys {

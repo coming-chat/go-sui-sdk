@@ -74,7 +74,8 @@ func TestResourceType_String(t *testing.T) {
 
 	resourceType, err := NewResourceType(typeString)
 	require.NoError(t, err)
-	require.Equal(t, resourceType.String(), "0x0000000000000000000000000000000000000001::mmm1::fff1<0x0000000000000000000000000000000123abcdef::mm2::ff3>")
+	res := "0x0000000000000000000000000000000000000000000000000000000000000001::mmm1::fff1<0x0000000000000000000000000000000000000000000000000000000123abcdef::mm2::ff3>"
+	require.Equal(t, resourceType.String(), res)
 }
 
 func TestResourceType_ShortString(t *testing.T) {

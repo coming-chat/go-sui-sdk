@@ -1,16 +1,15 @@
 package types
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/fardream/go-bcs/bcs"
 	"strings"
 	// "github.com/btcsuite/btcutil/base58"
 )
 
 type BytesData interface {
+	~[]byte
 	Data() []byte
 	Length() int
 	String() string
@@ -19,15 +18,13 @@ type BytesData interface {
 type Bytes []byte
 
 func (b Bytes) GetHexData() HexData {
-	return HexData{b}
+	return HexData(b)
 }
 func (b Bytes) GetBase64Data() Base64Data {
-	return Base64Data{b}
+	return Base64Data(b)
 }
 
-type HexData struct {
-	data []byte
-}
+type HexData []byte
 
 func NewHexData(str string) (*HexData, error) {
 	if strings.HasPrefix(str, "0x") || strings.HasPrefix(str, "0X") {
@@ -37,17 +34,18 @@ func NewHexData(str string) (*HexData, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &HexData{data}, nil
+	hexData := HexData(data)
+	return &hexData, nil
 }
 
 func (a HexData) Data() []byte {
-	return a.data
+	return a
 }
 func (a HexData) Length() int {
-	return len(a.data)
+	return len(a)
 }
 func (a HexData) String() string {
-	return "0x" + hex.EncodeToString(a.data)
+	return "0x" + hex.EncodeToString(a)
 }
 
 func (a HexData) MarshalJSON() ([]byte, error) {
@@ -62,35 +60,34 @@ func (a *HexData) UnmarshalJSON(data []byte) error {
 	}
 	tmp, err := NewHexData(str)
 	if err == nil {
-		a.data = tmp.data
+		*a = *tmp
 	}
 	return err
 }
 
 func (a HexData) MarshalBCS() ([]byte, error) {
-	return a.data, nil
+	return a, nil
 }
 
-type Base64Data struct {
-	data []byte
-}
+type Base64Data []byte
 
 func NewBase64Data(str string) (*Base64Data, error) {
 	data, err := base64.StdEncoding.DecodeString(str)
 	if err != nil {
 		return nil, err
 	}
-	return &Base64Data{data}, nil
+	b64 := Base64Data(data)
+	return &b64, nil
 }
 
 func (h Base64Data) Data() []byte {
-	return h.data
+	return h
 }
 func (h Base64Data) Length() int {
-	return len(h.data)
+	return len(h)
 }
 func (h Base64Data) String() string {
-	return base64.StdEncoding.EncodeToString(h.data)
+	return base64.StdEncoding.EncodeToString(h)
 }
 
 func (h Base64Data) MarshalJSON() ([]byte, error) {
@@ -105,23 +102,15 @@ func (h *Base64Data) UnmarshalJSON(data []byte) error {
 	}
 	tmp, err := NewBase64Data(str)
 	if err == nil {
-		h.data = tmp.data
+		*h = *tmp
 	}
 	return err
 }
 
 func (h Base64Data) MarshalBCS() ([]byte, error) {
-	buffer := bytes.NewBuffer([]byte{})
-	en := bcs.NewEncoder(buffer)
-	err := en.Encode(h.data)
-	if err != nil {
-		return nil, err
-	}
-	return buffer.Bytes(), nil
+	return h, nil
 }
 
-// type Base58Data struct {
-// 	data []byte
 // }
 
 // func NewBase58Data(str string) (*Base58Data, error) {

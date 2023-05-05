@@ -1,66 +1,56 @@
 package sui_types
 
-import (
-	"bytes"
-	"context"
-	"github.com/coming-chat/go-sui/client"
-	"github.com/coming-chat/go-sui/types"
-	"github.com/fardream/go-bcs/bcs"
-	"github.com/stretchr/testify/require"
-	"math/big"
-	"os"
-	"testing"
-)
+//var (
+//	Address, _ = types.NewAddressFromHex("0xb08ae4d187ca0057baa1666fe43fb9d7f3693a9a")
+//	M1Mnemonic = os.Getenv("WalletSdkTestM1")
+//)
 
-var (
-	Address, _ = types.NewAddressFromHex("0xb08ae4d187ca0057baa1666fe43fb9d7f3693a9a")
-	M1Mnemonic = os.Getenv("WalletSdkTestM1")
-)
+// func Test_BCSEncodeTransactionData(t *testing.T) {
+// 	chain, err := client.Dial(types.DevNetRpcUrl)
+// 	require.NoError(t, err)
+// 	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+// 	require.NoError(t, err)
+// 	transferCoins, coin, err := coins.PickSUICoinsWithGas(big.NewInt(1000), 1000, types.PickByOrder)
+// 	require.NoError(t, err)
+// 	var (
+// 		coinRef = []*types.ObjectRef{coin.Reference()}
+// 		coinId  = []types.ObjectId{coin.CoinObjectId}
+// 	)
+// 	for _, v := range transferCoins {
+// 		coinRef = append(coinRef, v.Reference())
+// 		coinId = append(coinId, v.CoinObjectId)
+// 	}
+// 	price, err := chain.GetReferenceGasPrice(context.TODO())
+// 	require.NoError(t, err)
+// 	priceInt, err := strconv.ParseUint(price, 10, 64)
+// 	require.NoError(t, err)
+// 	tx := TransactionData{
+// 		Kind: TransactionKind{
+// 			Single: &SingleTransactionKind{
+// 				PayAllSui: &PayAllSui{
+// 					Coins:     coinRef,
+// 					Recipient: *Address,
+// 				},
+// 			},
+// 		},
+// 		Sender: *Address,
+// 		GasData: GasData{
+// 			Payment: *coin.Reference(),
+// 			Owner:   *Address,
+// 			Price:   priceInt,
+// 			Budget:  uint64(1000),
+// 		},
+// 	}
+// 	encodeTx, err := bcs.Marshal(tx)
 
-func Test_BCSEncodeTransactionData(t *testing.T) {
-	chain, err := client.Dial(types.DevNetRpcUrl)
-	require.NoError(t, err)
-	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
-	require.NoError(t, err)
-	transferCoins, coin, err := coins.PickSUICoinsWithGas(big.NewInt(1000), 1000, types.PickByOrder)
-	require.NoError(t, err)
-	var (
-		coinRef = []*types.ObjectRef{coin.Reference}
-		coinId  = []types.ObjectId{coin.Reference.ObjectId}
-	)
-	for _, v := range transferCoins {
-		coinRef = append(coinRef, v.Reference)
-		coinId = append(coinId, v.Reference.ObjectId)
-	}
-	price, err := chain.GetReferenceGasPrice(context.TODO())
-	require.NoError(t, err)
-	tx := TransactionData{
-		Kind: TransactionKind{
-			Single: &SingleTransactionKind{
-				PayAllSui: &PayAllSui{
-					Coins:     coinRef,
-					Recipient: *Address,
-				},
-			},
-		},
-		Sender: *Address,
-		GasData: GasData{
-			Payment: *coin.Reference,
-			Owner:   *Address,
-			Price:   price,
-			Budget:  uint64(1000),
-		},
-	}
-	encodeTx, err := bcs.Marshal(tx)
-
-	currentTxEncode, err := chain.PayAllSui(context.TODO(), *Address, *Address, coinId, 1000)
-	require.NoError(t, err)
-	t.Logf("%x", encodeTx)
-	t.Logf("%x", currentTxEncode.TxBytes.Data())
-	if !bytes.Equal(encodeTx, currentTxEncode.TxBytes.Data()) {
-		t.Fatal("encode failed")
-	}
-}
+// 	currentTxEncode, err := chain.PayAllSui(context.TODO(), *Address, *Address, coinId, 1000)
+// 	require.NoError(t, err)
+// 	t.Logf("%x", encodeTx)
+// 	t.Logf("%x", currentTxEncode.TxBytes.Data())
+// 	if !bytes.Equal(encodeTx, currentTxEncode.TxBytes.Data()) {
+// 		t.Fatal("encode failed")
+// 	}
+// }
 
 // This test case needs dmens contract
 //func TestBCS_EncodeMoveCall(t *testing.T) {

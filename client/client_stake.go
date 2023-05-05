@@ -6,32 +6,32 @@ import (
 	"github.com/coming-chat/go-sui/types"
 )
 
-func (c *Client) GetDelegatedStakes(ctx context.Context, owner types.Address) ([]types.DelegatedStake, error) {
+func (c *Client) GetLatestSuiSystemState(ctx context.Context) (*types.SuiSystemStateSummary, error) {
+	var resp types.SuiSystemStateSummary
+	return &resp, c.CallContext(ctx, &resp, getLatestSuiSystemState)
+}
+
+func (c *Client) GetValidatorsApy(ctx context.Context) (*types.ValidatorsApy, error) {
+	var resp types.ValidatorsApy
+	return &resp, c.CallContext(ctx, &resp, getValidatorsApy)
+}
+
+func (c *Client) GetStakes(ctx context.Context, owner types.Address) ([]types.DelegatedStake, error) {
 	var resp []types.DelegatedStake
-	return resp, c.CallContext(ctx, &resp, "sui_getDelegatedStakes", owner)
+	return resp, c.CallContext(ctx, &resp, getStakes, owner)
 }
 
-func (c *Client) GetValidators(ctx context.Context) ([]types.ValidatorMetadata, error) {
-	var resp []types.ValidatorMetadata
-	return resp, c.CallContext(ctx, &resp, "sui_getValidators")
+func (c *Client) GetStakesByIds(ctx context.Context, stakedSuiIds []types.ObjectId) ([]types.DelegatedStake, error) {
+	var resp []types.DelegatedStake
+	return resp, c.CallContext(ctx, &resp, getStakesByIds, stakedSuiIds)
 }
 
-func (c *Client) GetSuiSystemState(ctx context.Context) (*types.SuiSystemState, error) {
-	var resp types.SuiSystemState
-	return &resp, c.CallContext(ctx, &resp, "sui_getSuiSystemState")
-}
-
-func (c *Client) RequestAddDelegation(ctx context.Context, signer types.Address, coins []types.ObjectId, amount uint64, validator types.Address, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) RequestAddStake(ctx context.Context, signer types.Address, coins []types.ObjectId, amount types.SuiBigInt, validator types.Address, gas *types.ObjectId, gasBudget types.SuiBigInt) (*types.TransactionBytes, error) {
 	var resp types.TransactionBytes
-	return &resp, c.CallContext(ctx, &resp, "sui_requestAddDelegation", signer, coins, amount, validator, gas, gasBudget)
+	return &resp, c.CallContext(ctx, &resp, requestAddStake, signer, coins, amount, validator, gas, gasBudget)
 }
 
-func (c *Client) RequestSwitchDelegation(ctx context.Context, signer types.Address, delegation, stakedSui types.ObjectId, newValidator types.Address, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
+func (c *Client) RequestWithdrawStake(ctx context.Context, signer types.Address, stakedSuiId types.ObjectId, gas *types.ObjectId, gasBudget types.SuiBigInt) (*types.TransactionBytes, error) {
 	var resp types.TransactionBytes
-	return &resp, c.CallContext(ctx, &resp, "sui_requestSwitchDelegation", signer, delegation, stakedSui, newValidator, gas, gasBudget)
-}
-
-func (c *Client) RequestWithdrawDelegation(ctx context.Context, signer types.Address, delegation, stakedSui types.ObjectId, gas types.ObjectId, gasBudget uint64) (*types.TransactionBytes, error) {
-	var resp types.TransactionBytes
-	return &resp, c.CallContext(ctx, &resp, "sui_requestWithdrawDelegation", signer, delegation, stakedSui, gas, gasBudget)
+	return &resp, c.CallContext(ctx, &resp, requestWithdrawStake, signer, stakedSuiId, gas, gasBudget)
 }

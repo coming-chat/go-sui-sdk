@@ -4,26 +4,22 @@ import (
 	"math/big"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
+
+func balanceObject(val uint64) SafeSuiBigInt[uint64] {
+	return NewSafeSuiBigInt(val)
+}
 
 func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 	// coins 1,2,3,4,5
 	testCoins := Coins{
-		{
-			Balance: 3,
-		},
-		{
-			Balance: 5,
-		},
-		{
-			Balance: 1,
-		},
-		{
-			Balance: 4,
-		},
-		{
-			Balance: 2,
-		},
+		{Balance: balanceObject(3)},
+		{Balance: balanceObject(5)},
+		{Balance: balanceObject(1)},
+		{Balance: balanceObject(4)},
+		{Balance: balanceObject(2)},
 	}
 	type args struct {
 		amount     *big.Int
@@ -58,8 +54,8 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 				gasAmount:  2,
 				pickMethod: PickSmaller,
 			},
-			want:    Coins{{Balance: 1}},
-			want1:   &Coin{Balance: 2},
+			want:    Coins{{Balance: balanceObject(1)}},
+			want1:   &Coin{Balance: balanceObject(2)},
 			wantErr: false,
 		},
 		{
@@ -70,8 +66,8 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 				gasAmount:  2,
 				pickMethod: PickSmaller,
 			},
-			want:    Coins{{Balance: 1}, {Balance: 3}},
-			want1:   &Coin{Balance: 2},
+			want:    Coins{{Balance: balanceObject(1)}, {Balance: balanceObject(3)}},
+			want1:   &Coin{Balance: balanceObject(2)},
 			wantErr: false,
 		},
 		{
@@ -82,8 +78,8 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 				gasAmount:  2,
 				pickMethod: PickSmaller,
 			},
-			want:    Coins{{Balance: 1}, {Balance: 3}, {Balance: 4}},
-			want1:   &Coin{Balance: 2},
+			want:    Coins{{Balance: balanceObject(1)}, {Balance: balanceObject(3)}, {Balance: balanceObject(4)}},
+			want1:   &Coin{Balance: balanceObject(2)},
 			wantErr: false,
 		},
 		{
@@ -107,7 +103,7 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 				pickMethod: PickSmaller,
 			},
 			want:    Coins{},
-			want1:   &Coin{Balance: 3},
+			want1:   &Coin{Balance: balanceObject(3)},
 			wantErr: true,
 		},
 		{
@@ -118,8 +114,8 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 				gasAmount:  3,
 				pickMethod: PickBigger,
 			},
-			want:    Coins{{Balance: 5}},
-			want1:   &Coin{Balance: 3},
+			want:    Coins{{Balance: balanceObject(5)}},
+			want1:   &Coin{Balance: balanceObject(3)},
 			wantErr: false,
 		},
 		{
@@ -130,8 +126,8 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 				gasAmount:  3,
 				pickMethod: PickByOrder,
 			},
-			want:    Coins{{Balance: 5}},
-			want1:   &Coin{Balance: 3},
+			want:    Coins{{Balance: balanceObject(5)}},
+			want1:   &Coin{Balance: balanceObject(3)},
 			wantErr: false,
 		},
 	}
@@ -157,21 +153,11 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 func TestCoins_PickCoins(t *testing.T) {
 	// coins 1,2,3,4,5
 	testCoins := Coins{
-		{
-			Balance: 3,
-		},
-		{
-			Balance: 5,
-		},
-		{
-			Balance: 1,
-		},
-		{
-			Balance: 4,
-		},
-		{
-			Balance: 2,
-		},
+		{Balance: balanceObject(3)},
+		{Balance: balanceObject(5)},
+		{Balance: balanceObject(1)},
+		{Balance: balanceObject(4)},
+		{Balance: balanceObject(2)},
 	}
 	type args struct {
 		amount     *big.Int
@@ -188,35 +174,35 @@ func TestCoins_PickCoins(t *testing.T) {
 			name:    "smaller 1",
 			cs:      testCoins,
 			args:    args{amount: big.NewInt(2), pickMethod: PickSmaller},
-			want:    Coins{{Balance: 1}, {Balance: 2}},
+			want:    Coins{{Balance: balanceObject(1)}, {Balance: balanceObject(2)}},
 			wantErr: false,
 		},
 		{
 			name:    "smaller 2",
 			cs:      testCoins,
 			args:    args{amount: big.NewInt(4), pickMethod: PickSmaller},
-			want:    Coins{{Balance: 1}, {Balance: 2}, {Balance: 3}},
+			want:    Coins{{Balance: balanceObject(1)}, {Balance: balanceObject(2)}, {Balance: balanceObject(3)}},
 			wantErr: false,
 		},
 		{
 			name:    "bigger 1",
 			cs:      testCoins,
 			args:    args{amount: big.NewInt(2), pickMethod: PickBigger},
-			want:    Coins{{Balance: 5}},
+			want:    Coins{{Balance: balanceObject(5)}},
 			wantErr: false,
 		},
 		{
 			name:    "bigger 2",
 			cs:      testCoins,
 			args:    args{amount: big.NewInt(6), pickMethod: PickBigger},
-			want:    Coins{{Balance: 5}, {Balance: 4}},
+			want:    Coins{{Balance: balanceObject(5)}, {Balance: balanceObject(4)}},
 			wantErr: false,
 		},
 		{
 			name:    "pick by order 1",
 			cs:      testCoins,
 			args:    args{amount: big.NewInt(6), pickMethod: PickByOrder},
-			want:    Coins{{Balance: 3}, {Balance: 5}},
+			want:    Coins{{Balance: balanceObject(3)}, {Balance: balanceObject(5)}},
 			wantErr: false,
 		},
 		{
@@ -243,6 +229,119 @@ func TestCoins_PickCoins(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Coins.PickCoins() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPickupCoins(t *testing.T) {
+	coin := func(n uint64) Coin {
+		return Coin{Balance: balanceObject(n)}
+	}
+
+	type args struct {
+		inputCoins     *CoinPage
+		targetAmount   big.Int
+		limit          int
+		reserveGasCoin bool
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *PickedCoins
+		wantErr error
+	}{
+		{
+			name: "need sort",
+			args: args{
+				inputCoins: &Page[Coin, HexData]{
+					Data: []Coin{
+						coin(1e3), coin(1e5), coin(1e2), coin(1e4),
+					},
+				},
+				targetAmount: *big.NewInt(101000),
+				limit:        100,
+			},
+			want: &PickedCoins{
+				Coins: []Coin{
+					coin(1e5), coin(1e4),
+				},
+				TotalAmount:  *big.NewInt(110000),
+				TargetAmount: *big.NewInt(101000),
+			},
+		},
+		{
+			name: "ErrNoCoinsFound",
+			args: args{
+				inputCoins: &Page[Coin, HexData]{
+					Data: []Coin{},
+				},
+				targetAmount: *big.NewInt(101000),
+			},
+			wantErr: ErrNoCoinsFound,
+		},
+		{
+			name: "ErrInsufficientBalance",
+			args: args{
+				inputCoins: &Page[Coin, HexData]{
+					Data: []Coin{
+						coin(1e5), coin(1e6), coin(1e4),
+					},
+				},
+				targetAmount: *big.NewInt(1e9),
+			},
+			wantErr: ErrInsufficientBalance,
+		},
+		{
+			name: "ErrNeedMergeCoin 1",
+			args: args{
+				inputCoins: &Page[Coin, HexData]{
+					Data: []Coin{
+						coin(1e5), coin(1e6), coin(1e4),
+					},
+					HasNextPage: true,
+				},
+				targetAmount: *big.NewInt(1e9),
+			},
+			wantErr: ErrNeedMergeCoin,
+		},
+		{
+			name: "ErrNeedMergeCoin 2",
+			args: args{
+				inputCoins: &Page[Coin, HexData]{
+					Data: []Coin{
+						coin(1e5), coin(1e6), coin(1e4), coin(1e5),
+					},
+					HasNextPage: false,
+				},
+				targetAmount: *big.NewInt(1201000),
+				limit:        3,
+			},
+			wantErr: ErrNeedMergeCoin,
+		},
+		{
+			name: "ErrNeedSplitGasCoin",
+			args: args{
+				inputCoins: &Page[Coin, HexData]{
+					Data: []Coin{
+						{Balance: balanceObject(1e5), CoinType: SUI_COIN_TYPE},
+						{Balance: balanceObject(1e5), CoinType: SUI_COIN_TYPE},
+					},
+					HasNextPage: false,
+				},
+				targetAmount:   *big.NewInt(110000),
+				reserveGasCoin: true,
+			},
+			wantErr: ErrNeedSplitGasCoin,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := PickupCoins(tt.args.inputCoins, tt.args.targetAmount, tt.args.limit, tt.args.reserveGasCoin)
+			if tt.wantErr != nil {
+				require.Equal(t, err, tt.wantErr)
+			} else {
+				require.Equal(t, got, tt.want)
 			}
 		})
 	}

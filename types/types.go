@@ -2,12 +2,10 @@ package types
 
 import (
 	"bytes"
-	"crypto/ed25519"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 )
 
@@ -15,6 +13,7 @@ const (
 	SuiCoinType   = "0x2::sui::SUI"
 	DevNetRpcUrl  = "https://fullnode.devnet.sui.io"
 	TestnetRpcUrl = "https://fullnode.testnet.sui.io"
+	MainnetRpcUrl = "https://sui-mainnet.coming.chat"
 )
 
 type Address = HexData
@@ -37,21 +36,20 @@ func NewAddressFromHex(addr string) (*Address, error) {
 	if err != nil {
 		return nil, err
 	}
-	const addressLength = 20
+	const addressLength = 32
 	if len(data) > addressLength {
 		return nil, fmt.Errorf("hex string is too long. Address's length is %v data", addressLength)
 	}
 
 	res := [addressLength]byte{}
 	copy(res[addressLength-len(data):], data[:])
-	return &Address{
-		data: res[:],
-	}, nil
+	address := Address(res[:])
+	return &address, nil
 }
 
 // ShortString Returns the address with leading zeros trimmed, e.g. 0x2
 func (a Address) ShortString() string {
-	return "0x" + strings.TrimLeft(hex.EncodeToString(a.data), "0")
+	return "0x" + strings.TrimLeft(hex.EncodeToString(a), "0")
 }
 
 type ObjectId = HexData
@@ -61,7 +59,7 @@ type InputObjectKind map[string]interface{}
 
 type TransactionBytes struct {
 	// the gas object to be used
-	Gas ObjectRef `json:"gas"`
+	Gas []ObjectRef `json:"gas"`
 
 	// objects to be used in this transaction
 	InputObjects []InputObjectKind `json:"inputObjects"`
@@ -72,54 +70,9 @@ type TransactionBytes struct {
 
 // ObjectRef for BCS, need to keep this order
 type ObjectRef struct {
-	ObjectId ObjectId `json:"objectId"`
-	Version  uint64   `json:"version"`
-	Digest   Digest   `json:"digest"`
-}
-
-type SignatureScheme string
-
-const (
-	SignatureSchemeEd25519   SignatureScheme = "ED25519"
-	SignatureSchemeSecp256k1 SignatureScheme = "Secp256k1"
-)
-
-type SignatureSchemeSerialized byte
-
-const (
-	SignatureSchemeSerializedEd25519   SignatureSchemeSerialized = 0
-	SignatureSchemeSerializedSecp256k1 SignatureSchemeSerialized = 1
-)
-
-type ExecuteTransactionRequestType string
-
-const (
-	TxnRequestTypeWaitForEffectsCert    ExecuteTransactionRequestType = "WaitForEffectsCert"
-	TxnRequestTypeWaitForLocalExecution ExecuteTransactionRequestType = "WaitForLocalExecution"
-)
-
-// SignedTransaction
-// Deprecated: replace with SignedTransactionSerializedSig
-type SignedTransaction struct {
-	// transaction data bytes
-	TxBytes *Base64Data `json:"tx_bytes"`
-
-	// Flag of the signature scheme that is used.
-	SigScheme SignatureScheme `json:"sig_scheme"`
-
-	// transaction signature
-	Signature *Base64Data `json:"signature"`
-
-	// signer's public key
-	PublicKey *Base64Data `json:"pub_key"`
-}
-
-type SignedTransactionSerializedSig struct {
-	// transaction data bytes
-	TxBytes *Base64Data `json:"tx_bytes"`
-
-	// transaction signature
-	Signature *Base64Data `json:"signature"`
+	ObjectId ObjectId          `json:"objectId"`
+	Version  SuiBigInt         `json:"version"`
+	Digest   TransactionDigest `json:"digest"`
 }
 
 type TransferObject struct {
@@ -180,104 +133,9 @@ type SenderSignedData struct {
 	// GasPrice     uint64      `json:"gasPrice"`
 }
 
-type OwnedObjectRef struct {
-	Owner     *ObjectOwner `json:"owner"`
-	Reference *ObjectRef   `json:"reference"`
-}
-
-type Event interface{}
-
-type ObjectOwner struct {
-	*ObjectOwnerInternal
-	*string
-}
-
-type ObjectOwnerInternal struct {
-	AddressOwner *Address `json:"AddressOwner,omitempty"`
-	ObjectOwner  *Address `json:"ObjectOwner,omitempty"`
-	SingleOwner  *Address `json:"SingleOwner,omitempty"`
-	Shared       *struct {
-		InitialSharedVersion uint64 `json:"initial_shared_version"`
-	} `json:"Shared,omitempty"`
-}
-
-type TransactionQuery struct {
-	All *string `json:"All"`
-	/// Query by move function.
-	MoveFunction *MoveFunction `json:"MoveFunction"`
-	/// Query by input object.
-	InputObject *ObjectId `json:"InputObject"`
-	/// Query by mutated object.
-	MutatedObject *ObjectId `json:"MutatedObject"`
-	/// Query by sender address.
-	FromAddress *Address `json:"FromAddress"`
-	/// Query by recipient address.
-	ToAddress *Address `json:"ToAddress"`
-}
-
-func (t TransactionQuery) MarshalJSON() ([]byte, error) {
-	return marshalQuery(t)
-}
-
 type TimeRange struct {
 	StartTime uint64 `json:"startTime"` // left endpoint of time interval, milliseconds since epoch, inclusive
 	EndTime   uint64 `json:"endTime"`   // right endpoint of time interval, milliseconds since epoch, exclusive
-}
-
-type EventQuery struct {
-	// Return all events.
-	All *string `json:"All"`
-	// Return events emitted by the given transaction.
-	Transaction *string `json:"Transaction"`
-	// Return events emitted in a specified Move module
-	MoveModule *MoveModule `json:"MoveModule"`
-	// Return events with the given move event struct name
-	MoveEvent *string `json:"MoveEvent"` // e.g. `0x2::devnet_nft::MintNFTEvent`
-	// MoveEvent/Publish/CoinBalanceChange/EpochChange/Checkpoint
-	// TransferObject/MutateObject/DeleteObject/NewObject
-	EventType *string `json:"EventType"`
-	// Query by sender address.
-	Sender *Address `json:"Sender"`
-	// Query by recipient address
-	Recipient *ObjectOwnerInternal `json:"Recipient"`
-	// Return events associated with the given object
-	Object *ObjectId `json:"Object"`
-	// Return events emitted in [start_time, end_time] interval
-	TimeRange *TimeRange `json:"TimeRange"`
-}
-
-func (q EventQuery) MarshalJSON() ([]byte, error) {
-	return marshalQuery(q)
-}
-
-func marshalQuery(q any) ([]byte, error) {
-	tV := reflect.ValueOf(q)
-	for i := 0; i < tV.Type().NumField(); i++ {
-		tField := tV.Field(i)
-		if tField.Kind() != reflect.Pointer || tField.IsNil() {
-			continue
-		}
-		fieldV := reflect.Indirect(tField)
-		tag := tV.Type().Field(i).Tag.Get("json")
-		if fieldV.Kind() == reflect.String && tag == "All" {
-			return []byte("\"All\""), nil
-		}
-		data, err := json.Marshal(fieldV.Interface())
-		if err != nil {
-			return nil, err
-		}
-		result := []byte("{\"" + tag + "\":")
-		result = append(result, data...)
-		result = append(result, []byte("}")...)
-		return result, nil
-	}
-	return nil, errors.New("all data is nil")
-}
-
-type MoveFunction struct {
-	Package  ObjectId `json:"package"`
-	Module   string   `json:"module,omitempty"`
-	Function string   `json:"function,omitempty"`
 }
 
 type MoveModule struct {
@@ -319,86 +177,6 @@ func (o *ObjectOwner) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 	return errors.New("value not json")
-}
-
-type ObjectReadDetail struct {
-	Data  map[string]interface{} `json:"data"`
-	Owner *ObjectOwner           `json:"owner"`
-
-	PreviousTransaction string     `json:"previousTransaction"`
-	StorageRebate       int        `json:"storageRebate"`
-	Reference           *ObjectRef `json:"reference"`
-}
-
-type ObjectStatus string
-
-const (
-	// ObjectStatusExists ObjectStatusNotExists ObjectStatusDeleted
-	// status for sui_getObject
-	ObjectStatusExists    ObjectStatus = "Exists"
-	ObjectStatusNotExists ObjectStatus = "NotExists"
-	ObjectStatusDeleted   ObjectStatus = "Deleted"
-	// ObjectDeleted VersionFound VersionTooHigh VersionNotFound
-	//status for sui_tryGetPastObject
-	ObjectDeleted   ObjectStatus = "ObjectDeleted"
-	VersionFound    ObjectStatus = "VersionFound"
-	VersionTooHigh  ObjectStatus = "VersionTooHigh"
-	VersionNotFound ObjectStatus = "VersionNotFound"
-)
-
-type ObjectRead struct {
-	Details *ObjectReadDetail `json:"details"`
-	Status  ObjectStatus      `json:"status"`
-}
-
-type ObjectInfo struct {
-	ObjectId *ObjectId    `json:"objectId"`
-	Version  int          `json:"version"`
-	Digest   string       `json:"digest"`
-	Type     string       `json:"type"`
-	Owner    *ObjectOwner `json:"owner"`
-
-	PreviousTransaction string `json:"previousTransaction"`
-}
-
-// IntentBytes See: sui/crates/sui-types/src/intent.rs
-// This is currently hardcoded with [IntentScope::TransactionData = 0, Version::V0 = 0, AppId::Sui = 0]
-var IntentBytes = []byte{0, 0, 0}
-
-// SignWith
-// Deprecated: replace with SignSerializedSigWith
-func (txn *TransactionBytes) SignWith(privateKey ed25519.PrivateKey) *SignedTransaction {
-	signTx := bytes.NewBuffer(IntentBytes)
-	signTx.Write(txn.TxBytes.Data())
-	message := signTx.Bytes()
-	signature := ed25519.Sign(privateKey, message)
-	sign := Bytes(signature).GetBase64Data()
-	publicKey := privateKey.Public().(ed25519.PublicKey)
-	pub := Bytes(publicKey).GetBase64Data()
-
-	return &SignedTransaction{
-		TxBytes:   &txn.TxBytes,
-		SigScheme: SignatureSchemeEd25519,
-		Signature: &sign,
-		PublicKey: &pub,
-	}
-}
-
-func (txn *TransactionBytes) SignSerializedSigWith(privateKey ed25519.PrivateKey) *SignedTransactionSerializedSig {
-	signTx := bytes.NewBuffer(IntentBytes)
-	signTx.Write(txn.TxBytes.Data())
-	message := signTx.Bytes()
-	signatureData := bytes.NewBuffer([]byte{byte(SignatureSchemeSerializedEd25519)})
-	signatureData.Write(ed25519.Sign(privateKey, message))
-	signatureData.Write(privateKey.Public().(ed25519.PublicKey))
-	signature := Base64Data{
-		data: signatureData.Bytes(),
-	}
-
-	return &SignedTransactionSerializedSig{
-		TxBytes:   &txn.TxBytes,
-		Signature: &signature,
-	}
 }
 
 func IsSameStringAddress(addr1, addr2 string) bool {

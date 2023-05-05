@@ -2,219 +2,84 @@ package client
 
 import (
 	"context"
+	"fmt"
+	"github.com/coming-chat/go-sui/sui_types"
+	"math/big"
 	"testing"
 
-	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/coming-chat/go-sui/types"
-	"github.com/fardream/go-bcs/bcs"
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_GetTransactionsInRange(t *testing.T) {
-	chain := DevnetClient(t)
-	type args struct {
-		ctx   context.Context
-		start uint64
-		end   uint64
-	}
-	tests := []struct {
-		name    string
-		chain   *Client
-		args    args
-		want    int
-		wantErr bool
-	}{
-		{
-			name:  "test for devnet",
-			chain: chain,
-			args: args{
-				ctx:   context.TODO(),
-				start: 0,
-				end:   10,
-			},
-			want:    10,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.GetTransactionsInRange(tt.args.ctx, tt.args.start, tt.args.end)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetTransactionsInRange() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(got) != tt.want {
-				t.Errorf("GetTransactionsInRange() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestClient_BatchGetTransaction(t *testing.T) {
-	chain := DevnetClient(t)
-	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
-	require.NoError(t, err)
-	object, err := chain.GetObject(context.TODO(), coins.Data[0].CoinObjectId)
-	require.NoError(t, err)
-	type args struct {
-		digests []string
-	}
-	tests := []struct {
-		name    string
-		chain   *Client
-		args    args
-		want    int
-		wantErr bool
-	}{
-		{
-			name:  "test for devnet transaction",
-			chain: chain,
-			args: args{
-				digests: []string{object.Details.PreviousTransaction},
-			},
-			want:    1,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.BatchGetTransaction(tt.args.digests)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("BatchGetTransaction() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(got) != tt.want {
-				t.Errorf("BatchGetTransaction() got = %v, want %v", got, tt.want)
-			}
-			t.Logf("%+v", got)
-		})
-	}
-}
-
-func TestClient_BatchGetObject(t *testing.T) {
-	type args struct {
-		objects []types.ObjectId
-	}
-	chain := DevnetClient(t)
-	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
-	require.NoError(t, err)
-
-	tests := []struct {
-		name    string
-		chain   *Client
-		args    args
-		want    int
-		wantErr bool
-	}{
-		{
-			name:  "test for devnet",
-			chain: chain,
-			args: args{
-				objects: []types.ObjectId{coins.Data[0].CoinObjectId},
-			},
-			want:    1,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.BatchGetObject(tt.args.objects)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("BatchGetObject() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(got) != tt.want {
-				t.Errorf("BatchGetObject() got = %v, want %v", got, tt.want)
-			}
-			t.Logf("%+v", got)
-		})
-	}
-}
-
-func TestClient_GetObject(t *testing.T) {
-	type args struct {
-		ctx   context.Context
-		objID types.ObjectId
-	}
-	chain := DevnetClient(t)
-	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
-	require.NoError(t, err)
-
-	tests := []struct {
-		name    string
-		chain   *Client
-		args    args
-		want    int
-		wantErr bool
-	}{
-		{
-			name:  "test for devnet",
-			chain: chain,
-			args: args{
-				ctx:   context.TODO(),
-				objID: coins.Data[0].CoinObjectId,
-			},
-			want:    3,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.GetObject(tt.args.ctx, tt.args.objID)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetObject() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%+v", got)
-		})
-	}
-}
+//func TestClient_BatchGetTransaction(t *testing.T) {
+//	chain := ChainClient(t)
+//	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
+//	require.NoError(t, err)
+//	object, err := chain.GetObject(context.TODO(), coins.Data[0].CoinObjectId, nil)
+//	require.NoError(t, err)
+//	type args struct {
+//		digests []string
+//	}
+//	tests := []struct {
+//		name    string
+//		chain   *Client
+//		args    args
+//		want    int
+//		wantErr bool
+//	}{
+//		{
+//			name:  "test for devnet transaction",
+//			chain: chain,
+//			args: args{
+//				digests: []string{*object.Data.PreviousTransaction},
+//			},
+//			want:    1,
+//			wantErr: false,
+//		},
+//	}
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//			got, err := tt.chain.BatchGetTransaction(tt.args.digests)
+//			if (err != nil) != tt.wantErr {
+//				t.Errorf("BatchGetTransaction() error = %v, wantErr %v", err, tt.wantErr)
+//				return
+//			}
+//			if len(got) != tt.want {
+//				t.Errorf("BatchGetTransaction() got = %v, want %v", got, tt.want)
+//			}
+//			t.Logf("%+v", got)
+//		})
+//	}
+//}
 
 func TestClient_DryRunTransaction(t *testing.T) {
-	chain := DevnetClient(t)
-	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+	cli := ChainClient(t)
+	signer := Address
+	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(2000)
+
+	amount := SUI(0.01).Uint64()
+	gasBudget := SUI(0.01).Uint64()
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, false)
 	require.NoError(t, err)
-	tx, err := chain.TransferSui(context.TODO(), *Address, *Address, coin.Reference.ObjectId, 1000, 1000)
+	tx, err := cli.PayAllSui(
+		context.Background(), *signer, *signer,
+		pickedCoins.CoinIds(),
+		types.NewSafeSuiBigInt(gasBudget),
+	)
 	require.NoError(t, err)
-	type args struct {
-		ctx context.Context
-		tx  *types.TransactionBytes
-	}
-	tests := []struct {
-		name  string
-		args  args
-		chain *Client
-		// want    *types.TransactionEffects
-		wantErr bool
-	}{
-		{
-			name:  "dry run",
-			chain: chain,
-			args: args{
-				ctx: context.TODO(),
-				tx:  tx,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result, err := tt.chain.DryRunTransaction(tt.args.ctx, tt.args.tx)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Client.DryRunTransaction() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%#v", result)
-		})
-	}
+
+	resp, err := cli.DryRunTransaction(context.Background(), tx)
+	require.Nil(t, err)
+	t.Log("dry run status:", resp.Effects.Data.IsSuccess())
+	t.Log("dry run error:", resp.Effects.Data.V1.Status.Error)
 }
 
 // TestClient_ExecuteTransactionSerializedSig
 // This test case will affect the real coin in the test case of account
 // temporary disabled
 //func TestClient_ExecuteTransactionSerializedSig(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := ChainClient(t)
 //	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 //	require.NoError(t, err)
 //	coin, err := coins.PickCoinNoLess(2000)
@@ -229,7 +94,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 //}
 
 //func TestClient_ExecuteTransaction(t *testing.T) {
-//	chain := DevnetClient(t)
+//	chain := ChainClient(t)
 //	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
 //	require.NoError(t, err)
 //	coin, err := coins.PickCoinNoLess(2000)
@@ -243,276 +108,60 @@ func TestClient_DryRunTransaction(t *testing.T) {
 //	t.Logf("%#v", txResult)
 //}
 
-func TestClient_GetObjectsOwnedByAddress(t *testing.T) {
-	cli := DevnetClient(t)
+func TestClient_BatchGetObjectsOwnedByAddress(t *testing.T) {
+	cli := ChainClient(t)
 
-	objects, err := cli.GetObjectsOwnedByAddress(context.TODO(), *Address)
-	require.NoError(t, err)
-	t.Log(objects)
-
-	filterObject, err := cli.BatchGetObjectsOwnedByAddress(context.TODO(), *Address, types.SuiCoinType)
+	options := types.SuiObjectDataOptions{
+		ShowType:    true,
+		ShowContent: true,
+	}
+	coinType := fmt.Sprintf("0x2::coin::Coin<%v>", types.SuiCoinType)
+	filterObject, err := cli.BatchGetObjectsOwnedByAddress(context.TODO(), *Address, options, coinType)
 	require.NoError(t, err)
 	t.Log(filterObject)
 }
 
-func TestClient_GetSuiCoinsOwnedByAddress(t *testing.T) {
-	chain := DevnetClient(t)
-	type args struct {
-		ctx     context.Context
-		address types.Address
-	}
-	tests := []struct {
-		name    string
-		chain   *Client
-		args    args
-		wantErr bool
-	}{
-		{
-			name:  "case 1",
-			chain: chain,
-			args: args{
-				ctx:     context.TODO(),
-				address: *Address,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.GetSuiCoinsOwnedByAddress(tt.args.ctx, tt.args.address)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetSuiCoinsOwnedByAddress() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("coin data: %v", got)
-		})
-	}
-}
-
 func TestClient_GetCoinMetadata(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	metadata, err := chain.GetCoinMetadata(context.TODO(), types.SuiCoinType)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("%+v", metadata)
-}
-
-// TestClient_Pay need another coin type(not default sui coin)
-//func TestClient_Pay(t *testing.T) {
-//	chain := DevnetClient(t)
-//	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
-//	require.NoError(t, err)
-//	inputCoins := []types.ObjectId{coins.Data[0].CoinObjectId}
-//
-//	tx, err := chain.Pay(context.TODO(), *Address, inputCoins, []types.Address{*Address}, []uint64{1000}, coins.Data[len(coins.Data)-1].CoinObjectId, 2000)
-//	require.NoError(t, err)
-//	t.Logf("%#v", tx)
-//	inspectResult, err := chain.DevInspectTransaction(context.TODO(), tx.TxBytes)
-//	require.NoError(t, err)
-//	t.Logf("%#v", inspectResult)
-//}
-
-func TestClient_PaySui(t *testing.T) {
-	chain := DevnetClient(t)
-
-	recipients := []types.Address{*Address}
-
-	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
-	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(2000)
-	require.NoError(t, err)
-	inputCoins := []types.ObjectId{coin.Reference.ObjectId}
-
-	tx, err := chain.PaySui(context.TODO(), *Address, inputCoins, recipients, []uint64{1000}, 1000)
-	require.NoError(t, err)
-	t.Logf("%#v", tx)
-
-	inspectResult, err := chain.DryRunTransaction(context.TODO(), tx)
-	require.NoError(t, err)
-	if inspectResult.Status.Error != "" {
-		t.Fatalf("%#v", inspectResult)
-	}
-	t.Logf("%#v", inspectResult)
+	require.Nil(t, err)
+	t.Logf("%#v", metadata)
 }
 
 func TestClient_GetAllBalances(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	balances, err := chain.GetAllBalances(context.TODO(), *Address)
 	require.NoError(t, err)
-	t.Logf("%#v", balances)
+	for _, balance := range balances {
+		t.Logf(
+			"Coin Name: %v, Count: %v, Total: %v, Locked: %v",
+			balance.CoinType, balance.CoinObjectCount,
+			balance.TotalBalance.String(), balance.LockedBalance,
+		)
+	}
 }
 
 func TestClient_GetBalance(t *testing.T) {
-	chain := DevnetClient(t)
-	balance, err := chain.GetBalance(context.TODO(), *Address, nil)
+	chain := ChainClient(t)
+	balance, err := chain.GetBalance(context.TODO(), *Address, "")
 	require.NoError(t, err)
-	t.Logf("%#v", balance)
-}
-
-//func TestClient_DevInspectMoveCall(t *testing.T) {
-//	chain := DevnetClient(t)
-//
-//	packageId, err := types.NewHexData("0xb08873e9b44960657723604e4f6bc70c2d1c2b50")
-//	require.NoError(t, err)
-//
-//	devInspectResults, err := chain.DevInspectMoveCall(
-//		context.TODO(),
-//		*Address,
-//		*packageId,
-//		"profile",
-//		"register",
-//		[]string{},
-//		[]any{
-//			"0xae71509d1be0c751bbced577bd1598e617161c29",
-//			"",
-//			"",
-//		},
-//	)
-//	require.NoError(t, err)
-//	if devInspectResults.Effects.Status.Error != "" {
-//		t.Fatalf("%#v", devInspectResults)
-//	}
-//	t.Logf("%T", devInspectResults)
-//}
-
-func TestClient_DevInspectTransaction(t *testing.T) {
-	chain := DevnetClient(t)
-	packageId, err := types.NewAddressFromHex("0x2")
-	require.NoError(t, err)
-	require.NoError(t, err)
-	arg := sui_types.MoveCallArg{
-		"ComingChat NFT",
-		"This is a NFT created by ComingChat",
-		"https://coming.chat/favicon.ico",
-	}
-	args, err := arg.GetMoveCallArgs()
-	require.NoError(t, err)
-	tKind := sui_types.TransactionKind{
-		Single: &sui_types.SingleTransactionKind{
-			Call: &sui_types.MoveCall{
-				Package:       *packageId,
-				Module:        "devnet_nft",
-				Function:      "mint",
-				TypeArguments: []*sui_types.TypeTag{},
-				Arguments:     args,
-			},
-		},
-	}
-	txBytes, err := bcs.Marshal(tKind)
-	require.NoError(t, err)
-
-	devInspectResults, err := chain.DevInspectTransaction(context.TODO(), *Address, types.Bytes(txBytes).GetBase64Data(), nil, nil)
-	require.NoError(t, err)
-	if devInspectResults.Effects.Status.Error != "" {
-		t.Fatalf("%#v", devInspectResults)
-	}
-	t.Logf("%#v", devInspectResults)
+	t.Logf(
+		"Coin Name: %v, Count: %v, Total: %v, Locked: %v",
+		balance.CoinType, balance.CoinObjectCount,
+		balance.TotalBalance.String(), balance.LockedBalance,
+	)
 }
 
 func TestClient_GetCoins(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	defaultCoinType := types.SuiCoinType
 	coins, err := chain.GetCoins(context.TODO(), *Address, &defaultCoinType, nil, 1)
 	require.NoError(t, err)
 	t.Logf("%#v", coins)
 }
 
-func TestClient_SplitCoin(t *testing.T) {
-	cli := DevnetClient(t)
-
-	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
-	require.NoError(t, err)
-
-	firstCoin, err := coins.PickCoinNoLess(100)
-	require.NoError(t, err)
-	everyAmount := firstCoin.Balance / 2
-	amounts := []uint64{everyAmount, everyAmount}
-
-	txn, err := cli.SplitCoin(context.TODO(), *Address, firstCoin.Reference.ObjectId, amounts, nil, 1000)
-	require.NoError(t, err)
-
-	t.Log(txn.TxBytes.String())
-
-	inspectTxResult, err := cli.DryRunTransaction(context.TODO(), txn)
-	require.NoError(t, err)
-	if inspectTxResult.Status.Error != "" {
-		t.Fatalf("%#v", inspectTxResult)
-	}
-	t.Logf("%#v", inspectTxResult)
-}
-
-func TestClient_SplitCoinEqual(t *testing.T) {
-	cli := DevnetClient(t)
-
-	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
-	require.NoError(t, err)
-
-	firstCoin, err := coins.PickCoinNoLess(1000)
-	require.NoError(t, err)
-
-	getCoins, err := cli.GetCoins(context.TODO(), *Address, nil, nil, 0)
-	require.NoError(t, err)
-
-	txn, err := cli.SplitCoinEqual(context.TODO(), *Address, firstCoin.Reference.ObjectId, 2, &getCoins.Data[len(getCoins.Data)-1].CoinObjectId, 1000)
-	require.NoError(t, err)
-
-	t.Log(txn.TxBytes.String())
-
-	inspectRes, err := cli.DryRunTransaction(context.TODO(), txn)
-	require.NoError(t, err)
-
-	if inspectRes.Status.Error != "" {
-		t.Fatalf("%#v", inspectRes)
-	}
-	t.Logf("%#v", inspectRes)
-}
-
-func TestGetTransaction(t *testing.T) {
-	cli := DevnetClient(t)
-	transactions, err := cli.GetTransactionsInRange(context.TODO(), 0, 1)
-	require.NoError(t, err)
-	require.NotEmpty(t, transactions)
-	resp, err := cli.GetTransaction(context.TODO(), transactions[0])
-	require.NoError(t, err)
-
-	t.Logf("%#v", resp)
-}
-
-func TestBatchCall_GetObject(t *testing.T) {
-	cli := DevnetClient(t)
-	coins, err := cli.GetCoins(context.TODO(), *Address, nil, nil, 3)
-	require.NoError(t, err)
-	var objKeys []string
-	for _, v := range coins.Data {
-		objKeys = append(objKeys, v.CoinObjectId.String())
-	}
-
-	elems := make([]BatchElem, len(objKeys))
-	for i := 0; i < len(objKeys); i++ {
-		ele := BatchElem{
-			Method: "sui_getObject",
-			Args:   []interface{}{objKeys[i]},
-			Result: &types.ObjectRead{},
-		}
-		elems[i] = ele
-	}
-
-	err = cli.BatchCall(elems)
-	require.NoError(t, err)
-
-	t.Logf("%#v", elems)
-}
-
-func TestBatchGetObjectsOwnedByAddress(t *testing.T) {
-	cli := DevnetClient(t)
-	coins, err := cli.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
-	require.NoError(t, err)
-
-	t.Logf("%#v", coins)
-}
-
 func TestClient_GetAllCoins(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	type args struct {
 		ctx     context.Context
 		address types.Address
@@ -539,19 +188,166 @@ func TestClient_GetAllCoins(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := chain.GetAllCoins(tt.args.ctx, tt.args.address, tt.args.cursor, tt.args.limit)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetAllCoins() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%#v", got)
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := chain.GetAllCoins(tt.args.ctx, tt.args.address, tt.args.cursor, tt.args.limit)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("GetAllCoins() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Logf("%#v", got)
+			},
+		)
 	}
 }
 
+func TestClient_GetTransaction(t *testing.T) {
+	cli := TestnetClient(t)
+	digest := "B6WTZwFp1D6poMAQyWW8EGkq6iNLgqY1V64xJkgZDwVY"
+	resp, err := cli.GetTransactionBlock(
+		context.Background(), digest, types.SuiTransactionBlockResponseOptions{
+			ShowInput:          true,
+			ShowEffects:        true,
+			ShowObjectChanges:  true,
+			ShowBalanceChanges: true,
+			ShowEvents:         true,
+		},
+	)
+	require.NoError(t, err)
+	t.Logf("%#v", resp)
+
+	require.Equal(t, int64(1997880), resp.Effects.Data.GasFee())
+}
+
+func TestBatchCall_GetObject(t *testing.T) {
+	cli := ChainClient(t)
+
+	if false {
+		// get sepcified object
+		idstr := "0x4ad2f0a918a241d6a19573212aeb56947bb9255a14e921a7ec78b262536826f0"
+		objId, err := types.NewHexData(idstr)
+		require.Nil(t, err)
+		obj, err := cli.GetObject(
+			context.Background(), *objId, &types.SuiObjectDataOptions{
+				ShowType:    true,
+				ShowContent: true,
+			},
+		)
+		require.Nil(t, err)
+		t.Log(obj.Data)
+	}
+
+	coins, err := cli.GetCoins(context.TODO(), *Address, nil, nil, 3)
+	require.NoError(t, err)
+	if len(coins.Data) == 0 {
+		return
+	}
+	objId := coins.Data[0].CoinObjectId
+	obj, err := cli.GetObject(context.Background(), objId, nil)
+	require.Nil(t, err)
+	t.Log(obj.Data)
+}
+
+func TestClient_GetObject(t *testing.T) {
+	type args struct {
+		ctx   context.Context
+		objID types.ObjectId
+	}
+	chain := ChainClient(t)
+	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
+	require.NoError(t, err)
+
+	tests := []struct {
+		name    string
+		chain   *Client
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{
+			name:  "test for devnet",
+			chain: chain,
+			args: args{
+				ctx:   context.TODO(),
+				objID: coins.Data[0].CoinObjectId,
+			},
+			want:    3,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := tt.chain.GetObject(
+					tt.args.ctx, tt.args.objID, &types.SuiObjectDataOptions{
+						ShowType:                true,
+						ShowOwner:               true,
+						ShowContent:             true,
+						ShowDisplay:             true,
+						ShowBcs:                 true,
+						ShowPreviousTransaction: true,
+						ShowStorageRebate:       true,
+					},
+				)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("GetObject() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Logf("%+v", got)
+			},
+		)
+	}
+}
+
+func TestClient_MultiGetObjects(t *testing.T) {
+	chain := ChainClient(t)
+	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
+	require.NoError(t, err)
+	if len(coins.Data) == 0 {
+		t.Log("Warning: No Object Id for test.")
+		return
+	}
+
+	obj := coins.Data[0].CoinObjectId
+	objs := []types.ObjectId{obj, obj}
+	resp, err := chain.MultiGetObjects(
+		context.Background(), objs, &types.SuiObjectDataOptions{
+			ShowType:                true,
+			ShowOwner:               true,
+			ShowContent:             true,
+			ShowDisplay:             true,
+			ShowBcs:                 true,
+			ShowPreviousTransaction: true,
+			ShowStorageRebate:       true,
+		},
+	)
+	require.Nil(t, err)
+	require.Equal(t, len(objs), len(resp))
+	require.Equal(t, resp[0], resp[1])
+}
+
+func TestClient_GetOwnedObjects(t *testing.T) {
+	cli := ChainClient(t)
+
+	obj, err := types.NewHexData("0x02")
+	require.Nil(t, err)
+	query := types.SuiObjectResponseQuery{
+		Filter: &types.SuiObjectDataFilter{
+			Package: obj,
+			// StructType: "0x2::coin::Coin<0x2::sui::SUI>",
+		},
+		Options: &types.SuiObjectDataOptions{
+			ShowType: true,
+		},
+	}
+	limit := uint(1)
+	objs, err := cli.GetOwnedObjects(context.Background(), *Address, &query, nil, &limit)
+	require.Nil(t, err)
+	require.GreaterOrEqual(t, len(objs.Data), int(limit))
+}
+
 func TestClient_GetTotalSupply(t *testing.T) {
-	chain := DevnetClient(t)
+	chain := ChainClient(t)
 	type args struct {
 		ctx      context.Context
 		coinType string
@@ -574,246 +370,310 @@ func TestClient_GetTotalSupply(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.GetTotalSupply(tt.args.ctx, tt.args.coinType)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetTotalSupply() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%d", got)
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := tt.chain.GetTotalSupply(tt.args.ctx, tt.args.coinType)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("GetTotalSupply() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Logf("%d", got)
+			},
+		)
 	}
 }
-
-func TestClient_Publish(t *testing.T) {
-	chain := DevnetClient(t)
-	dmens, err := types.NewBase64Data(DmensDmensB64)
-	require.NoError(t, err)
-	profile, err := types.NewBase64Data(DmensProfileB64)
-	require.NoError(t, err)
-	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
-	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(30000)
-	require.NoError(t, err)
-	type args struct {
-		ctx             context.Context
-		address         types.Address
-		compiledModules []*types.Base64Data
-		gas             types.ObjectId
-		gasBudget       uint
-	}
-	tests := []struct {
-		name    string
-		client  *Client
-		args    args
-		want    *types.TransactionBytes
-		wantErr bool
-	}{
-		{
-			name:   "test for dmens publish",
-			client: chain,
-			args: args{
-				ctx:             context.TODO(),
-				address:         *Address,
-				compiledModules: []*types.Base64Data{dmens, profile},
-				gas:             coin.Reference.ObjectId,
-				gasBudget:       30000,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.client.Publish(tt.args.ctx, tt.args.address, tt.args.compiledModules, tt.args.gas, tt.args.gasBudget)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Publish() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%#v", got)
-
-			txResult, err := tt.client.DryRunTransaction(context.TODO(), got)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Publish() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			t.Logf("%#v", txResult)
-		})
-	}
+func TestClient_GetTotalTransactionBlocks(t *testing.T) {
+	cli := ChainClient(t)
+	res, err := cli.GetTotalTransactionBlocks(context.Background())
+	require.Nil(t, err)
+	t.Log(res)
 }
 
-func TestClient_GetTransactions(t *testing.T) {
-	chain := DevnetClient(t)
-	All := ""
-	inputObject, err := types.NewHexData("0x9836b5d5bdf944fa09792e2b7d97bbd061e0a550")
-	require.NoError(t, err)
-	fromAddress, err := types.NewAddressFromHex("0x6fc6148816617c3c3eccb1d09e930f73f6712c9c")
-	require.NoError(t, err)
-	type args struct {
-		ctx              context.Context
-		transactionQuery types.TransactionQuery
-		cursor           *string
-		limit            uint
-		descendingOrder  bool
-	}
-	tests := []struct {
-		name    string
-		chain   *Client
-		args    args
-		want    *types.TransactionsPage
-		wantErr bool
-	}{
-		{
-			name:  "test 1",
-			chain: chain,
-			args: args{
-				ctx: context.TODO(),
-				transactionQuery: types.TransactionQuery{
-					All: &All,
-				},
-				cursor:          nil,
-				limit:           20,
-				descendingOrder: false,
-			},
-		},
-		{
-			name:  "test 1",
-			chain: chain,
-			args: args{
-				ctx: context.TODO(),
-				transactionQuery: types.TransactionQuery{
-					InputObject: inputObject,
-				},
-				cursor:          nil,
-				limit:           20,
-				descendingOrder: false,
-			},
-		},
-		{
-			name:  "test 1",
-			chain: chain,
-			args: args{
-				ctx: context.TODO(),
-				transactionQuery: types.TransactionQuery{
-					FromAddress: fromAddress,
-				},
-				cursor:          nil,
-				limit:           20,
-				descendingOrder: false,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.GetTransactions(tt.args.ctx, tt.args.transactionQuery, tt.args.cursor, tt.args.limit, tt.args.descendingOrder)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetTransactions() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%#v", got)
-		})
-	}
-}
+//func TestClient_Publish(t *testing.T) {
+//	chain := ChainClient(t)
+//	dmens, err := types.NewBase64Data(DmensDmensB64)
+//	require.NoError(t, err)
+//	profile, err := types.NewBase64Data(DmensProfileB64)
+//	require.NoError(t, err)
+//	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
+//	require.NoError(t, err)
+//	coin, err := coins.PickCoinNoLess(30000)
+//	require.NoError(t, err)
+//	type args struct {
+//		ctx             context.Context
+//		address         types.Address
+//		compiledModules []*types.Base64Data
+//		gas             types.ObjectId
+//		gasBudget       uint
+//	}
+//	tests := []struct {
+//		name    string
+//		client  *Client
+//		args    args
+//		want    *types.TransactionBytes
+//		wantErr bool
+//	}{
+//		{
+//			name:   "test for dmens publish",
+//			client: chain,
+//			args: args{
+//				ctx:             context.TODO(),
+//				address:         *Address,
+//				compiledModules: []*types.Base64Data{dmens, profile},
+//				gas:             coin.CoinObjectId,
+//				gasBudget:       30000,
+//			},
+//		},
+//	}
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//			got, err := tt.client.Publish(tt.args.ctx, tt.args.address, tt.args.compiledModules, tt.args.gas, tt.args.gasBudget)
+//			if (err != nil) != tt.wantErr {
+//				t.Errorf("Publish() error = %v, wantErr %v", err, tt.wantErr)
+//				return
+//			}
+//			t.Logf("%#v", got)
+//
+//			txResult, err := tt.client.DryRunTransaction(context.TODO(), got)
+//			if (err != nil) != tt.wantErr {
+//				t.Errorf("Publish() error = %v, wantErr %v", err, tt.wantErr)
+//				return
+//			}
+//
+//			t.Logf("%#v", txResult)
+//		})
+//	}
+//}
 
 func TestClient_TryGetPastObject(t *testing.T) {
-	chain := DevnetClient(t)
-	coins, err := chain.GetSuiCoinsOwnedByAddress(context.TODO(), *Address)
-	require.NoError(t, err)
-	coin, err := coins.PickCoinNoLess(1000)
-	require.NoError(t, err)
-
-	type args struct {
-		ctx      context.Context
-		objectId types.ObjectId
-		version  uint64
-	}
-	tests := []struct {
-		name    string
-		chain   *Client
-		args    args
-		want    *types.ObjectRead
-		wantErr bool
-	}{
-		{
-			name:  "test for devnet",
-			chain: chain,
-			args: args{
-				ctx:      context.TODO(),
-				objectId: coin.Reference.ObjectId,
-				version:  coin.Reference.Version,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.chain.TryGetPastObject(tt.args.ctx, tt.args.objectId, tt.args.version)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TryGetPastObject() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Logf("%#v", got)
-		})
-	}
+	cli := ChainClient(t)
+	objId, err := types.NewHexData("0x11462c88e74bb00079e3c043efb664482ee4551744ee691c7623b98503cb3f4d")
+	require.Nil(t, err)
+	data, err := cli.TryGetPastObject(context.Background(), *objId, 903, nil)
+	require.Nil(t, err)
+	t.Log(data)
 }
 
 func TestClient_GetEvents(t *testing.T) {
-	chain := DevnetClient(t)
-	type args struct {
-		ctx             context.Context
-		eventQuery      types.EventQuery
-		cursor          *types.EventID
-		limit           uint
-		descendingOrder bool
-	}
-	all := "All"
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "all",
-			args: args{
-				ctx: context.Background(),
-				eventQuery: types.EventQuery{
-					All: &all,
-				},
-				cursor:          nil,
-				limit:           10,
-				descendingOrder: false,
-			},
-			wantErr: false,
-		},
-		{
-			name: "from address",
-			args: args{
-				ctx: context.Background(),
-				eventQuery: types.EventQuery{
-					Sender: Address,
-				},
-				cursor:          nil,
-				limit:           10,
-				descendingOrder: false,
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			es, err := chain.GetEvents(tt.args.ctx, tt.args.eventQuery, tt.args.cursor, tt.args.limit, tt.args.descendingOrder)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Client.GetEvents() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(es.Data) == 0 {
-				t.Errorf("no events")
-			}
-		})
-	}
+	cli := ChainClient(t)
+	digest := "8WvqRRZ96u3UjY24WcjmZtUZyugXUagiQNkpRe97aKRR"
+	res, err := cli.GetEvents(context.Background(), digest)
+	require.NoError(t, err)
+	t.Log(res)
 }
 
 func TestClient_GetReferenceGasPrice(t *testing.T) {
-	cli := DevnetClient(t)
+	cli := ChainClient(t)
 	gasPrice, err := cli.GetReferenceGasPrice(context.Background())
 	require.Nil(t, err)
 	t.Logf("current gas price = %v", gasPrice)
+}
+
+// func TestClient_DevInspectTransactionBlock(t *testing.T) {
+// 	chain := ChainClient(t)
+// 	signer := Address
+// 	price, err := chain.GetReferenceGasPrice(context.TODO())
+// 	require.NoError(t, err)
+// 	coins, err := chain.GetCoins(context.Background(), *signer, nil, nil, 10)
+// 	require.NoError(t, err)
+
+// 	amount := SUI(0.01).Int64()
+// 	gasBudget := SUI(0.01).Uint64()
+// 	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(amount * 2), 0, false)
+// 	require.NoError(t, err)
+// 	tx, err := chain.PayAllSui(context.Background(),
+// 		*signer, *signer,
+// 		pickedCoins.CoinIds(),
+// 		types.NewSafeSuiBigInt(gasBudget))
+// 	require.NoError(t, err)
+
+// 	resp, err := chain.DevInspectTransactionBlock(context.Background(), *signer, tx.TxBytes, price, nil)
+// 	require.Nil(t, err)
+// 	t.Log(resp)
+// }
+
+func TestClient_QueryTransactionBlocks(t *testing.T) {
+	cli := ChainClient(t)
+	limit := uint(10)
+	type args struct {
+		ctx             context.Context
+		query           types.SuiTransactionBlockResponseQuery
+		cursor          *types.TransactionDigest
+		limit           *uint
+		descendingOrder bool
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *types.TransactionBlocksPage
+		wantErr bool
+	}{
+		{
+			name: "test for queryTransactionBlocks",
+			args: args{
+				ctx: context.TODO(),
+				query: types.SuiTransactionBlockResponseQuery{
+					Filter: &types.TransactionFilter{
+						FromAddress: Address,
+					},
+					Options: &types.SuiTransactionBlockResponseOptions{
+						ShowInput:   true,
+						ShowEffects: true,
+					},
+				},
+				cursor:          nil,
+				limit:           &limit,
+				descendingOrder: true,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := cli.QueryTransactionBlocks(
+					tt.args.ctx,
+					tt.args.query,
+					tt.args.cursor,
+					tt.args.limit,
+					tt.args.descendingOrder,
+				)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("QueryTransactionBlocks() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Logf("%#v", got)
+			},
+		)
+	}
+}
+
+func TestClient_QueryEvents(t *testing.T) {
+	cli := ChainClient(t)
+	limit := uint(10)
+	type args struct {
+		ctx             context.Context
+		query           types.EventFilter
+		cursor          *types.EventId
+		limit           *uint
+		descendingOrder bool
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *types.EventPage
+		wantErr bool
+	}{
+		{
+			name: "test for query events",
+			args: args{
+				ctx: context.TODO(),
+				query: types.EventFilter{
+					Sender: Address,
+				},
+				cursor:          nil,
+				limit:           &limit,
+				descendingOrder: false,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := cli.QueryEvents(
+					tt.args.ctx,
+					tt.args.query,
+					tt.args.cursor,
+					tt.args.limit,
+					tt.args.descendingOrder,
+				)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("QueryEvents() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Log(got)
+			},
+		)
+	}
+}
+
+func TestClient_GetDynamicFields(t *testing.T) {
+	chain := ChainClient(t)
+	parentObjectId, err := types.NewHexData("0x1719957d7a2bf9d72459ff0eab8e600cbb1991ef41ddd5b4a8c531035933d256")
+	require.NoError(t, err)
+	limit := uint(5)
+	type args struct {
+		ctx            context.Context
+		parentObjectId types.ObjectId
+		cursor         *types.ObjectId
+		limit          *uint
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *types.DynamicFieldPage
+		wantErr bool
+	}{
+		{
+			name: "case 1",
+			args: args{
+				ctx:            context.TODO(),
+				parentObjectId: *parentObjectId,
+				cursor:         nil,
+				limit:          &limit,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := chain.GetDynamicFields(tt.args.ctx, tt.args.parentObjectId, tt.args.cursor, tt.args.limit)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("GetDynamicFields() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Log(got)
+			},
+		)
+	}
+}
+
+func TestClient_GetDynamicFieldObject(t *testing.T) {
+	chain := ChainClient(t)
+	parentObjectId, err := types.NewHexData("0x1719957d7a2bf9d72459ff0eab8e600cbb1991ef41ddd5b4a8c531035933d256")
+	require.NoError(t, err)
+	type args struct {
+		ctx            context.Context
+		parentObjectId types.ObjectId
+		name           sui_types.DynamicFieldName
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *types.SuiObjectResponse
+		wantErr bool
+	}{
+		{
+			name: "case 1",
+			args: args{
+				ctx:            context.TODO(),
+				parentObjectId: *parentObjectId,
+				name: sui_types.DynamicFieldName{
+					Type:  "address",
+					Value: "0xf9ed7d8de1a6c44d703b64318a1cc687c324fdec35454281035a53ea3ba1a95a",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := chain.GetDynamicFieldObject(tt.args.ctx, tt.args.parentObjectId, tt.args.name)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("GetDynamicFieldObject() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				t.Logf("%#v", got)
+			},
+		)
+	}
 }

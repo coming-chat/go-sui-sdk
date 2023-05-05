@@ -6,8 +6,6 @@ import (
 	"github.com/coming-chat/go-sui/types"
 )
 
-const ROLLING_AVERAGE = 30
-
 func (c *Client) GetLatestSuiSystemState(ctx context.Context) (*types.SuiSystemStateSummary, error) {
 	var resp types.SuiSystemStateSummary
 	return &resp, c.CallContext(ctx, &resp, getLatestSuiSystemState)

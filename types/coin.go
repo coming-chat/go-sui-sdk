@@ -52,6 +52,9 @@ type PickedCoins struct {
 	Coins        []Coin
 	TotalAmount  big.Int
 	TargetAmount big.Int
+
+	// max coin value except the picked coins, It may be used to help set the gas budget.
+	RemainingMaxCoinValue uint64
 }
 
 func (cs *PickedCoins) Count() int {
@@ -96,12 +99,20 @@ func PickupCoins(inputCoins *CoinPage, targetAmount big.Int, limit int, reserveG
 	})
 
 	// First find a coin with a value that is exactly equal to the target amount.
-	for _, coin := range coins {
+	for idx, coin := range coins {
 		if coin.Balance.Uint64() == targetAmount.Uint64() {
+			maxGas := uint64(0)
+			if idx == 0 && len(coins) > 1 {
+				maxGas = coins[1].Balance.Uint64()
+			} else {
+				maxGas = coins[0].Balance.Uint64()
+			}
 			return &PickedCoins{
 				Coins:        Coins{coin},
 				TotalAmount:  targetAmount,
 				TargetAmount: targetAmount,
+
+				RemainingMaxCoinValue: maxGas,
 			}, nil
 		}
 		if coin.Balance.Uint64() < targetAmount.Uint64() {
@@ -111,10 +122,14 @@ func PickupCoins(inputCoins *CoinPage, targetAmount big.Int, limit int, reserveG
 
 	total := big.NewInt(0)
 	pickedCoins := []Coin{}
-	for _, coin := range coins {
+	maxGas := uint64(0)
+	for idx, coin := range coins {
 		total = total.Add(total, big.NewInt(0).SetUint64(coin.Balance.Uint64()))
 		pickedCoins = append(pickedCoins, coin)
 		if total.Cmp(&targetAmount) >= 0 {
+			if idx+1 < len(coins) {
+				maxGas = coins[idx+1].Balance.Uint64()
+			}
 			break
 		}
 	}
@@ -139,6 +154,8 @@ func PickupCoins(inputCoins *CoinPage, targetAmount big.Int, limit int, reserveG
 		Coins:        pickedCoins,
 		TotalAmount:  *total,
 		TargetAmount: targetAmount,
+
+		RemainingMaxCoinValue: maxGas,
 	}, nil
 }
 

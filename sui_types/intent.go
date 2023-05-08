@@ -6,30 +6,31 @@ type EmptyEnum struct {
 func (e EmptyEnum) MarshalBCS() ([]byte, error) {
 	return []byte{}, nil
 }
+import "github.com/coming-chat/go-sui/lib"
 
 type IntentScope struct {
-	TransactionData         *EmptyEnum // Used for a user signature on a transaction data.
-	TransactionEffects      *EmptyEnum // Used for an authority signature on transaction effects.
-	CheckpointSummary       *EmptyEnum // Used for an authority signature on a checkpoint summary.
-	PersonalMessage         *EmptyEnum // Used for a user signature on a personal message.
-	SenderSignedTransaction *EmptyEnum // Used for an authority signature on a user signed transaction.
-	ProofOfPossession       *EmptyEnum // Used as a signature representing an authority's proof of possesion of its authority protocol key.
-	HeaderDigest            *EmptyEnum // Used for narwhal authority signature on header digest.
+	TransactionData         *lib.EmptyEnum // Used for a user signature on a transaction data.
+	TransactionEffects      *lib.EmptyEnum // Used for an authority signature on transaction effects.
+	CheckpointSummary       *lib.EmptyEnum // Used for an authority signature on a checkpoint summary.
+	PersonalMessage         *lib.EmptyEnum // Used for a user signature on a personal message.
+	SenderSignedTransaction *lib.EmptyEnum // Used for an authority signature on a user signed transaction.
+	ProofOfPossession       *lib.EmptyEnum // Used as a signature representing an authority's proof of possesion of its authority protocol key.
+	HeaderDigest            *lib.EmptyEnum // Used for narwhal authority signature on header digest.
 }
 
 func (i IntentScope) IsBcsEnum() {
 }
 
 type IntentVersion struct {
-	V0 *EmptyEnum
+	V0 *lib.EmptyEnum
 }
 
 func (i IntentVersion) IsBcsEnum() {
 }
 
 type AppId struct {
-	Sui     *EmptyEnum
-	Narwhal *EmptyEnum
+	Sui     *lib.EmptyEnum
+	Narwhal *lib.EmptyEnum
 }
 
 func (a AppId) IsBcsEnum() {
@@ -44,13 +45,13 @@ type Intent struct {
 func DefaultIntent() Intent {
 	return Intent{
 		Scope: IntentScope{
-			TransactionData: &EmptyEnum{},
+			TransactionData: &lib.EmptyEnum{},
 		},
 		Version: IntentVersion{
-			V0: &EmptyEnum{},
+			V0: &lib.EmptyEnum{},
 		},
 		AppId: AppId{
-			Sui: &EmptyEnum{},
+			Sui: &lib.EmptyEnum{},
 		},
 	}
 }

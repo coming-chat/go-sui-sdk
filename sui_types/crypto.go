@@ -5,6 +5,7 @@ import (
 	"crypto/ed25519"
 	"encoding/json"
 	"errors"
+	"github.com/coming-chat/go-sui/lib"
 
 	"github.com/coming-chat/go-sui/crypto"
 	"github.com/fardream/go-bcs/bcs"
@@ -63,11 +64,11 @@ func NewSignatureSecure[T IntentValue](value IntentMessage[T], secret crypto.Sig
 }
 
 type SignatureScheme struct {
-	ED25519   *EmptyEnum
-	Secp256k1 *EmptyEnum
-	Secp256r1 *EmptyEnum
-	MultiSig  *EmptyEnum
-	BLS12381  *EmptyEnum
+	ED25519   *lib.EmptyEnum
+	Secp256k1 *lib.EmptyEnum
+	Secp256r1 *lib.EmptyEnum
+	MultiSig  *lib.EmptyEnum
+	BLS12381  *lib.EmptyEnum
 }
 
 func (s *SignatureScheme) Flag() byte {
@@ -91,7 +92,7 @@ func NewSignatureScheme(flag byte) (SignatureScheme, error) {
 	switch flag {
 	case 0:
 		return SignatureScheme{
-			ED25519: &EmptyEnum{},
+			ED25519: &lib.EmptyEnum{},
 		}, nil
 	case 1:
 		fallthrough
@@ -170,7 +171,7 @@ func NewEd25519SuiSignature(keyPair crypto.KeyPair, message []byte) *Ed25519SuiS
 
 	var signatureBytes [ed25519.PublicKeySize + ed25519.SignatureSize + 1]byte
 	signatureBuffer := bytes.NewBuffer([]byte{})
-	scheme := SignatureScheme{ED25519: &EmptyEnum{}}
+	scheme := SignatureScheme{ED25519: &lib.EmptyEnum{}}
 	signatureBuffer.WriteByte(scheme.Flag())
 	signatureBuffer.Write(sig)
 	signatureBuffer.Write(keyPair.PublicKey())

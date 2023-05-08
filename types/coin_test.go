@@ -236,7 +236,7 @@ func TestCoins_PickCoins(t *testing.T) {
 
 func TestPickupCoins(t *testing.T) {
 	coin := func(n uint64) Coin {
-		return Coin{Balance: balanceObject(n)}
+		return Coin{Balance: balanceObject(n), CoinType: SUI_COIN_TYPE}
 	}
 
 	type args struct {
@@ -268,6 +268,10 @@ func TestPickupCoins(t *testing.T) {
 				},
 				TotalAmount:  *big.NewInt(1e5 + 1e4),
 				TargetAmount: *big.NewInt(1e5 + 1e3),
+				GasCoins: []Coin{
+					coin(1e3),
+				},
+				GasTotalAmount: 1e3,
 			},
 		},
 		{

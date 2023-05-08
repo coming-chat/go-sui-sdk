@@ -57,6 +57,7 @@ type PickedCoins struct {
 	TotalAmount  big.Int
 	TargetAmount big.Int
 
+	// There may be at least one coin even if gasAmount is 0
 	GasCoins       []Coin
 	GasTotalAmount uint64
 	GasAmount      uint64
@@ -167,10 +168,10 @@ out:
 		break out
 	}
 	isSUI := res.Coins[0].IsSUI()
-	if !isSUI || gasAmount == 0 {
+	if !isSUI {
 		return res, nil
 	}
-	if len(coins) == 0 && !inputCoins.HasNextPage { // There is no gas coin.
+	if gasAmount != 0 && len(coins) == 0 && !inputCoins.HasNextPage { // There is no gas coin.
 		return nil, ErrNeedSplitGasCoin
 	}
 

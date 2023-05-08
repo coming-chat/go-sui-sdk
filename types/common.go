@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"reflect"
 	"strings"
 
@@ -69,7 +70,7 @@ func (s SafeSuiBigInt[T]) Uint64() uint64 {
 }
 
 func (s *SafeSuiBigInt[T]) Decimal() decimal.Decimal {
-	return decimal.NewFromInt(s.Int64())
+	return decimal.NewFromBigInt(big.NewInt(0).SetUint64(s.Uint64()), 0)
 }
 
 // export const ObjectId = string();

@@ -82,7 +82,7 @@ func TestRequestAddDelegation(t *testing.T) {
 
 	amount := SUI(1).Int64()
 	gasBudget := SUI(0.01).Int64()
-	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(amount), 0, true)
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(amount), 0, 1100000)
 	require.Nil(t, err)
 
 	validatorAddress := ComingChatValidatorAddress

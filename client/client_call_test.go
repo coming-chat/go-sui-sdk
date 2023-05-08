@@ -3,9 +3,10 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/coming-chat/go-sui/sui_types"
 	"math/big"
 	"testing"
+
+	"github.com/coming-chat/go-sui/sui_types"
 
 	"github.com/coming-chat/go-sui/types"
 	"github.com/stretchr/testify/require"
@@ -60,7 +61,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 
 	amount := SUI(0.01).Uint64()
 	gasBudget := SUI(0.01).Uint64()
-	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, false)
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, 0)
 	require.NoError(t, err)
 	tx, err := cli.PayAllSui(
 		context.Background(), *signer, *signer,

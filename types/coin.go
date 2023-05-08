@@ -35,6 +35,10 @@ func (c *Coin) Reference() *ObjectRef {
 	}
 }
 
+func (c *Coin) IsSUI() bool {
+	return c.CoinType == SUI_COIN_TYPE
+}
+
 type CoinPage = Page[Coin, ObjectId]
 
 type Balance struct {
@@ -53,8 +57,9 @@ type PickedCoins struct {
 	TotalAmount  big.Int
 	TargetAmount big.Int
 
-	// max coin value except the picked coins, It may be used to help set the gas budget.
-	RemainingMaxCoinValue uint64
+	GasCoins       []Coin
+	GasTotalAmount uint64
+	GasAmount      uint64
 }
 
 func (cs *PickedCoins) Count() int {
@@ -74,22 +79,38 @@ func (cs *PickedCoins) CoinIds() []ObjectId {
 	return coinIds
 }
 
+func (cs *PickedCoins) MaxGasCoin() *Coin {
+	if cs.GasCoins == nil || len(cs.GasCoins) <= 0 {
+		return nil
+	}
+	return &cs.GasCoins[0]
+}
+
+func (cs *PickedCoins) GasEnough() bool {
+	return cs.GasTotalAmount >= cs.GasAmount
+}
+
+// return ((totalAmount + gasTotalAmount) - (targetAmount + gasAmount)) >= 0
+func (cs *PickedCoins) AllAmountEnough() bool {
+	return big.NewInt(0).Sub(&cs.TotalAmount, &cs.TargetAmount).Int64()-int64(cs.GasAmount)+int64(cs.GasTotalAmount) >= 0
+}
+
 // PickupCoins
 // Select coins that match the target amount.
 // @param inputCoins queried page coin datas
 // @param targetAmount total amount of coins to be selected from inputCoins
 // @param limit the max number of coins selected, default is `MAX_INPUT_COUNT_MERGE`
-// @param reserveGasCoin Only valid when coin is SUI, Do we need to keep at least one coin unselected?
+// @param gasAmount Only valid when coin is SUI, Amount of gas need to be selected, set 0 if no need separate gas coin
+//
 // @throw ErrNoCoinsFound If the count of input coins is 0.
 // @throw ErrInsufficientBalance If the input coins are all that is left and the total amount is less than the target amount.
 // @throw ErrNeedMergeCoin If there are many coins, but the total amount of coins limited is less than the target amount.
 // @throw ErrNeedSplitGasCoin If the coin to be selected is SUI, the total amount of left all coins is greater than the target amount, but cannot reserved another gas coin.
-func PickupCoins(inputCoins *CoinPage, targetAmount big.Int, limit int, reserveGasCoin bool) (*PickedCoins, error) {
-	inputCount := len(inputCoins.Data)
-	if inputCount <= 0 {
+func PickupCoins(inputCoins *CoinPage, targetAmount big.Int, limit int, gasAmount uint64) (*PickedCoins, error) {
+	if inputCoins == nil || len(inputCoins.Data) <= 0 {
 		return nil, ErrNoCoinsFound
 	}
-	if limit == 0 {
+	if limit <= 0 {
 		limit = MAX_INPUT_COUNT_MERGE
 	}
 	coins := inputCoins.Data
@@ -98,65 +119,75 @@ func PickupCoins(inputCoins *CoinPage, targetAmount big.Int, limit int, reserveG
 		return coins[i].Balance.Uint64() > coins[j].Balance.Uint64()
 	})
 
-	// First find a coin with a value that is exactly equal to the target amount.
-	for idx, coin := range coins {
-		if coin.Balance.Uint64() == targetAmount.Uint64() {
-			maxGas := uint64(0)
-			if idx == 0 && len(coins) > 1 {
-				maxGas = coins[1].Balance.Uint64()
+	var res *PickedCoins
+
+out:
+	for {
+		// First find a coin with a value that is exactly equal to the target amount.
+		for idx, coin := range coins {
+			if coin.Balance.Uint64() == targetAmount.Uint64() {
+				res = &PickedCoins{
+					Coins:        Coins{coin},
+					TotalAmount:  targetAmount,
+					TargetAmount: targetAmount,
+				}
+				coins = append(coins[:idx], coins[idx+1:]...)
+				break out
+			}
+			if coin.Balance.Uint64() < targetAmount.Uint64() {
+				break
+			}
+		}
+
+		total := big.NewInt(0)
+		pickedCoins := []Coin{}
+		for idx, coin := range coins {
+			total = total.Add(total, big.NewInt(0).SetUint64(coin.Balance.data))
+			pickedCoins = append(pickedCoins, coin)
+			if total.Cmp(&targetAmount) >= 0 {
+				res = &PickedCoins{
+					Coins:        pickedCoins,
+					TotalAmount:  *total,
+					TargetAmount: targetAmount,
+				}
+				coins = coins[idx+1:]
+				break
+			}
+		}
+		if res == nil { // This means that the totalAmount < targetAmount
+			if inputCoins.HasNextPage {
+				return nil, ErrNeedMergeCoin
 			} else {
-				maxGas = coins[0].Balance.Uint64()
+				return nil, ErrInsufficientBalance
 			}
-			return &PickedCoins{
-				Coins:        Coins{coin},
-				TotalAmount:  targetAmount,
-				TargetAmount: targetAmount,
-
-				RemainingMaxCoinValue: maxGas,
-			}, nil
 		}
-		if coin.Balance.Uint64() < targetAmount.Uint64() {
-			break
-		}
-	}
-
-	total := big.NewInt(0)
-	pickedCoins := []Coin{}
-	maxGas := uint64(0)
-	for idx, coin := range coins {
-		total = total.Add(total, big.NewInt(0).SetUint64(coin.Balance.Uint64()))
-		pickedCoins = append(pickedCoins, coin)
-		if total.Cmp(&targetAmount) >= 0 {
-			if idx+1 < len(coins) {
-				maxGas = coins[idx+1].Balance.Uint64()
-			}
-			break
-		}
-	}
-
-	if total.Cmp(&targetAmount) < 0 {
-		if inputCoins.HasNextPage {
+		if limit < len(pickedCoins) {
 			return nil, ErrNeedMergeCoin
-		} else {
-			return nil, ErrInsufficientBalance
 		}
+		break out
 	}
-	if limit < len(pickedCoins) {
-		return nil, ErrNeedMergeCoin
+	isSUI := res.Coins[0].IsSUI()
+	if !isSUI || gasAmount == 0 {
+		return res, nil
 	}
-	isLeftCoin := inputCoins.HasNextPage || inputCount > len(pickedCoins)
-	isSUI := coins[0].CoinType == SUI_COIN_TYPE
-	if isSUI && reserveGasCoin && !isLeftCoin {
+	if len(coins) == 0 && !inputCoins.HasNextPage { // There is no gas coin.
 		return nil, ErrNeedSplitGasCoin
 	}
 
-	return &PickedCoins{
-		Coins:        pickedCoins,
-		TotalAmount:  *total,
-		TargetAmount: targetAmount,
-
-		RemainingMaxCoinValue: maxGas,
-	}, nil
+	totalGas := uint64(0)
+	pickedGas := []Coin{}
+	for _, coin := range coins {
+		totalGas = totalGas + coin.Balance.data
+		pickedGas = append(pickedGas, coin)
+		if totalGas >= gasAmount {
+			break
+		}
+	}
+	// The gas fee is estimated and cannot be accurately equal, so no comparison is made
+	res.GasCoins = pickedGas
+	res.GasTotalAmount = totalGas
+	res.GasAmount = gasAmount
+	return res, nil
 }
 
 type Coins []Coin

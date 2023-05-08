@@ -240,10 +240,10 @@ func TestPickupCoins(t *testing.T) {
 	}
 
 	type args struct {
-		inputCoins     *CoinPage
-		targetAmount   big.Int
-		limit          int
-		reserveGasCoin bool
+		inputCoins   *CoinPage
+		targetAmount big.Int
+		limit        int
+		gasAmount    uint64
 	}
 	tests := []struct {
 		name    string
@@ -259,15 +259,15 @@ func TestPickupCoins(t *testing.T) {
 						coin(1e3), coin(1e5), coin(1e2), coin(1e4),
 					},
 				},
-				targetAmount: *big.NewInt(101000),
+				targetAmount: *big.NewInt(1e5 + 1e3),
 				limit:        100,
 			},
 			want: &PickedCoins{
 				Coins: []Coin{
 					coin(1e5), coin(1e4),
 				},
-				TotalAmount:  *big.NewInt(110000),
-				TargetAmount: *big.NewInt(101000),
+				TotalAmount:  *big.NewInt(1e5 + 1e4),
+				TargetAmount: *big.NewInt(1e5 + 1e3),
 			},
 		},
 		{
@@ -314,7 +314,7 @@ func TestPickupCoins(t *testing.T) {
 					},
 					HasNextPage: false,
 				},
-				targetAmount: *big.NewInt(1201000),
+				targetAmount: *big.NewInt(1e6 + 2e5 + 1e3),
 				limit:        3,
 			},
 			wantErr: ErrNeedMergeCoin,
@@ -329,15 +329,15 @@ func TestPickupCoins(t *testing.T) {
 					},
 					HasNextPage: false,
 				},
-				targetAmount:   *big.NewInt(110000),
-				reserveGasCoin: true,
+				targetAmount: *big.NewInt(1e5 + 1),
+				gasAmount:    1e4,
 			},
 			wantErr: ErrNeedSplitGasCoin,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := PickupCoins(tt.args.inputCoins, tt.args.targetAmount, tt.args.limit, tt.args.reserveGasCoin)
+			got, err := PickupCoins(tt.args.inputCoins, tt.args.targetAmount, tt.args.limit, tt.args.gasAmount)
 			if tt.wantErr != nil {
 				require.Equal(t, err, tt.wantErr)
 			} else {

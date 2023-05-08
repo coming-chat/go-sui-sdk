@@ -1,11 +1,5 @@
 package sui_types
 
-type EmptyEnum struct {
-}
-
-func (e EmptyEnum) MarshalBCS() ([]byte, error) {
-	return []byte{}, nil
-}
 import "github.com/coming-chat/go-sui/lib"
 
 type IntentScope struct {

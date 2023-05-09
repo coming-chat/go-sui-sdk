@@ -1,14 +1,17 @@
 package types
 
-type ObjectDigest = string
+import (
+	"github.com/coming-chat/go-sui/lib"
+	"github.com/coming-chat/go-sui/sui_types"
+)
 
 type SuiObjectRef struct {
 	/** Base64 string representing the object digest */
-	Digest TransactionDigest `json:"digest"`
+	Digest sui_types.TransactionDigest `json:"digest"`
 	/** Hex code as string representing the object id */
 	ObjectId string `json:"objectId"`
 	/** Object version */
-	Version SequenceNumber `json:"version"`
+	Version sui_types.SequenceNumber `json:"version"`
 }
 
 type SuiGasData struct {
@@ -56,35 +59,35 @@ func (r SuiRawData) Content() string {
 }
 
 type SuiRawMoveObject struct {
-	Type              string         `json:"type"`
-	HasPublicTransfer bool           `json:"hasPublicTransfer"`
-	Version           SequenceNumber `json:"version"`
-	BcsBytes          Base64Data     `json:"bcsBytes"`
+	Type              string                   `json:"type"`
+	HasPublicTransfer bool                     `json:"hasPublicTransfer"`
+	Version           sui_types.SequenceNumber `json:"version"`
+	BcsBytes          lib.Base64Data           `json:"bcsBytes"`
 }
 
 type SuiRawMovePackage struct {
-	Id              ObjectId              `json:"id"`
-	Version         SequenceNumber        `json:"version"`
-	ModuleMap       map[string]Base64Data `json:"moduleMap"`
-	TypeOriginTable []TypeOrigin          `json:"typeOriginTable"`
+	Id              sui_types.ObjectID        `json:"id"`
+	Version         sui_types.SequenceNumber  `json:"version"`
+	ModuleMap       map[string]lib.Base64Data `json:"moduleMap"`
+	TypeOriginTable []TypeOrigin              `json:"typeOriginTable"`
 	LinkageTable    map[string]UpgradeInfo
 }
 
 type UpgradeInfo struct {
-	UpgradedId      ObjectId
-	UpgradedVersion SequenceNumber
+	UpgradedId      sui_types.ObjectID
+	UpgradedVersion sui_types.SequenceNumber
 }
 
 type TypeOrigin struct {
-	ModuleName string   `json:"moduleName"`
-	StructName string   `json:"structName"`
-	Package    ObjectId `json:"package"`
+	ModuleName string             `json:"moduleName"`
+	StructName string             `json:"structName"`
+	Package    sui_types.ObjectID `json:"package"`
 }
 
 type SuiObjectData struct {
-	ObjectId ObjectId                      `json:"objectId"`
-	Version  SafeSuiBigInt[SequenceNumber] `json:"version"`
-	Digest   ObjectDigest                  `json:"digest"`
+	ObjectId sui_types.ObjectID                      `json:"sui_types.objectId"`
+	Version  SafeSuiBigInt[sui_types.SequenceNumber] `json:"version"`
+	Digest   sui_types.ObjectDigest                  `json:"digest"`
 	/**
 	 * Type of the object, default to be undefined unless SuiObjectDataOptions.showType is set to true
 	 */
@@ -92,11 +95,11 @@ type SuiObjectData struct {
 	/**
 	 * Move object content or package content, default to be undefined unless SuiObjectDataOptions.showContent is set to true
 	 */
-	Content *TagJson[SuiParsedData] `json:"content,omitempty"`
+	Content *lib.TagJson[SuiParsedData] `json:"content,omitempty"`
 	/**
 	 * Move object content or package content in BCS bytes, default to be undefined unless SuiObjectDataOptions.showBcs is set to true
 	 */
-	Bcs *TagJson[SuiRawData] `json:"bcs,omitempty"`
+	Bcs *lib.TagJson[SuiRawData] `json:"bcs,omitempty"`
 	/**
 	 * The owner of this object. Default to be undefined unless SuiObjectDataOptions.showOwner is set to true
 	 */
@@ -105,7 +108,7 @@ type SuiObjectData struct {
 	 * The digest of the transaction that created or last mutated this object.
 	 * Default to be undefined unless SuiObjectDataOptions.showPreviousTransaction is set to true
 	 */
-	PreviousTransaction *TransactionDigest `json:"previousTransaction,omitempty"`
+	PreviousTransaction *sui_types.TransactionDigest `json:"previousTransaction,omitempty"`
 	/**
 	 * The amount of SUI we would rebate if this object gets deleted.
 	 * This number is re-calculated each time the object is mutated based on
@@ -140,12 +143,12 @@ type SuiObjectDataOptions struct {
 
 type SuiObjectResponseError struct {
 	NotExists *struct {
-		ObjectId ObjectId `json:"object_id"`
+		ObjectId sui_types.ObjectID `json:"object_id"`
 	} `json:"notExists,omitempty"`
 	Deleted *struct {
-		ObjectId ObjectId       `json:"object_id"`
-		Version  SequenceNumber `json:"version"`
-		Digest   ObjectDigest   `json:"digest"`
+		ObjectId sui_types.ObjectID       `json:"object_id"`
+		Version  sui_types.SequenceNumber `json:"version"`
+		Digest   sui_types.ObjectDigest   `json:"digest"`
 	} `json:"deleted,omitempty"`
 	UnKnown      *struct{} `json:"unKnown"`
 	DisplayError *struct {
@@ -162,23 +165,23 @@ func (e SuiObjectResponseError) Content() string {
 }
 
 type SuiObjectResponse struct {
-	Data  *SuiObjectData                   `json:"data,omitempty"`
-	Error *TagJson[SuiObjectResponseError] `json:"error,omitempty"`
+	Data  *SuiObjectData                       `json:"data,omitempty"`
+	Error *lib.TagJson[SuiObjectResponseError] `json:"error,omitempty"`
 }
 
 type CheckpointSequenceNumber = uint64
 type CheckpointedObjectId struct {
-	ObjectId     ObjectId                                 `json:"objectId"`
+	ObjectId     sui_types.ObjectID                       `json:"objectId"`
 	AtCheckpoint *SafeSuiBigInt[CheckpointSequenceNumber] `json:"atCheckpoint"`
 }
 
-type ObjectsPage = Page[SuiObjectResponse, ObjectId]
+type ObjectsPage = Page[SuiObjectResponse, sui_types.ObjectID]
 
 // TODO need use Enum
 type SuiObjectDataFilter struct {
-	Package    *ObjectId   `json:"Package,omitempty"`
-	MoveModule *MoveModule `json:"MoveModule,omitempty"`
-	StructType string      `json:"StructType,omitempty"`
+	Package    *sui_types.ObjectID `json:"Package,omitempty"`
+	MoveModule *MoveModule         `json:"MoveModule,omitempty"`
+	StructType string              `json:"StructType,omitempty"`
 }
 
 type SuiObjectResponseQuery struct {
@@ -186,23 +189,23 @@ type SuiObjectResponseQuery struct {
 	Options *SuiObjectDataOptions `json:"options,omitempty"`
 }
 
-type SuiPastObjectResponse = TagJson[SuiPastObject]
+type SuiPastObjectResponse = lib.TagJson[SuiPastObject]
 
 // TODO need test VersionNotFound
 type SuiPastObject struct {
 	/// The object exists and is found with this version
 	VersionFound *SuiObjectData `json:"VersionFound,omitempty"`
 	/// The object does not exist
-	ObjectNotExists *ObjectId `json:"ObjectNotExists,omitempty"`
+	ObjectNotExists *sui_types.ObjectID `json:"ObjectNotExists,omitempty"`
 	/// The object is found to be deleted with this version
 	ObjectDeleted *SuiObjectRef `json:"ObjectDeleted,omitempty"`
 	/// The object exists but not found with this version
-	VersionNotFound *struct{ ObjectId SequenceNumber } `json:"VersionNotFound,omitempty"`
+	VersionNotFound *struct{ ObjectId sui_types.SequenceNumber } `json:"VersionNotFound,omitempty"`
 	/// The asked object version is higher than the latest
 	VersionTooHigh *struct {
-		ObjectId      ObjectId       `json:"object_id"`
-		AskedVersion  SequenceNumber `json:"asked_version"`
-		LatestVersion SequenceNumber `json:"latest_version"`
+		ObjectId      sui_types.ObjectID       `json:"object_id"`
+		AskedVersion  sui_types.SequenceNumber `json:"asked_version"`
+		LatestVersion sui_types.SequenceNumber `json:"latest_version"`
 	} `json:"VersionTooHigh,omitempty"`
 }
 

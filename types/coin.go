@@ -2,6 +2,7 @@ package types
 
 import (
 	"errors"
+	"github.com/coming-chat/go-sui/sui_types"
 	"math/big"
 	"sort"
 )
@@ -17,25 +18,25 @@ const MAX_INPUT_COUNT_STAKE = 512 - 1
 // }
 
 type Coin struct {
-	CoinType     string                `json:"coinType"`
-	CoinObjectId ObjectId              `json:"coinObjectId"`
-	Version      SuiBigInt             `json:"version"`
-	Digest       TransactionDigest     `json:"digest"`
-	Balance      SafeSuiBigInt[uint64] `json:"balance"`
+	CoinType     string                   `json:"coinType"`
+	CoinObjectId sui_types.ObjectID       `json:"coinObjectId"`
+	Version      sui_types.SequenceNumber `json:"version"`
+	Digest       sui_types.ObjectDigest   `json:"digest"`
+	Balance      SafeSuiBigInt[uint64]    `json:"balance"`
 
-	LockedUntilEpoch    *SafeSuiBigInt[uint64] `json:"lockedUntilEpoch,omitempty"`
-	PreviousTransaction TransactionDigest      `json:"previousTransaction"`
+	LockedUntilEpoch    *SafeSuiBigInt[uint64]      `json:"lockedUntilEpoch,omitempty"`
+	PreviousTransaction sui_types.TransactionDigest `json:"previousTransaction"`
 }
 
-func (c *Coin) Reference() *ObjectRef {
-	return &ObjectRef{
+func (c *Coin) Reference() *sui_types.ObjectRef {
+	return &sui_types.ObjectRef{
 		Digest:   c.Digest,
 		Version:  c.Version,
 		ObjectId: c.CoinObjectId,
 	}
 }
 
-type CoinPage = Page[Coin, ObjectId]
+type CoinPage = Page[Coin, sui_types.ObjectID]
 
 type Balance struct {
 	CoinType        string                              `json:"coinType"`
@@ -66,8 +67,8 @@ func (cs *PickedCoins) OnlyOneAndAmountMatch() bool {
 	return len(cs.Coins) == 1 && cs.TotalAmount.Cmp(&cs.TargetAmount) == 0
 }
 
-func (cs *PickedCoins) CoinIds() []ObjectId {
-	coinIds := make([]ObjectId, len(cs.Coins))
+func (cs *PickedCoins) CoinIds() []sui_types.ObjectID {
+	coinIds := make([]sui_types.ObjectID, len(cs.Coins))
 	for idx, coin := range cs.Coins {
 		coinIds[idx] = coin.CoinObjectId
 	}
@@ -94,9 +95,11 @@ func PickupCoins(inputCoins *CoinPage, targetAmount big.Int, limit int, reserveG
 	}
 	coins := inputCoins.Data
 	// sort by balance descend
-	sort.Slice(coins, func(i, j int) bool {
-		return coins[i].Balance.Uint64() > coins[j].Balance.Uint64()
-	})
+	sort.Slice(
+		coins, func(i, j int) bool {
+			return coins[i].Balance.Uint64() > coins[j].Balance.Uint64()
+		},
+	)
 
 	// First find a coin with a value that is exactly equal to the target amount.
 	for idx, coin := range coins {

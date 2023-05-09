@@ -1,5 +1,10 @@
 package types
 
+import (
+	"github.com/coming-chat/go-sui/lib"
+	"github.com/coming-chat/go-sui/sui_types"
+)
+
 type AuthSignInfo interface{}
 
 type CertifiedTransaction struct {
@@ -15,8 +20,8 @@ type ParsedTransactionResponse interface{}
 type ExecuteTransactionEffects struct {
 	TransactionEffectsDigest string `json:"transactionEffectsDigest"`
 
-	Effects      TagJson[SuiTransactionBlockEffects] `json:"effects"`
-	AuthSignInfo *AuthSignInfo                       `json:"authSignInfo"`
+	Effects      lib.TagJson[SuiTransactionBlockEffects] `json:"effects"`
+	AuthSignInfo *AuthSignInfo                           `json:"authSignInfo"`
 }
 
 type ExecuteTransactionResponse struct {
@@ -31,12 +36,12 @@ func (r *ExecuteTransactionResponse) TransactionDigest() string {
 }
 
 type SuiCoinMetadata struct {
-	Decimals    uint8    `json:"decimals"`
-	Description string   `json:"description"`
-	IconUrl     string   `json:"iconUrl,omitempty"`
-	Id          ObjectId `json:"id"`
-	Name        string   `json:"name"`
-	Symbol      string   `json:"symbol"`
+	Decimals    uint8              `json:"decimals"`
+	Description string             `json:"description"`
+	IconUrl     string             `json:"iconUrl,omitempty"`
+	Id          sui_types.ObjectID `json:"id"`
+	Name        string             `json:"name"`
+	Symbol      string             `json:"symbol"`
 }
 
 type DevInspectResult struct {

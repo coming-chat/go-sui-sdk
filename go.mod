@@ -3,6 +3,7 @@ module github.com/coming-chat/go-sui
 go 1.18
 
 require (
+	github.com/btcsuite/btcutil v1.0.2
 	github.com/coming-chat/go-aptos v0.0.0-20221013022715-39f91035c785
 	github.com/fardream/go-bcs v0.2.1
 	github.com/shopspring/decimal v1.3.1
@@ -14,7 +15,6 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/shopspring/decimal v1.3.1 // indirect
 	golang.org/x/sys v0.0.0-20190412213103-97732733099d // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

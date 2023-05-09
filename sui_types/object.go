@@ -31,3 +31,11 @@ type Owner struct {
 
 func (o Owner) IsBcsEnum() {
 }
+
+func (o Owner) Tag() string {
+	return ""
+}
+
+func (o Owner) Content() string {
+	return ""
+}

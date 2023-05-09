@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/btcsuite/btcutil/base58"
 	"strings"
 )
 
@@ -64,10 +65,6 @@ func (h *HexData) UnmarshalJSON(data []byte) error {
 	return err
 }
 
-func (h HexData) MarshalBCS() ([]byte, error) {
-	return h, nil
-}
-
 func (h HexData) ShortString() string {
 	return "0x" + strings.TrimLeft(hex.EncodeToString(h), "0")
 }
@@ -114,34 +111,36 @@ func (h Base64Data) MarshalBCS() ([]byte, error) {
 	return h, nil
 }
 
-// func NewBase58Data(str string) (*Base58Data, error) {
-// 	data := base58.Decode(str)
-// 	return &Base58Data{data}, nil
-// }
+type Base58 []byte
 
-// func (h Base58Data) Data() []byte {
-// 	return h.data
-// }
-// func (h Base58Data) Length() int {
-// 	return len(h.data)
-// }
-// func (h Base58Data) String() string {
-// 	return base58.Encode(h.data)
-// }
+func NewBase58(str string) (*Base58, error) {
+	data := Base58(base58.Decode(str))
+	return &data, nil
+}
 
-// func (h Base58Data) MarshalJSON() ([]byte, error) {
-// 	return json.Marshal(h.String())
-// }
+func (b Base58) Data() []byte {
+	return b
+}
+func (b Base58) Length() int {
+	return len(b)
+}
+func (b Base58) String() string {
+	return base58.Encode(b)
+}
 
-// func (h *Base58Data) UnmarshalJSON(data []byte) error {
-// 	str := ""
-// 	err := json.Unmarshal(data, &str)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	tmp, err := NewBase58Data(str)
-// 	if err == nil {
-// 		h.data = tmp.data
-// 	}
-// 	return err
-// }
+func (b Base58) MarshalJSON() ([]byte, error) {
+	return json.Marshal(b.String())
+}
+
+func (b *Base58) UnmarshalJSON(data []byte) error {
+	str := ""
+	err := json.Unmarshal(data, &str)
+	if err != nil {
+		return err
+	}
+	tmp, err := NewBase58(str)
+	if err == nil {
+		*b = *tmp
+	}
+	return err
+}

@@ -390,6 +390,13 @@ func TestClient_GetTotalTransactionBlocks(t *testing.T) {
 	t.Log(res)
 }
 
+func TestClient_GetLatestCheckpointSequenceNumber(t *testing.T) {
+	cli := MainnetClient(t)
+	res, err := cli.GetLatestCheckpointSequenceNumber(context.Background())
+	require.Nil(t, err)
+	t.Log(res)
+}
+
 //func TestClient_Publish(t *testing.T) {
 //	chain := ChainClient(t)
 //	dmens, err := types.NewBase64Data(DmensDmensB64)

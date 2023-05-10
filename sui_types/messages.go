@@ -10,6 +10,10 @@ type TransactionData struct {
 	V1 *TransactionDataV1
 }
 
+func (t TransactionData) IsBcsEnum() {
+
+}
+
 type TransactionDataV1 struct {
 	Kind       TransactionKind
 	Sender     SuiAddress
@@ -188,7 +192,6 @@ type GenesisObject struct {
 type CallArg struct {
 	Pure   *[]byte
 	Object *ObjectArg
-	ObjVec []*ObjectArg
 }
 
 func (c CallArg) IsBcsEnum() {
@@ -196,14 +199,23 @@ func (c CallArg) IsBcsEnum() {
 
 type ObjectArg struct {
 	ImmOrOwnedObject *ObjectRef
-	SharedObject     *SharedObject
+	SharedObject     *struct {
+		Id                   ObjectID
+		InitialSharedVersion SequenceNumber
+		Mutable              bool
+	}
 }
 
 func (o ObjectArg) IsBcsEnum() {
 }
 
-type SharedObject struct {
-	Id                   ObjectID
-	InitialSharedVersion uint64
-	Mutable              bool `bcs:"-"`
+func (o ObjectArg) id() ObjectID {
+	switch {
+	case o.ImmOrOwnedObject != nil:
+		return o.ImmOrOwnedObject.ObjectId
+	case o.SharedObject != nil:
+		return o.SharedObject.Id
+	default:
+		return ObjectID{}
+	}
 }

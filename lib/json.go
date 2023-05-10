@@ -2,6 +2,7 @@ package lib
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -17,20 +18,29 @@ type TagJson[T TagJsonType] struct {
 }
 
 func (t *TagJson[T]) UnmarshalJSON(data []byte) error {
+	if len(data) <= 0 {
+		return errors.New("empty json data")
+	}
 	rv := reflect.ValueOf(t).Elem().Field(0)
 	if t.Data.Tag() == "" {
-		var tmp string
-		err := json.Unmarshal(data, &tmp)
-		if err != nil {
-			return err
+		if data[0] == '{' {
+			return json.Unmarshal(data, &t.Data)
 		}
-		for i := 0; i < rv.Type().NumField(); i++ {
-			if rv.Field(i).Type().Name() == tmp && rv.Field(i).IsNil() {
-				rv.Field(i).Set(reflect.New(rv.Field(i).Type().Elem()))
-				break
+		if data[0] == '"' {
+			var tmp string
+			err := json.Unmarshal(data, &tmp)
+			if err != nil {
+				return err
 			}
+			for i := 0; i < rv.Type().NumField(); i++ {
+				tagName := rv.Type().Field(i).Tag.Get("json")
+				if strings.Contains(tagName, tmp) && rv.Field(i).IsNil() {
+					rv.Field(i).Set(reflect.New(rv.Field(i).Type().Elem()))
+				}
+			}
+			return nil
 		}
-		return nil
+		return errors.New("value not a tag json")
 	}
 	tmp := make(map[string]json.RawMessage)
 	err := json.Unmarshal(data, &tmp)

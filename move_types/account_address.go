@@ -26,7 +26,7 @@ func NewAccountAddressHex(str string) (*AccountAddress, error) {
 		return nil, errors.New("the len is invalid")
 	}
 	var accountAddress AccountAddress
-	copy(accountAddress[:], data[:])
+	copy(accountAddress[SuiAddressLen-len(data):], data[:])
 	return &accountAddress, nil
 }
 
@@ -38,6 +38,10 @@ func (a AccountAddress) Length() int {
 }
 func (a AccountAddress) String() string {
 	return "0x" + hex.EncodeToString(a[:])
+}
+
+func (a AccountAddress) ShortString() string {
+	return "0x" + strings.TrimLeft(hex.EncodeToString(a[:]), "0")
 }
 
 func (a AccountAddress) MarshalJSON() ([]byte, error) {
@@ -59,8 +63,4 @@ func (a *AccountAddress) UnmarshalJSON(data []byte) error {
 
 func (a AccountAddress) MarshalBCS() ([]byte, error) {
 	return a[:], nil
-}
-
-func (a AccountAddress) ShortString() string {
-	return "0x" + strings.TrimLeft(hex.EncodeToString(a[:]), "0")
 }

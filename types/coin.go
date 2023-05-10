@@ -18,11 +18,11 @@ const MAX_INPUT_COUNT_STAKE = 512 - 1
 // }
 
 type Coin struct {
-	CoinType     string                   `json:"coinType"`
-	CoinObjectId sui_types.ObjectID       `json:"coinObjectId"`
-	Version      sui_types.SequenceNumber `json:"version"`
-	Digest       sui_types.ObjectDigest   `json:"digest"`
-	Balance      SafeSuiBigInt[uint64]    `json:"balance"`
+	CoinType     string                 `json:"coinType"`
+	CoinObjectId sui_types.ObjectID     `json:"coinObjectId"`
+	Version      SafeSuiBigInt[uint64]  `json:"version"`
+	Digest       sui_types.ObjectDigest `json:"digest"`
+	Balance      SafeSuiBigInt[uint64]  `json:"balance"`
 
 	LockedUntilEpoch    *SafeSuiBigInt[uint64]      `json:"lockedUntilEpoch,omitempty"`
 	PreviousTransaction sui_types.TransactionDigest `json:"previousTransaction"`
@@ -31,7 +31,7 @@ type Coin struct {
 func (c *Coin) Reference() *sui_types.ObjectRef {
 	return &sui_types.ObjectRef{
 		Digest:   c.Digest,
-		Version:  c.Version,
+		Version:  c.Version.data,
 		ObjectId: c.CoinObjectId,
 	}
 }

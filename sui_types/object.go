@@ -25,8 +25,8 @@ type Owner struct {
 	ObjectOwner  *SuiAddress `json:"ObjectOwner"`
 	Shared       *struct {
 		InitialSharedVersion SequenceNumber `json:"initial_shared_version"`
-	}
-	Immutable *lib.EmptyEnum
+	} `json:"Shared,omitempty"`
+	Immutable *lib.EmptyEnum `json:"Immutable,omitempty"`
 }
 
 func (o Owner) IsBcsEnum() {

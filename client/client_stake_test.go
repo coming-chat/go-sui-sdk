@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/coming-chat/go-sui/types"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
@@ -19,25 +20,24 @@ func TestClient_GetLatestSuiSystemState(t *testing.T) {
 	state, err := cli.GetLatestSuiSystemState(context.Background())
 	require.Nil(t, err)
 	t.Logf("system state = %v", state)
-
-	for _, v := range state.ActiveValidators {
-		t.Logf("%v, %v\n", v.Name, v.CalculateAPY(state.Epoch.Uint64()))
-	}
 }
 
 func TestClient_GetValidatorsApy(t *testing.T) {
 	cli := ChainClient(t)
 	apys, err := cli.GetValidatorsApy(context.Background())
 	require.Nil(t, err)
-	t.Logf("current gas price = %v", apys)
+	t.Logf("current epoch %v", apys.Epoch)
 	apyMap := apys.ApyMap()
-	t.Log(apyMap)
+	for idx := 0; idx < 10; idx++ {
+		key := apys.Apys[idx].Address
+		t.Logf("%v apy = %v", key, apyMap[key])
+	}
 }
 
 func TestGetDelegatedStakes(t *testing.T) {
 	cli := ChainClient(t)
 
-	address, err := types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
+	address, err := sui_types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
 	require.Nil(t, err)
 	stakes, err := cli.GetStakes(context.Background(), *address)
 	require.Nil(t, err)
@@ -57,14 +57,14 @@ func TestGetDelegatedStakes(t *testing.T) {
 
 func TestGetStakesByIds(t *testing.T) {
 	cli := TestnetClient(t)
-	owner, err := types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
+	owner, err := sui_types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
 	stakes, err := cli.GetStakes(context.Background(), *owner)
 	require.Nil(t, err)
 	require.GreaterOrEqual(t, len(stakes), 1)
 
 	stake1 := stakes[0].Stakes[0].Data
 	stakeId := stake1.StakedSuiId
-	stakesFromId, err := cli.GetStakesByIds(context.Background(), []types.ObjectId{stakeId})
+	stakesFromId, err := cli.GetStakesByIds(context.Background(), []suiObjectID{stakeId})
 	require.Nil(t, err)
 	require.GreaterOrEqual(t, len(stakesFromId), 1)
 
@@ -86,7 +86,7 @@ func TestRequestAddDelegation(t *testing.T) {
 	require.Nil(t, err)
 
 	validatorAddress := ComingChatValidatorAddress
-	validator, err := types.NewAddressFromHex(validatorAddress)
+	validator, err := sui_types.NewAddressFromHex(validatorAddress)
 	require.Nil(t, err)
 
 	amountInt := decimal.NewFromInt(amount)
@@ -101,7 +101,7 @@ func TestRequestAddDelegation(t *testing.T) {
 func TestRequestWithdrawDelegation(t *testing.T) {
 	cli := TestnetClient(t)
 
-	signer, err := types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
+	signer, err := sui_types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
 	require.Nil(t, err)
 	stakes, err := cli.GetStakes(context.Background(), *signer)
 	require.Nil(t, err)

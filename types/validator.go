@@ -3,13 +3,11 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/coming-chat/go-sui/lib"
-	"github.com/coming-chat/go-sui/sui_types"
-	"math"
 	"reflect"
 	"strings"
 
-	"github.com/shopspring/decimal"
+	"github.com/coming-chat/go-sui/lib"
+	"github.com/coming-chat/go-sui/sui_types"
 )
 
 type StakeStatus = lib.TagJson[Status]
@@ -122,33 +120,6 @@ type SuiValidatorSummary struct {
 	PendingTotalSuiWithdraw  SafeSuiBigInt[uint64] `json:"pendingTotalSuiWithdraw"`
 	ExchangeRatesId          sui_types.ObjectID    `json:"exchangeRatesId"`
 	ExchangeRatesSize        SafeSuiBigInt[uint64] `json:"exchangeRatesSize"`
-}
-
-func (v *SuiValidatorSummary) CalculateAPY(epoch uint64) float64 {
-	var (
-		stakingPoolSuiBalance      = v.StakingPoolSuiBalance
-		stakingPoolActivationEpoch = v.StakingPoolActivationEpoch
-		poolTokenBalance           = v.PoolTokenBalance
-	)
-
-	// If the staking pool is active then we calculate its APY. Or if staking started in epoch 0
-	if stakingPoolActivationEpoch.Uint64() == 0 {
-		numEpochsParticipated := epoch - stakingPoolActivationEpoch.Uint64()
-		pow1, _ := decimal.NewFromInt(stakingPoolSuiBalance.Int64()).Sub(decimal.NewFromInt(stakingPoolSuiBalance.Int64())).
-			Div(decimal.NewFromInt(poolTokenBalance.Int64())).Add(
-			decimal.
-				NewFromInt(1),
-		).Float64()
-		pow2, _ := decimal.NewFromInt(365).Div(decimal.NewFromInt(int64(numEpochsParticipated))).Float64()
-		apy := (math.Pow(pow1, pow2) - 1) * 100
-		if apy > 100000 {
-			return 0
-		} else {
-			return apy
-		}
-	} else {
-		return 0
-	}
 }
 
 type TypeName []sui_types.SuiAddress

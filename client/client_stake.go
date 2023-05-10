@@ -16,22 +16,22 @@ func (c *Client) GetValidatorsApy(ctx context.Context) (*types.ValidatorsApy, er
 	return &resp, c.CallContext(ctx, &resp, getValidatorsApy)
 }
 
-func (c *Client) GetStakes(ctx context.Context, owner types.Address) ([]types.DelegatedStake, error) {
+func (c *Client) GetStakes(ctx context.Context, owner suiAddress) ([]types.DelegatedStake, error) {
 	var resp []types.DelegatedStake
 	return resp, c.CallContext(ctx, &resp, getStakes, owner)
 }
 
-func (c *Client) GetStakesByIds(ctx context.Context, stakedSuiIds []types.ObjectId) ([]types.DelegatedStake, error) {
+func (c *Client) GetStakesByIds(ctx context.Context, stakedSuiIds []suiObjectID) ([]types.DelegatedStake, error) {
 	var resp []types.DelegatedStake
 	return resp, c.CallContext(ctx, &resp, getStakesByIds, stakedSuiIds)
 }
 
-func (c *Client) RequestAddStake(ctx context.Context, signer types.Address, coins []types.ObjectId, amount types.SuiBigInt, validator types.Address, gas *types.ObjectId, gasBudget types.SuiBigInt) (*types.TransactionBytes, error) {
+func (c *Client) RequestAddStake(ctx context.Context, signer suiAddress, coins []suiObjectID, amount types.SuiBigInt, validator suiAddress, gas *suiObjectID, gasBudget types.SuiBigInt) (*types.TransactionBytes, error) {
 	var resp types.TransactionBytes
 	return &resp, c.CallContext(ctx, &resp, requestAddStake, signer, coins, amount, validator, gas, gasBudget)
 }
 
-func (c *Client) RequestWithdrawStake(ctx context.Context, signer types.Address, stakedSuiId types.ObjectId, gas *types.ObjectId, gasBudget types.SuiBigInt) (*types.TransactionBytes, error) {
+func (c *Client) RequestWithdrawStake(ctx context.Context, signer suiAddress, stakedSuiId suiObjectID, gas *suiObjectID, gasBudget types.SuiBigInt) (*types.TransactionBytes, error) {
 	var resp types.TransactionBytes
 	return &resp, c.CallContext(ctx, &resp, requestWithdrawStake, signer, stakedSuiId, gas, gasBudget)
 }

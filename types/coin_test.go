@@ -5,8 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/stretchr/testify/require"
 )
+
+type suiAddress = sui_types.SuiAddress
+type suiObjectID = sui_types.ObjectID
 
 func balanceObject(val uint64) SafeSuiBigInt[uint64] {
 	return NewSafeSuiBigInt(val)
@@ -254,7 +258,7 @@ func TestPickupCoins(t *testing.T) {
 		{
 			name: "need sort",
 			args: args{
-				inputCoins: &Page[Coin, HexData]{
+				inputCoins: &Page[Coin, suiObjectID]{
 					Data: []Coin{
 						coin(1e3), coin(1e5), coin(1e2), coin(1e4),
 					},
@@ -268,12 +272,14 @@ func TestPickupCoins(t *testing.T) {
 				},
 				TotalAmount:  *big.NewInt(110000),
 				TargetAmount: *big.NewInt(101000),
+
+				RemainingMaxCoinValue: 1e3,
 			},
 		},
 		{
 			name: "ErrNoCoinsFound",
 			args: args{
-				inputCoins: &Page[Coin, HexData]{
+				inputCoins: &Page[Coin, suiObjectID]{
 					Data: []Coin{},
 				},
 				targetAmount: *big.NewInt(101000),
@@ -283,7 +289,7 @@ func TestPickupCoins(t *testing.T) {
 		{
 			name: "ErrInsufficientBalance",
 			args: args{
-				inputCoins: &Page[Coin, HexData]{
+				inputCoins: &Page[Coin, suiObjectID]{
 					Data: []Coin{
 						coin(1e5), coin(1e6), coin(1e4),
 					},
@@ -295,7 +301,7 @@ func TestPickupCoins(t *testing.T) {
 		{
 			name: "ErrNeedMergeCoin 1",
 			args: args{
-				inputCoins: &Page[Coin, HexData]{
+				inputCoins: &Page[Coin, suiObjectID]{
 					Data: []Coin{
 						coin(1e5), coin(1e6), coin(1e4),
 					},
@@ -308,7 +314,7 @@ func TestPickupCoins(t *testing.T) {
 		{
 			name: "ErrNeedMergeCoin 2",
 			args: args{
-				inputCoins: &Page[Coin, HexData]{
+				inputCoins: &Page[Coin, suiObjectID]{
 					Data: []Coin{
 						coin(1e5), coin(1e6), coin(1e4), coin(1e5),
 					},
@@ -322,7 +328,7 @@ func TestPickupCoins(t *testing.T) {
 		{
 			name: "ErrNeedSplitGasCoin",
 			args: args{
-				inputCoins: &Page[Coin, HexData]{
+				inputCoins: &Page[Coin, suiObjectID]{
 					Data: []Coin{
 						{Balance: balanceObject(1e5), CoinType: SUI_COIN_TYPE},
 						{Balance: balanceObject(1e5), CoinType: SUI_COIN_TYPE},

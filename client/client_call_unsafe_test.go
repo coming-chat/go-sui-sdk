@@ -90,7 +90,7 @@ func TestClient_Pay(t *testing.T) {
 	txnBytes, err := cli.Pay(
 		context.Background(), *signer,
 		pickedCoins.CoinIds(),
-		[]types.Address{*recipient},
+		[]suiAddress{*recipient},
 		[]types.SafeSuiBigInt[uint64]{
 			types.NewSafeSuiBigInt(amount),
 		},
@@ -117,7 +117,7 @@ func TestClient_PaySui(t *testing.T) {
 	txnBytes, err := cli.PaySui(
 		context.Background(), *signer,
 		pickedCoins.CoinIds(),
-		[]types.Address{*recipient},
+		[]suiAddress{*recipient},
 		[]types.SafeSuiBigInt[uint64]{
 			types.NewSafeSuiBigInt(amount),
 		},

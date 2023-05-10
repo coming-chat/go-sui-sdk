@@ -4,11 +4,12 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/stretchr/testify/require"
 )
 
-func AddressFromHex(t *testing.T, hex string) *Address {
-	addr, err := NewAddressFromHex(hex)
+func AddressFromHex(t *testing.T, hex string) *suiAddress {
+	addr, err := sui_types.NewAddressFromHex(hex)
 	require.NoError(t, err)
 	return addr
 }

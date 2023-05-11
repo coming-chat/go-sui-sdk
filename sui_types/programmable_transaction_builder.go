@@ -36,6 +36,14 @@ func (p *ProgrammableTransactionBuilder) Finish() ProgrammableTransaction {
 	}
 }
 
+func (p *ProgrammableTransactionBuilder) ForceSeparatePure(value any) (Argument, error) {
+	pureData, err := bcs.Marshal(value)
+	if err != nil {
+		return Argument{}, err
+	}
+	return p.pureBytes(pureData, true), nil
+}
+
 func (p *ProgrammableTransactionBuilder) pureBytes(bytes []byte, forceSeparate bool) Argument {
 	var arg BuilderArg
 	if forceSeparate {
@@ -145,8 +153,39 @@ func (p *ProgrammableTransactionBuilder) Command(command Command) Argument {
 	}
 }
 
+func (p *ProgrammableTransactionBuilder) TransferObject(
+	recipient SuiAddress,
+	objectRefs []*ObjectRef,
+) error {
+	recArg, err := p.Pure(recipient)
+	if err != nil {
+		return err
+	}
+	var objArgs []Argument
+	for _, v := range objectRefs {
+		objArg, err := p.Obj(
+			ObjectArg{
+				ImmOrOwnedObject: v,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		objArgs = append(objArgs, objArg)
+	}
+	p.Command(
+		Command{
+			TransferObjects: &struct {
+				Arguments []Argument
+				Argument  Argument
+			}{Arguments: objArgs, Argument: recArg},
+		},
+	)
+	return nil
+}
+
 func (p *ProgrammableTransactionBuilder) TransferSui(recipient SuiAddress, amount *uint64) error {
-	recArg, err := p.pure(recipient)
+	recArg, err := p.Pure(recipient)
 	if err != nil {
 		return err
 	}

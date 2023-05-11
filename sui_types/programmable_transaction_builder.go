@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/coming-chat/go-sui/lib"
+	"github.com/coming-chat/go-sui/move_types"
 	"github.com/fardream/go-bcs/bcs"
 )
 
@@ -145,6 +146,26 @@ func (p *ProgrammableTransactionBuilder) Input(callArg CallArg) (Argument, error
 	}
 }
 
+func (p *ProgrammableTransactionBuilder) MakeObjList(objs []ObjectArg) error {
+	var objArgs []Argument
+	for _, v := range objs {
+		objArg, err := p.Obj(v)
+		if err != nil {
+			return err
+		}
+		objArgs = append(objArgs, objArg)
+	}
+	p.Command(
+		Command{
+			MakeMoveVec: &struct {
+				TypeTag   *move_types.TypeTag `bcs:"optional"`
+				Arguments []Argument
+			}{TypeTag: nil, Arguments: objArgs},
+		},
+	)
+	return nil
+}
+
 func (p *ProgrammableTransactionBuilder) Command(command Command) Argument {
 	p.Commands = append(p.Commands, command)
 	i := uint16(len(p.Commands)) - 1
@@ -223,6 +244,35 @@ func (p *ProgrammableTransactionBuilder) TransferSui(recipient SuiAddress, amoun
 				Arguments: []Argument{
 					coinArg,
 				}, Argument: recArg,
+			},
+		},
+	)
+	return nil
+}
+
+func (p *ProgrammableTransactionBuilder) MoveCall(
+	packageID ObjectID,
+	module move_types.Identifier,
+	function move_types.Identifier,
+	typeArguments []move_types.TypeTag,
+	callArgs []CallArg,
+) error {
+	var arguments []Argument
+	for _, v := range callArgs {
+		argument, err := p.Input(v)
+		if err != nil {
+			return err
+		}
+		arguments = append(arguments, argument)
+	}
+	p.Command(
+		Command{
+			MoveCall: &ProgrammableMoveCall{
+				Package:       packageID,
+				Module:        module,
+				Function:      function,
+				TypeArguments: typeArguments,
+				Arguments:     arguments,
 			},
 		},
 	)

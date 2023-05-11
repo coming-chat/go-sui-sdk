@@ -76,7 +76,7 @@ type Command struct {
 		Objects []ObjectID
 	}
 	MakeMoveVec *struct {
-		TypeTag   move_types.TypeTag `bcs:"optional"`
+		TypeTag   *move_types.TypeTag `bcs:"optional"`
 		Arguments []Argument
 	}
 	Upgrade *struct {

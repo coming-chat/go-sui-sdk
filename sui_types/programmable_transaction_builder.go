@@ -64,7 +64,7 @@ func (p *ProgrammableTransactionBuilder) insertFull(key BuilderArg, value CallAr
 	p.InputsKeyOrder = append(p.InputsKeyOrder, key)
 	return uint16(len(p.InputsKeyOrder) - 1)
 }
-func (p *ProgrammableTransactionBuilder) pure(value any) (Argument, error) {
+func (p *ProgrammableTransactionBuilder) Pure(value any) (Argument, error) {
 	pureData, err := bcs.Marshal(value)
 	if err != nil {
 		return Argument{}, err
@@ -72,7 +72,7 @@ func (p *ProgrammableTransactionBuilder) pure(value any) (Argument, error) {
 	return p.pureBytes(pureData, false), nil
 }
 
-func (p *ProgrammableTransactionBuilder) obj(objArg ObjectArg) (Argument, error) {
+func (p *ProgrammableTransactionBuilder) Obj(objArg ObjectArg) (Argument, error) {
 	id := objArg.id()
 	var oj ObjectArg
 	if oldValue, ok := p.Inputs[BuilderArg{
@@ -81,7 +81,7 @@ func (p *ProgrammableTransactionBuilder) obj(objArg ObjectArg) (Argument, error)
 		var oldObjArg ObjectArg
 		switch {
 		case oldValue.Pure != nil:
-			return Argument{}, errors.New("invariant violation! object has pure argument")
+			return Argument{}, errors.New("invariant violation! object has Pure argument")
 		case oldValue.Object != nil:
 			oldObjArg = *oldValue.Object
 		}
@@ -126,18 +126,18 @@ func (p *ProgrammableTransactionBuilder) obj(objArg ObjectArg) (Argument, error)
 	}, nil
 }
 
-func (p *ProgrammableTransactionBuilder) input(callArg CallArg) (Argument, error) {
+func (p *ProgrammableTransactionBuilder) Input(callArg CallArg) (Argument, error) {
 	switch {
 	case callArg.Pure != nil:
 		return p.pureBytes(*callArg.Pure, false), nil
 	case callArg.Object != nil:
-		return p.obj(*callArg.Object)
+		return p.Obj(*callArg.Object)
 	default:
 		return Argument{}, errors.New("this callArg is nil")
 	}
 }
 
-func (p *ProgrammableTransactionBuilder) command(command Command) Argument {
+func (p *ProgrammableTransactionBuilder) Command(command Command) Argument {
 	p.Commands = append(p.Commands, command)
 	i := uint16(len(p.Commands)) - 1
 	return Argument{
@@ -156,11 +156,11 @@ func (p *ProgrammableTransactionBuilder) TransferSui(recipient SuiAddress, amoun
 			GasCoin: &lib.EmptyEnum{},
 		}
 	} else {
-		amtArg, err := p.pure(*amount)
+		amtArg, err := p.Pure(*amount)
 		if err != nil {
 			return err
 		}
-		coinArg = p.command(
+		coinArg = p.Command(
 			Command{
 				SplitCoins: &struct {
 					Argument  Argument
@@ -175,7 +175,7 @@ func (p *ProgrammableTransactionBuilder) TransferSui(recipient SuiAddress, amoun
 			},
 		)
 	}
-	p.command(
+	p.Command(
 		Command{
 			TransferObjects: &struct {
 				Arguments []Argument

@@ -61,14 +61,14 @@ type Command struct {
 	MoveCall        *ProgrammableMoveCall
 	TransferObjects *struct {
 		Arguments []Argument
-		Argument
+		Argument  Argument
 	}
 	SplitCoins *struct {
-		Argument
+		Argument  Argument
 		Arguments []Argument
 	}
 	MergeCoins *struct {
-		Argument
+		Argument  Argument
 		Arguments []Argument
 	}
 	Publish *struct {
@@ -76,14 +76,14 @@ type Command struct {
 		Objects []ObjectID
 	}
 	MakeMoveVec *struct {
-		move_types.TypeTag `bcs:"optional"`
-		Arguments          []Argument
+		TypeTag   move_types.TypeTag `bcs:"optional"`
+		Arguments []Argument
 	}
 	Upgrade *struct {
-		Bytes   [][]uint8
-		Objects []ObjectID
-		ObjectID
-		Argument
+		Bytes    [][]uint8
+		Objects  []ObjectID
+		ObjectID ObjectID
+		Argument Argument
 	}
 }
 
@@ -101,7 +101,7 @@ type Argument struct {
 	}
 }
 
-func (a *Argument) IsBcsEnum() {
+func (a Argument) IsBcsEnum() {
 
 }
 
@@ -172,9 +172,9 @@ type ChangeEpoch struct {
 	NonRefundableStorageFee uint64
 	EpochStartTimestampMs   uint64
 	SystemPackages          []*struct {
-		SequenceNumber
-		Bytes   [][]uint8
-		Objects []*ObjectID
+		SequenceNumber SequenceNumber
+		Bytes          [][]uint8
+		Objects        []*ObjectID
 	}
 }
 

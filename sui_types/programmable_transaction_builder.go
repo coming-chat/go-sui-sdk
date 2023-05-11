@@ -3,6 +3,7 @@ package sui_types
 import (
 	"errors"
 	"fmt"
+	"github.com/coming-chat/go-sui/lib"
 	"github.com/fardream/go-bcs/bcs"
 )
 
@@ -16,6 +17,12 @@ type ProgrammableTransactionBuilder struct {
 	Inputs         map[BuilderArg]CallArg
 	InputsKeyOrder []BuilderArg
 	Commands       []Command
+}
+
+func NewProgrammableTransactionBuilder() *ProgrammableTransactionBuilder {
+	return &ProgrammableTransactionBuilder{
+		Inputs: make(map[BuilderArg]CallArg),
+	}
 }
 
 func (p *ProgrammableTransactionBuilder) Finish() ProgrammableTransaction {
@@ -132,7 +139,7 @@ func (p *ProgrammableTransactionBuilder) input(callArg CallArg) (Argument, error
 
 func (p *ProgrammableTransactionBuilder) command(command Command) Argument {
 	p.Commands = append(p.Commands, command)
-	i := uint16(len(p.Commands))
+	i := uint16(len(p.Commands)) - 1
 	return Argument{
 		Result: &i,
 	}

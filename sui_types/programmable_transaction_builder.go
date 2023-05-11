@@ -3,7 +3,7 @@ package sui_types
 import (
 	"errors"
 	"fmt"
-	"github.com/coming-chat/go-sui/lib"
+	lib "github.com/coming-chat/go-sui/lib"
 	"github.com/coming-chat/go-sui/move_types"
 	"github.com/fardream/go-bcs/bcs"
 )
@@ -274,6 +274,22 @@ func (p *ProgrammableTransactionBuilder) MoveCall(
 				TypeArguments: typeArguments,
 				Arguments:     arguments,
 			},
+		},
+	)
+	return nil
+}
+
+func (p *ProgrammableTransactionBuilder) PayAllSui(recipient SuiAddress) error {
+	recArg, err := p.Pure(recipient)
+	if err != nil {
+		return err
+	}
+	p.Command(
+		Command{
+			TransferObjects: &struct {
+				Arguments []Argument
+				Argument  Argument
+			}{Arguments: []Argument{{GasCoin: &lib.EmptyEnum{}}}, Argument: recArg},
 		},
 	)
 	return nil

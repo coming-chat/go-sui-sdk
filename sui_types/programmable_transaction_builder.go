@@ -144,3 +144,48 @@ func (p *ProgrammableTransactionBuilder) command(command Command) Argument {
 		Result: &i,
 	}
 }
+
+func (p *ProgrammableTransactionBuilder) TransferSui(recipient SuiAddress, amount *uint64) error {
+	recArg, err := p.pure(recipient)
+	if err != nil {
+		return err
+	}
+	var coinArg Argument
+	if amount == nil {
+		coinArg = Argument{
+			GasCoin: &lib.EmptyEnum{},
+		}
+	} else {
+		amtArg, err := p.pure(*amount)
+		if err != nil {
+			return err
+		}
+		coinArg = p.command(
+			Command{
+				SplitCoins: &struct {
+					Argument  Argument
+					Arguments []Argument
+				}{
+					Argument: Argument{
+						GasCoin: &lib.EmptyEnum{},
+					}, Arguments: []Argument{
+						amtArg,
+					},
+				},
+			},
+		)
+	}
+	p.command(
+		Command{
+			TransferObjects: &struct {
+				Arguments []Argument
+				Argument  Argument
+			}{
+				Arguments: []Argument{
+					coinArg,
+				}, Argument: recArg,
+			},
+		},
+	)
+	return nil
+}

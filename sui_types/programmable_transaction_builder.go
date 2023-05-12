@@ -279,6 +279,17 @@ func (p *ProgrammableTransactionBuilder) MoveCall(
 	return nil
 }
 
+func (p *ProgrammableTransactionBuilder) PaySui(
+	recipients []SuiAddress,
+	amounts []uint64,
+) error {
+	return p.PayMulInternal(
+		recipients, amounts, Argument{
+			GasCoin: &lib.EmptyEnum{},
+		},
+	)
+}
+
 func (p *ProgrammableTransactionBuilder) PayAllSui(recipient SuiAddress) error {
 	recArg, err := p.Pure(recipient)
 	if err != nil {

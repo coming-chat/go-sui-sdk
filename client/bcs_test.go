@@ -88,7 +88,7 @@ func TestBCS_TransferSui(t *testing.T) {
 func TestBCS_PaySui(t *testing.T) {
 	sender, err := sui_types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
 	require.NoError(t, err)
-	recipient := sender
+	// recipient := sender
 	recipient2, _ := sui_types.NewAddressFromHex("0x123456")
 	amount := SUI(0.001).Uint64()
 	gasBudget := SUI(0.01).Uint64()
@@ -101,7 +101,7 @@ func TestBCS_PaySui(t *testing.T) {
 
 	// build with BCS
 	ptb := sui_types.NewProgrammableTransactionBuilder()
-	err = ptb.PaySui([]suiAddress{*recipient, *recipient2}, []uint64{amount, amount})
+	err = ptb.PaySui([]suiAddress{*recipient2, *recipient2}, []uint64{amount, amount})
 	require.NoError(t, err)
 	pt := ptb.Finish()
 	tx := sui_types.NewProgrammable(
@@ -113,7 +113,6 @@ func TestBCS_PaySui(t *testing.T) {
 	txBytesBCS, err := bcs.Marshal(tx)
 	require.NoError(t, err)
 
-	// FIXME: Fail when there are two equal recipients
 	resp := simulateCheck(t, cli, &types.TransactionBytes{
 		TxBytes: txBytesBCS,
 	}, true)
@@ -122,7 +121,7 @@ func TestBCS_PaySui(t *testing.T) {
 
 	// build with remote rpc
 	// txn, err := cli.PaySui(context.Background(), *sender, []suiObjectID{coin.CoinObjectId},
-	// 	[]suiAddress{*recipient, *recipient2},
+	// 	[]suiAddress{*recipient2, *recipient2},
 	// 	[]types.SafeSuiBigInt[uint64]{types.NewSafeSuiBigInt(amount), types.NewSafeSuiBigInt(amount)},
 	// 	types.NewSafeSuiBigInt(gasBudget))
 	// require.NoError(t, err)
@@ -175,7 +174,7 @@ func TestBCS_PayAllSui(t *testing.T) {
 func TestBCS_Pay(t *testing.T) {
 	sender, err := sui_types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
 	require.NoError(t, err)
-	recipient := sender
+	// recipient := sender
 	recipient2, _ := sui_types.NewAddressFromHex("0x123456")
 	amount := SUI(0.001).Uint64()
 	gasBudget := SUI(0.01).Uint64()
@@ -191,7 +190,7 @@ func TestBCS_Pay(t *testing.T) {
 	ptb := sui_types.NewProgrammableTransactionBuilder()
 	err = ptb.Pay(
 		[]*sui_types.ObjectRef{coin.Reference()},
-		[]suiAddress{*recipient, *recipient2},
+		[]suiAddress{*recipient2, *recipient2},
 		[]uint64{amount, amount})
 	require.NoError(t, err)
 	pt := ptb.Finish()
@@ -204,7 +203,6 @@ func TestBCS_Pay(t *testing.T) {
 	txBytesBCS, err := bcs.Marshal(tx)
 	require.NoError(t, err)
 
-	// FIXME: Fail when there are two equal recipients
 	resp := simulateCheck(t, cli, &types.TransactionBytes{
 		TxBytes: txBytesBCS,
 	}, true)

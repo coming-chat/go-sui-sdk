@@ -294,3 +294,111 @@ func (p *ProgrammableTransactionBuilder) PayAllSui(recipient SuiAddress) error {
 	)
 	return nil
 }
+
+func (p *ProgrammableTransactionBuilder) Pay(
+	coins []*ObjectRef,
+	recipients []SuiAddress,
+	amounts []uint64,
+) error {
+	if len(coins) == 0 {
+		return errors.New("coins is empty")
+	}
+	coinArg, err := p.Obj(
+		ObjectArg{
+			ImmOrOwnedObject: coins[0],
+		},
+	)
+	coins = coins[1:]
+	if err != nil {
+		return err
+	}
+	var mergeArgs []Argument
+	for _, v := range coins {
+		mergeCoin, err := p.Obj(
+			ObjectArg{
+				ImmOrOwnedObject: v,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		mergeArgs = append(mergeArgs, mergeCoin)
+	}
+	if len(mergeArgs) != 0 {
+		p.Command(
+			Command{
+				MergeCoins: &struct {
+					Argument  Argument
+					Arguments []Argument
+				}{Argument: coinArg, Arguments: mergeArgs},
+			},
+		)
+	}
+	return p.PayMulInternal(recipients, amounts, coinArg)
+}
+
+func (p *ProgrammableTransactionBuilder) PayMulInternal(
+	recipients []SuiAddress,
+	amounts []uint64, coin Argument,
+) error {
+	if len(recipients) != len(amounts) {
+		return fmt.Errorf(
+			"recipients and amounts mismatch. Got %d recipients but %d amounts",
+			len(recipients),
+			len(amounts),
+		)
+	}
+	if len(amounts) == 0 {
+		return nil
+	}
+	var (
+		amtArgs              []Argument
+		recipientMap         = make(map[SuiAddress][]int)
+		recipientMapKeyIndex []SuiAddress
+	)
+	for i := 0; i < len(amounts); i++ {
+		amt, err := p.Pure(amounts[i])
+		if err != nil {
+			return err
+		}
+		recipientMap[recipients[i]] = append(recipientMap[recipients[i]], i)
+		recipientMapKeyIndex = append(recipientMapKeyIndex, recipients[i])
+		amtArgs = append(amtArgs, amt)
+	}
+	splitCoinResult := p.Command(
+		Command{
+			SplitCoins: &struct {
+				Argument  Argument
+				Arguments []Argument
+			}{Argument: coin, Arguments: amtArgs},
+		},
+	)
+	if splitCoinResult.Result == nil {
+		return errors.New("self.command should always give a Argument::Result")
+	}
+	for _, v := range recipientMapKeyIndex {
+		recArg, err := p.Pure(v)
+		if err != nil {
+			return err
+		}
+		var coins []Argument
+		for _, j := range recipientMap[v] {
+			sdCoin := Argument{
+				NestedResult: &struct {
+					Result1 uint16
+					Result2 uint16
+				}{Result1: *splitCoinResult.Result, Result2: uint16(j)},
+			}
+			coins = append(coins, sdCoin)
+		}
+		p.Command(
+			Command{
+				TransferObjects: &struct {
+					Arguments []Argument
+					Argument  Argument
+				}{Arguments: coins, Argument: recArg},
+			},
+		)
+	}
+	return nil
+}

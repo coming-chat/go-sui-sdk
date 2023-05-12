@@ -373,7 +373,9 @@ func (p *ProgrammableTransactionBuilder) PayMulInternal(
 			return err
 		}
 		recipientMap[recipients[i]] = append(recipientMap[recipients[i]], i)
-		recipientMapKeyIndex = append(recipientMapKeyIndex, recipients[i])
+		if len(recipientMap[recipients[i]]) == 1 {
+			recipientMapKeyIndex = append(recipientMapKeyIndex, recipients[i])
+		}
 		amtArgs = append(amtArgs, amt)
 	}
 	splitCoinResult := p.Command(

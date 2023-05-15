@@ -3,9 +3,11 @@ package sui_types
 import (
 	"errors"
 	"fmt"
-	lib "github.com/coming-chat/go-sui/lib"
+	"github.com/coming-chat/go-sui/lib"
 	"github.com/coming-chat/go-sui/move_types"
 	"github.com/fardream/go-bcs/bcs"
+	"github.com/mitchellh/hashstructure/v2"
+	"strconv"
 )
 
 type BuilderArg struct {
@@ -14,22 +16,30 @@ type BuilderArg struct {
 	ForcedNonUniquePure *uint
 }
 
+func (b BuilderArg) String() string {
+	hash, err := hashstructure.Hash(b, hashstructure.FormatV2, nil)
+	if err != nil {
+		panic(err)
+	}
+	return strconv.FormatUint(hash, 10)
+}
+
 type ProgrammableTransactionBuilder struct {
-	Inputs         map[BuilderArg]CallArg
+	Inputs         map[string]CallArg //maybe has hash clash
 	InputsKeyOrder []BuilderArg
 	Commands       []Command
 }
 
 func NewProgrammableTransactionBuilder() *ProgrammableTransactionBuilder {
 	return &ProgrammableTransactionBuilder{
-		Inputs: make(map[BuilderArg]CallArg),
+		Inputs: make(map[string]CallArg),
 	}
 }
 
 func (p *ProgrammableTransactionBuilder) Finish() ProgrammableTransaction {
 	var inputs []CallArg
 	for _, v := range p.InputsKeyOrder {
-		inputs = append(inputs, p.Inputs[v])
+		inputs = append(inputs, p.Inputs[v.String()])
 	}
 	return ProgrammableTransaction{
 		Inputs:   inputs,
@@ -69,10 +79,20 @@ func (p *ProgrammableTransactionBuilder) pureBytes(bytes []byte, forceSeparate b
 }
 
 func (p *ProgrammableTransactionBuilder) insertFull(key BuilderArg, value CallArg) uint16 {
-	p.Inputs[key] = value
-	p.InputsKeyOrder = append(p.InputsKeyOrder, key)
-	return uint16(len(p.InputsKeyOrder) - 1)
+	_, ok := p.Inputs[key.String()]
+	p.Inputs[key.String()] = value
+	if !ok {
+		p.InputsKeyOrder = append(p.InputsKeyOrder, key)
+		return uint16(len(p.InputsKeyOrder) - 1)
+	}
+	for i, v := range p.InputsKeyOrder {
+		if v.String() == key.String() {
+			return uint16(i)
+		}
+	}
+	return 0
 }
+
 func (p *ProgrammableTransactionBuilder) Pure(value any) (Argument, error) {
 	pureData, err := bcs.Marshal(value)
 	if err != nil {
@@ -86,7 +106,7 @@ func (p *ProgrammableTransactionBuilder) Obj(objArg ObjectArg) (Argument, error)
 	var oj ObjectArg
 	if oldValue, ok := p.Inputs[BuilderArg{
 		Object: &id,
-	}]; ok {
+	}.String()]; ok {
 		var oldObjArg ObjectArg
 		switch {
 		case oldValue.Pure != nil:

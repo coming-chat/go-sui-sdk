@@ -22,12 +22,12 @@ func TestClient_TransferObject(t *testing.T) {
 	require.GreaterOrEqual(t, len(coins.Data), 2)
 	coin := coins.Data[0]
 
-	txnBytes, err := cli.TransferObject(context.Background(), *signer, *recipient,
+	txn, err := cli.TransferObject(context.Background(), *signer, *recipient,
 		coin.CoinObjectId, nil, types.NewSafeSuiBigInt(SUI(0.01).Uint64()),
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, true)
+	simulateCheck(t, cli, txn.TxBytes, true)
 }
 
 func TestClient_TransferSui(t *testing.T) {
@@ -42,7 +42,7 @@ func TestClient_TransferSui(t *testing.T) {
 	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 1, false)
 	require.Nil(t, err)
 
-	txnBytes, err := cli.TransferSui(
+	txn, err := cli.TransferSui(
 		context.Background(), *signer, *recipient,
 		pickedCoins.Coins[0].CoinObjectId,
 		types.NewSafeSuiBigInt(amount),
@@ -50,7 +50,7 @@ func TestClient_TransferSui(t *testing.T) {
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, true)
+	simulateCheck(t, cli, txn.TxBytes, true)
 }
 
 func TestClient_PayAllSui(t *testing.T) {
@@ -65,14 +65,14 @@ func TestClient_PayAllSui(t *testing.T) {
 	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, false)
 	require.Nil(t, err)
 
-	txnBytes, err := cli.PayAllSui(
+	txn, err := cli.PayAllSui(
 		context.Background(), *signer, *recipient,
 		pickedCoins.CoinIds(),
 		types.NewSafeSuiBigInt(gasBudget),
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, true)
+	simulateCheck(t, cli, txn.TxBytes, true)
 }
 
 func TestClient_Pay(t *testing.T) {
@@ -87,7 +87,7 @@ func TestClient_Pay(t *testing.T) {
 	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, true)
 	require.NoError(t, err)
 
-	txnBytes, err := cli.Pay(
+	txn, err := cli.Pay(
 		context.Background(), *signer,
 		pickedCoins.CoinIds(),
 		[]suiAddress{*recipient},
@@ -99,7 +99,7 @@ func TestClient_Pay(t *testing.T) {
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, true)
+	simulateCheck(t, cli, txn.TxBytes, true)
 }
 
 func TestClient_PaySui(t *testing.T) {
@@ -114,7 +114,7 @@ func TestClient_PaySui(t *testing.T) {
 	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, false)
 	require.NoError(t, err)
 
-	txnBytes, err := cli.PaySui(
+	txn, err := cli.PaySui(
 		context.Background(), *signer,
 		pickedCoins.CoinIds(),
 		[]suiAddress{*recipient},
@@ -125,7 +125,7 @@ func TestClient_PaySui(t *testing.T) {
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, true)
+	simulateCheck(t, cli, txn.TxBytes, true)
 }
 
 func TestClient_SplitCoin(t *testing.T) {
@@ -140,7 +140,7 @@ func TestClient_SplitCoin(t *testing.T) {
 	require.NoError(t, err)
 	splitCoins := []types.SafeSuiBigInt[uint64]{types.NewSafeSuiBigInt(amount / 2)}
 
-	txnBytes, err := cli.SplitCoin(
+	txn, err := cli.SplitCoin(
 		context.Background(), *signer,
 		pickedCoins.Coins[0].CoinObjectId,
 		splitCoins,
@@ -148,7 +148,7 @@ func TestClient_SplitCoin(t *testing.T) {
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, false)
+	simulateCheck(t, cli, txn.TxBytes, false)
 }
 
 func TestClient_SplitCoinEqual(t *testing.T) {
@@ -162,7 +162,7 @@ func TestClient_SplitCoinEqual(t *testing.T) {
 	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), 1, true)
 	require.NoError(t, err)
 
-	txnBytes, err := cli.SplitCoinEqual(
+	txn, err := cli.SplitCoinEqual(
 		context.Background(), *signer,
 		pickedCoins.Coins[0].CoinObjectId,
 		types.NewSafeSuiBigInt(uint64(2)),
@@ -170,7 +170,7 @@ func TestClient_SplitCoinEqual(t *testing.T) {
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, true)
+	simulateCheck(t, cli, txn.TxBytes, true)
 }
 
 func TestClient_MergeCoins(t *testing.T) {
@@ -178,20 +178,20 @@ func TestClient_MergeCoins(t *testing.T) {
 	signer := Address
 	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.NoError(t, err)
-	require.GreaterOrEqual(t, len(coins.Data), 3)
+	require.True(t, len(coins.Data) >= 3)
 
 	coin1 := coins.Data[0]
 	coin2 := coins.Data[1]
 	coin3 := coins.Data[2] // gas coin
 
-	txnBytes, err := cli.MergeCoins(
+	txn, err := cli.MergeCoins(
 		context.Background(), *signer,
 		coin1.CoinObjectId, coin2.CoinObjectId,
 		&coin3.CoinObjectId, coin3.Balance,
 	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txnBytes, true)
+	simulateCheck(t, cli, txn.TxBytes, true)
 }
 
 func TestClient_Publish(t *testing.T) {
@@ -225,10 +225,10 @@ func TestClient_BatchTransaction(t *testing.T) {
 func simulateCheck(
 	t *testing.T,
 	cli *Client,
-	txn *types.TransactionBytes,
+	txBytes suiBase64Data,
 	showJson bool,
 ) *types.DryRunTransactionBlockResponse {
-	simulate, err := cli.DryRunTransaction(context.Background(), txn)
+	simulate, err := cli.DryRunTransaction(context.Background(), txBytes)
 	require.Nil(t, err)
 	require.Equal(t, simulate.Effects.Data.V1.Status.Error, "")
 	require.True(t, simulate.Effects.Data.IsSuccess())
@@ -243,22 +243,22 @@ func simulateCheck(
 func executeTxn(
 	t *testing.T,
 	cli *Client,
-	txn *types.TransactionBytes,
+	txBytes suiBase64Data,
 	acc *account.Account,
 ) *types.SuiTransactionBlockResponse {
 	// First of all, make sure that there are no problems with simulated trading.
-	simulate, err := cli.DryRunTransaction(context.Background(), txn)
+	simulate, err := cli.DryRunTransaction(context.Background(), txBytes)
 	require.Nil(t, err)
 	require.True(t, simulate.Effects.Data.IsSuccess())
 
 	// sign and send
-	signature, err := acc.SignSecureWithoutEncode(txn.TxBytes, sui_types.DefaultIntent())
+	signature, err := acc.SignSecureWithoutEncode(txBytes, sui_types.DefaultIntent())
 	require.NoError(t, err)
 	options := types.SuiTransactionBlockResponseOptions{
 		ShowEffects: true,
 	}
 	resp, err := cli.ExecuteTransactionBlock(
-		context.TODO(), txn.TxBytes, []any{signature}, &options,
+		context.TODO(), txBytes, []any{signature}, &options,
 		types.TxnRequestTypeWaitForLocalExecution,
 	)
 	require.NoError(t, err)

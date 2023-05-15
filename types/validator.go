@@ -42,6 +42,10 @@ type Stake struct {
 	StakeStatus       *StakeStatus           `json:"-,flatten"`
 }
 
+func (s *Stake) IsActive() bool {
+	return s.StakeStatus.Data.Active != nil
+}
+
 type JsonFlatten[T Stake] struct {
 	Data T
 }

@@ -113,9 +113,7 @@ func TestBCS_PaySui(t *testing.T) {
 	txBytesBCS, err := bcs.Marshal(tx)
 	require.NoError(t, err)
 
-	resp := simulateCheck(t, cli, &types.TransactionBytes{
-		TxBytes: txBytesBCS,
-	}, true)
+	resp := simulateCheck(t, cli, txBytesBCS, true)
 	gasFee := resp.Effects.Data.GasFee()
 	t.Log(gasFee)
 
@@ -203,9 +201,7 @@ func TestBCS_Pay(t *testing.T) {
 	txBytesBCS, err := bcs.Marshal(tx)
 	require.NoError(t, err)
 
-	resp := simulateCheck(t, cli, &types.TransactionBytes{
-		TxBytes: txBytesBCS,
-	}, true)
+	resp := simulateCheck(t, cli, txBytesBCS, true)
 	gasfee := resp.Effects.Data.GasFee()
 	t.Log(gasfee)
 

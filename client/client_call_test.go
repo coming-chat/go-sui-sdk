@@ -96,7 +96,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	resp, err := cli.DryRunTransaction(context.Background(), tx)
+	resp, err := cli.DryRunTransaction(context.Background(), tx.TxBytes)
 	require.Nil(t, err)
 	t.Log("dry run status:", resp.Effects.Data.IsSuccess())
 	t.Log("dry run error:", resp.Effects.Data.V1.Status.Error)

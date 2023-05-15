@@ -95,7 +95,7 @@ func TestRequestAddDelegation(t *testing.T) {
 		nil, decimal.NewFromInt(gasBudget))
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txn, true)
+	simulateCheck(t, cli, txn.TxBytes, true)
 }
 
 func TestRequestWithdrawDelegation(t *testing.T) {
@@ -105,7 +105,8 @@ func TestRequestWithdrawDelegation(t *testing.T) {
 	require.Nil(t, err)
 	stakes, err := cli.GetStakes(context.Background(), *signer)
 	require.Nil(t, err)
-	require.GreaterOrEqual(t, len(stakes), 1)
+	require.True(t, len(stakes) > 0)
+	require.True(t, len(stakes[0].Stakes) > 0)
 
 	stakeId := stakes[0].Stakes[0].Data.StakedSuiId
 
@@ -113,5 +114,5 @@ func TestRequestWithdrawDelegation(t *testing.T) {
 	txn, err := cli.RequestWithdrawStake(context.Background(), *signer, stakeId, nil, gasBudget)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txn, true)
+	simulateCheck(t, cli, txn.TxBytes, true)
 }

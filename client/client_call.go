@@ -203,10 +203,10 @@ func (c *Client) DevInspectTransactionBlock(
 
 func (c *Client) DryRunTransaction(
 	ctx context.Context,
-	tx *types.TransactionBytes,
+	txBytes suiBase64Data,
 ) (*types.DryRunTransactionBlockResponse, error) {
 	var resp types.DryRunTransactionBlockResponse
-	return &resp, c.CallContext(ctx, &resp, dryRunTransactionBlock, tx.TxBytes)
+	return &resp, c.CallContext(ctx, &resp, dryRunTransactionBlock, txBytes)
 }
 
 func (c *Client) ExecuteTransactionBlock(

@@ -2,6 +2,20 @@ package sui_types
 
 import "github.com/coming-chat/go-sui/lib"
 
+var (
+	SuiSystemMut = CallArg{
+		Object: &SuiSystemMutObj,
+	}
+
+	SuiSystemMutObj = ObjectArg{
+		SharedObject: &struct {
+			Id                   ObjectID
+			InitialSharedVersion SequenceNumber
+			Mutable              bool
+		}{Id: *SuiSystemStateObjectId, InitialSharedVersion: SuiSystemStateObjectSharedVersion, Mutable: true},
+	}
+)
+
 func NewProgrammableAllowSponsor(
 	sender SuiAddress,
 	gasPayment []*ObjectRef,

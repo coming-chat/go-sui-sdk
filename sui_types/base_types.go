@@ -15,6 +15,10 @@ func NewAddressFromHex(str string) (*SuiAddress, error) {
 	return move_types.NewAccountAddressHex(str)
 }
 
+func NewObjectIdFromHex(str string) (*ObjectID, error) {
+	return move_types.NewAccountAddressHex(str)
+}
+
 // ObjectRef for BCS, need to keep this order
 type ObjectRef struct {
 	ObjectId ObjectID       `json:"objectId"`

@@ -87,7 +87,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 
 	amount := SUI(0.01).Uint64()
 	gasBudget := SUI(0.01).Uint64()
-	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, false)
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), gasBudget, 0, 0)
 	require.NoError(t, err)
 	tx, err := cli.PayAllSui(
 		context.Background(), *signer, *signer,

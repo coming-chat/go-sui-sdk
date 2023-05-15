@@ -39,7 +39,7 @@ func TestClient_TransferSui(t *testing.T) {
 
 	amount := SUI(0.0001).Uint64()
 	gasBudget := SUI(0.01).Uint64()
-	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 1, false)
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), gasBudget, 1, 0)
 	require.Nil(t, err)
 
 	txn, err := cli.TransferSui(
@@ -62,7 +62,7 @@ func TestClient_PayAllSui(t *testing.T) {
 
 	amount := SUI(0.001).Uint64()
 	gasBudget := SUI(0.01).Uint64()
-	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, false)
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), gasBudget, 0, 0)
 	require.Nil(t, err)
 
 	txn, err := cli.PayAllSui(
@@ -81,10 +81,11 @@ func TestClient_Pay(t *testing.T) {
 	recipient := Address
 	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.NoError(t, err)
+	limit := len(coins.Data) - 1 // need reserve a coin for gas
 
 	amount := SUI(0.001).Uint64()
 	gasBudget := SUI(0.01).Uint64()
-	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, true)
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), gasBudget, limit, 0)
 	require.NoError(t, err)
 
 	txn, err := cli.Pay(
@@ -111,7 +112,7 @@ func TestClient_PaySui(t *testing.T) {
 
 	amount := SUI(0.001).Uint64()
 	gasBudget := SUI(0.01).Uint64()
-	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, false)
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), gasBudget, 0, 0)
 	require.NoError(t, err)
 
 	txn, err := cli.PaySui(
@@ -136,7 +137,7 @@ func TestClient_SplitCoin(t *testing.T) {
 
 	amount := SUI(0.01).Uint64()
 	gasBudget := SUI(0.01).Uint64()
-	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), 1, true)
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), 0, 1, 0)
 	require.NoError(t, err)
 	splitCoins := []types.SafeSuiBigInt[uint64]{types.NewSafeSuiBigInt(amount / 2)}
 
@@ -159,7 +160,7 @@ func TestClient_SplitCoinEqual(t *testing.T) {
 
 	amount := SUI(0.01).Uint64()
 	gasBudget := SUI(0.01).Uint64()
-	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), 1, true)
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), 0, 1, 0)
 	require.NoError(t, err)
 
 	txn, err := cli.SplitCoinEqual(
@@ -236,6 +237,7 @@ func simulateCheck(
 		data, err := json.Marshal(simulate)
 		require.Nil(t, err)
 		t.Log(string(data))
+		t.Log("gasFee = ", simulate.Effects.Data.GasFee())
 	}
 	return simulate
 }

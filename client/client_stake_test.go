@@ -7,7 +7,6 @@ import (
 
 	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/coming-chat/go-sui/types"
-	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -80,22 +79,25 @@ func TestRequestAddDelegation(t *testing.T) {
 	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.Nil(t, err)
 
-	amount := SUI(1).Int64()
-	gasBudget := SUI(0.01).Int64()
-	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(amount), 0, true)
+	amount := SUI(1).Uint64()
+	gasBudget := SUI(0.01).Uint64()
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), 0, 0, 0)
 	require.Nil(t, err)
 
 	validatorAddress := ComingChatValidatorAddress
 	validator, err := sui_types.NewAddressFromHex(validatorAddress)
 	require.Nil(t, err)
 
-	amountInt := decimal.NewFromInt(amount)
-	txn, err := cli.RequestAddStake(context.Background(), *signer,
-		pickedCoins.CoinIds(), amountInt, *validator,
-		nil, decimal.NewFromInt(gasBudget))
+	txBytes, err := BCS_RequestAddStake(*signer,
+		pickedCoins.CoinRefs(),
+		types.NewSafeSuiBigInt(amount),
+		*validator,
+		1000,
+		gasBudget,
+	)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txn.TxBytes, true)
+	simulateCheck(t, cli, txBytes, true)
 }
 
 func TestRequestWithdrawDelegation(t *testing.T) {

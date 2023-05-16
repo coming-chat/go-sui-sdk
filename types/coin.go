@@ -140,7 +140,6 @@ func PickupCoins(inputCoins *CoinPage, targetAmount big.Int, gasBudget uint64, l
 		if sub.Uint64() > gasBudget {
 			return nil, ErrInsufficientBalance
 		}
-		break out
 	}
 	return &PickedCoins{
 		Coins:        pickedCoins,

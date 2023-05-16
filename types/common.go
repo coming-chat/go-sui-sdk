@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/shopspring/decimal"
+	"math/big"
 )
 
 type SuiBigInt = decimal.Decimal

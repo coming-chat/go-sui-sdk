@@ -124,6 +124,14 @@ type SuiObjectData struct {
 	Display interface{} `json:"display,omitempty"`
 }
 
+func (data *SuiObjectData) Reference() sui_types.ObjectRef {
+	return sui_types.ObjectRef{
+		ObjectId: data.ObjectId,
+		Version:  data.Version.data,
+		Digest:   data.Digest.Data(),
+	}
+}
+
 type SuiObjectDataOptions struct {
 	/* Whether to fetch the object type, default to be false */
 	ShowType bool `json:"showType,omitempty"`

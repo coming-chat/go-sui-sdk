@@ -59,7 +59,7 @@ func BCS_RequestAddStake(
 	coins []*sui_types.ObjectRef,
 	amount types.SafeSuiBigInt[uint64],
 	validator suiAddress,
-	gasPrice, gasBudget uint64,
+	gasBudget, gasPrice uint64,
 ) ([]byte, error) {
 	// build with BCS
 	ptb := sui_types.NewProgrammableTransactionBuilder()
@@ -106,7 +106,7 @@ func BCS_RequestAddStake(
 	return bcs.Marshal(tx)
 }
 
-func BCS_RequestWithdrawStake(signer suiAddress, stakedSuiRef sui_types.ObjectRef, gas []*sui_types.ObjectRef, gasPrice, gasBudget uint64) ([]byte, error) {
+func BCS_RequestWithdrawStake(signer suiAddress, stakedSuiRef sui_types.ObjectRef, gas []*sui_types.ObjectRef, gasBudget, gasPrice uint64) ([]byte, error) {
 	// build with BCS
 	ptb := sui_types.NewProgrammableTransactionBuilder()
 	arg0, err := ptb.Obj(sui_types.SuiSystemMutObj)

@@ -93,8 +93,8 @@ func TestRequestAddDelegation(t *testing.T) {
 		pickedCoins.CoinRefs(),
 		types.NewSafeSuiBigInt(amount),
 		*validator,
-		1000,
 		gasBudget,
+		1000,
 	)
 	require.Nil(t, err)
 
@@ -120,7 +120,7 @@ func TestRequestWithdrawDelegation(t *testing.T) {
 	stakeId := stakes[0].Stakes[0].Data.StakedSuiId
 	detail, err := cli.GetObject(context.Background(), stakeId, nil)
 	require.Nil(t, err)
-	txBytes, err := BCS_RequestWithdrawStake(*signer, detail.Data.Reference(), pickedCoins.CoinRefs(), 1000, gasBudget)
+	txBytes, err := BCS_RequestWithdrawStake(*signer, detail.Data.Reference(), pickedCoins.CoinRefs(), gasBudget, 1000)
 	require.Nil(t, err)
 
 	simulateCheck(t, cli, txBytes, true)

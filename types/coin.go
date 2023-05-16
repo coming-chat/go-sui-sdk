@@ -36,7 +36,12 @@ func (c *Coin) Reference() *sui_types.ObjectRef {
 	}
 }
 
+
 type CoinPage = Page[Coin, sui_types.ObjectID]
+
+func (c *Coin) IsSUI() bool {
+	return c.CoinType == SUI_COIN_TYPE
+}
 
 type Balance struct {
 	CoinType        string                              `json:"coinType"`
@@ -100,7 +105,7 @@ func PickupCoins(inputCoins *CoinPage, targetAmount big.Int, gasBudget uint64, l
 	if inputCount <= 0 {
 		return nil, ErrNoCoinsFound
 	}
-	if limit == 0 {
+	if limit <= 0 {
 		limit = MAX_INPUT_COUNT_MERGE
 	}
 	if moreCount == 0 {
@@ -135,6 +140,7 @@ func PickupCoins(inputCoins *CoinPage, targetAmount big.Int, gasBudget uint64, l
 		if sub.Uint64() > gasBudget {
 			return nil, ErrInsufficientBalance
 		}
+		break out
 	}
 	return &PickedCoins{
 		Coins:        pickedCoins,

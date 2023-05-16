@@ -117,6 +117,11 @@ func (c *Client) GetTotalTransactionBlocks(ctx context.Context) (string, error) 
 	return resp, c.CallContext(ctx, &resp, getTotalTransactionBlocks)
 }
 
+func (c *Client) GetLatestCheckpointSequenceNumber(ctx context.Context) (string, error) {
+	var resp string
+	return resp, c.CallContext(ctx, &resp, getLatestCheckpointSequenceNumber)
+}
+
 // BatchGetObjectsOwnedByAddress @param filterType You can specify filtering out the specified resources, this will fetch all resources if it is not empty ""
 func (c *Client) BatchGetObjectsOwnedByAddress(
 	ctx context.Context,

@@ -103,6 +103,7 @@ func TestRequestAddDelegation(t *testing.T) {
 
 func TestRequestWithdrawDelegation(t *testing.T) {
 	cli := TestnetClient(t)
+	gasBudget := SUI(0.1).Uint64()
 
 	signer, err := sui_types.NewAddressFromHex("0xd77955e670f42c1bc5e94b9e68e5fe9bdbed9134d784f2a14dfe5fc1b24b5d9f")
 	require.Nil(t, err)
@@ -111,11 +112,16 @@ func TestRequestWithdrawDelegation(t *testing.T) {
 	require.True(t, len(stakes) > 0)
 	require.True(t, len(stakes[0].Stakes) > 0)
 
-	stakeId := stakes[0].Stakes[0].Data.StakedSuiId
-
-	gasBudget := SUI(0.02).Decimal()
-	txn, err := cli.RequestWithdrawStake(context.Background(), *signer, stakeId, nil, gasBudget)
+	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
+	require.Nil(t, err)
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0), gasBudget, 0, 0)
 	require.Nil(t, err)
 
-	simulateCheck(t, cli, txn.TxBytes, true)
+	stakeId := stakes[0].Stakes[0].Data.StakedSuiId
+	detail, err := cli.GetObject(context.Background(), stakeId, nil)
+	require.Nil(t, err)
+	txBytes, err := BCS_RequestWithdrawStake(*signer, detail.Data.Reference(), pickedCoins.CoinRefs(), 1000, gasBudget)
+	require.Nil(t, err)
+
+	simulateCheck(t, cli, txBytes, true)
 }

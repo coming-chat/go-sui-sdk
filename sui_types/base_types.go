@@ -1,8 +1,8 @@
 package sui_types
 
 import (
-	"github.com/coming-chat/go-sui/lib"
-	"github.com/coming-chat/go-sui/move_types"
+	"github.com/coming-chat/go-sui/v2/lib"
+	"github.com/coming-chat/go-sui/v2/move_types"
 )
 
 type SuiAddress = move_types.AccountAddress

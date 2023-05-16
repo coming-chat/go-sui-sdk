@@ -3,8 +3,8 @@ package client
 import (
 	"context"
 
-	"github.com/coming-chat/go-sui/sui_types"
-	"github.com/coming-chat/go-sui/types"
+	"github.com/coming-chat/go-sui/v2/sui_types"
+	"github.com/coming-chat/go-sui/v2/types"
 )
 
 // MintNFT

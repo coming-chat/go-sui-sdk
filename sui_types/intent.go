@@ -1,6 +1,6 @@
 package sui_types
 
-import "github.com/coming-chat/go-sui/lib"
+import "github.com/coming-chat/go-sui/v2/lib"
 
 type IntentScope struct {
 	TransactionData         *lib.EmptyEnum // Used for a user signature on a transaction data.

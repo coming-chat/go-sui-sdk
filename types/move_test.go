@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/coming-chat/go-sui/sui_types"
+	"github.com/coming-chat/go-sui/v2/sui_types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,8 +29,10 @@ func TestNewResourceType(t *testing.T) {
 		{
 			name: "three level",
 			str:  "0xabc::Coin::Xxxx<0x789::AAA::ppp<0x111::mod3::func3>>",
-			want: &ResourceType{AddressFromHex(t, "0xabc"), "Coin", "Xxxx",
-				&ResourceType{AddressFromHex(t, "0x789"), "AAA", "ppp",
+			want: &ResourceType{
+				AddressFromHex(t, "0xabc"), "Coin", "Xxxx",
+				&ResourceType{
+					AddressFromHex(t, "0x789"), "AAA", "ppp",
 					&ResourceType{AddressFromHex(t, "0x111"), "mod3", "func3", nil},
 				},
 			},
@@ -57,16 +59,18 @@ func TestNewResourceType(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewResourceType(tt.str)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("NewResourceType() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewResourceType() = %v, want %v", got, tt.want)
-			}
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := NewResourceType(tt.str)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("NewResourceType() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("NewResourceType() = %v, want %v", got, tt.want)
+				}
+			},
+		)
 	}
 }
 
@@ -90,17 +94,23 @@ func TestResourceType_ShortString(t *testing.T) {
 			want: "0x1::m1::f1",
 		},
 		{
-			arg: &ResourceType{AddressFromHex(t, "0x1"), "m1", "f1",
-				&ResourceType{AddressFromHex(t, "2"), "m2", "f2",
-					&ResourceType{AddressFromHex(t, "0x123abcdef"), "m3", "f3", nil}}},
+			arg: &ResourceType{
+				AddressFromHex(t, "0x1"), "m1", "f1",
+				&ResourceType{
+					AddressFromHex(t, "2"), "m2", "f2",
+					&ResourceType{AddressFromHex(t, "0x123abcdef"), "m3", "f3", nil},
+				},
+			},
 			want: "0x1::m1::f1<0x2::m2::f2<0x123abcdef::m3::f3>>",
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.arg.ShortString(); got != tt.want {
-				t.Errorf("ResourceType.ShortString() = %v, want %v", got, tt.want)
-			}
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				if got := tt.arg.ShortString(); got != tt.want {
+					t.Errorf("ResourceType.ShortString() = %v, want %v", got, tt.want)
+				}
+			},
+		)
 	}
 }

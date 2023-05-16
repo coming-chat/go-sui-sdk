@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/coming-chat/go-sui/sui_types"
+	"github.com/coming-chat/go-sui/v2/sui_types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -136,21 +136,23 @@ func TestCoins_PickSUICoinsWithGas(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := tt.cs.PickSUICoinsWithGas(tt.args.amount, tt.args.gasAmount, tt.args.pickMethod)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Coins.PickSUICoinsWithGas() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(got) != 0 && len(tt.want) != 0 {
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("Coins.PickSUICoinsWithGas() got = %v, want %v", got, tt.want)
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, got1, err := tt.cs.PickSUICoinsWithGas(tt.args.amount, tt.args.gasAmount, tt.args.pickMethod)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Coins.PickSUICoinsWithGas() error = %v, wantErr %v", err, tt.wantErr)
+					return
 				}
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("Coins.PickSUICoinsWithGas() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
+				if len(got) != 0 && len(tt.want) != 0 {
+					if !reflect.DeepEqual(got, tt.want) {
+						t.Errorf("Coins.PickSUICoinsWithGas() got = %v, want %v", got, tt.want)
+					}
+				}
+				if !reflect.DeepEqual(got1, tt.want1) {
+					t.Errorf("Coins.PickSUICoinsWithGas() got1 = %v, want %v", got1, tt.want1)
+				}
+			},
+		)
 	}
 }
 
@@ -225,16 +227,18 @@ func TestCoins_PickCoins(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.cs.PickCoins(tt.args.amount, tt.args.pickMethod)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Coins.PickCoins() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Coins.PickCoins() = %v, want %v", got, tt.want)
-			}
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := tt.cs.PickCoins(tt.args.amount, tt.args.pickMethod)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Coins.PickCoins() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("Coins.PickCoins() = %v, want %v", got, tt.want)
+				}
+			},
+		)
 	}
 }
 
@@ -346,14 +350,22 @@ func TestPickupCoins(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := PickupCoins(tt.args.inputCoins, tt.args.targetAmount, tt.args.gasBudget, tt.args.limit, tt.args.moreCount)
-			if tt.wantErr != nil {
-				require.Equal(t, err, tt.wantErr)
-			} else {
-				require.Equal(t, got, tt.want)
-				t.Log("suggest max gas budget = ", tt.want.SuggestMaxGasBudget())
-			}
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				got, err := PickupCoins(
+					tt.args.inputCoins,
+					tt.args.targetAmount,
+					tt.args.gasBudget,
+					tt.args.limit,
+					tt.args.moreCount,
+				)
+				if tt.wantErr != nil {
+					require.Equal(t, err, tt.wantErr)
+				} else {
+					require.Equal(t, got, tt.want)
+					t.Log("suggest max gas budget = ", tt.want.SuggestMaxGasBudget())
+				}
+			},
+		)
 	}
 }

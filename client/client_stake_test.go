@@ -5,8 +5,8 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/coming-chat/go-sui/sui_types"
-	"github.com/coming-chat/go-sui/types"
+	"github.com/coming-chat/go-sui/v2/sui_types"
+	"github.com/coming-chat/go-sui/v2/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -88,7 +88,8 @@ func TestRequestAddDelegation(t *testing.T) {
 	validator, err := sui_types.NewAddressFromHex(validatorAddress)
 	require.Nil(t, err)
 
-	txBytes, err := BCS_RequestAddStake(*signer,
+	txBytes, err := BCS_RequestAddStake(
+		*signer,
 		pickedCoins.CoinRefs(),
 		types.NewSafeSuiBigInt(amount),
 		*validator,

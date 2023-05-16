@@ -5,9 +5,9 @@ import (
 	"crypto/ed25519"
 	"encoding/json"
 	"errors"
-	"github.com/coming-chat/go-sui/lib"
+	"github.com/coming-chat/go-sui/v2/lib"
 
-	"github.com/coming-chat/go-sui/crypto"
+	"github.com/coming-chat/go-sui/v2/crypto"
 	"github.com/fardream/go-bcs/bcs"
 	"golang.org/x/crypto/blake2b"
 )

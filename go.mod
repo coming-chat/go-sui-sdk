@@ -1,4 +1,4 @@
-module github.com/coming-chat/go-sui
+module github.com/coming-chat/go-sui/v2
 
 go 1.18
 

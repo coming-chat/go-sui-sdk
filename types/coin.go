@@ -2,7 +2,7 @@ package types
 
 import (
 	"errors"
-	"github.com/coming-chat/go-sui/sui_types"
+	"github.com/coming-chat/go-sui/v2/sui_types"
 	"math/big"
 	"sort"
 )

@@ -6,10 +6,10 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/coming-chat/go-sui/sui_types"
+	"github.com/coming-chat/go-sui/v2/sui_types"
 
-	"github.com/coming-chat/go-sui/account"
-	"github.com/coming-chat/go-sui/types"
+	"github.com/coming-chat/go-sui/v2/account"
+	"github.com/coming-chat/go-sui/v2/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,7 +22,8 @@ func TestClient_TransferObject(t *testing.T) {
 	require.GreaterOrEqual(t, len(coins.Data), 2)
 	coin := coins.Data[0]
 
-	txn, err := cli.TransferObject(context.Background(), *signer, *recipient,
+	txn, err := cli.TransferObject(
+		context.Background(), *signer, *recipient,
 		coin.CoinObjectId, nil, types.NewSafeSuiBigInt(SUI(0.01).Uint64()),
 	)
 	require.Nil(t, err)

@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/coming-chat/go-sui/lib"
-	"github.com/coming-chat/go-sui/sui_types"
-	"github.com/coming-chat/go-sui/sui_types/sui_system_state"
-	"github.com/coming-chat/go-sui/types"
+	"github.com/coming-chat/go-sui/v2/lib"
+	"github.com/coming-chat/go-sui/v2/sui_types"
+	"github.com/coming-chat/go-sui/v2/sui_types/sui_system_state"
+	"github.com/coming-chat/go-sui/v2/types"
 	"github.com/fardream/go-bcs/bcs"
 	"github.com/stretchr/testify/require"
 )
@@ -40,10 +40,12 @@ func TestBCS_TransferObject(t *testing.T) {
 	require.NoError(t, err)
 
 	// build with remote rpc
-	txn, err := cli.TransferObject(context.Background(), *sender, *recipient,
+	txn, err := cli.TransferObject(
+		context.Background(), *sender, *recipient,
 		coin.CoinObjectId,
 		&gas.CoinObjectId,
-		types.NewSafeSuiBigInt(gasBudget))
+		types.NewSafeSuiBigInt(gasBudget),
+	)
 	require.NoError(t, err)
 	txBytesRemote := txn.TxBytes.Data()
 
@@ -78,9 +80,11 @@ func TestBCS_TransferSui(t *testing.T) {
 	require.NoError(t, err)
 
 	// build with remote rpc
-	txn, err := cli.TransferSui(context.Background(), *sender, *recipient, coin.CoinObjectId,
+	txn, err := cli.TransferSui(
+		context.Background(), *sender, *recipient, coin.CoinObjectId,
 		types.NewSafeSuiBigInt(amount),
-		types.NewSafeSuiBigInt(gasBudget))
+		types.NewSafeSuiBigInt(gasBudget),
+	)
 	require.NoError(t, err)
 	txBytesRemote := txn.TxBytes.Data()
 
@@ -160,11 +164,13 @@ func TestBCS_PayAllSui(t *testing.T) {
 	require.NoError(t, err)
 
 	// build with remote rpc
-	txn, err := cli.PayAllSui(context.Background(), *sender, *recipient,
+	txn, err := cli.PayAllSui(
+		context.Background(), *sender, *recipient,
 		[]suiObjectID{
 			coin.CoinObjectId, coin2.CoinObjectId,
 		},
-		types.NewSafeSuiBigInt(gasBudget))
+		types.NewSafeSuiBigInt(gasBudget),
+	)
 	require.NoError(t, err)
 	txBytesRemote := txn.TxBytes.Data()
 
@@ -191,7 +197,8 @@ func TestBCS_Pay(t *testing.T) {
 	err = ptb.Pay(
 		[]*sui_types.ObjectRef{coin.Reference()},
 		[]suiAddress{*recipient2, *recipient2},
-		[]uint64{amount, amount})
+		[]uint64{amount, amount},
+	)
 	require.NoError(t, err)
 	pt := ptb.Finish()
 	tx := sui_types.NewProgrammable(
@@ -240,29 +247,33 @@ func TestBCS_MoveCall(t *testing.T) {
 	// case 1: split target amount
 	amtArg, err := ptb.Pure(SUI(1).Uint64())
 	require.NoError(t, err)
-	arg1 := ptb.Command(sui_types.Command{
-		SplitCoins: &struct {
-			Argument  sui_types.Argument
-			Arguments []sui_types.Argument
-		}{
-			Argument:  sui_types.Argument{GasCoin: &lib.EmptyEnum{}},
-			Arguments: []sui_types.Argument{amtArg},
+	arg1 := ptb.Command(
+		sui_types.Command{
+			SplitCoins: &struct {
+				Argument  sui_types.Argument
+				Arguments []sui_types.Argument
+			}{
+				Argument:  sui_types.Argument{GasCoin: &lib.EmptyEnum{}},
+				Arguments: []sui_types.Argument{amtArg},
+			},
 		},
-	}) // the coin is split result argument
+	) // the coin is split result argument
 	arg2, err := ptb.Pure(validatorAddress)
 	require.NoError(t, err)
 	arg0, err := ptb.Obj(sui_types.SuiSystemMutObj)
 	require.NoError(t, err)
-	ptb.Command(sui_types.Command{
-		MoveCall: &sui_types.ProgrammableMoveCall{
-			Package:  *sui_types.SuiSystemAddress,
-			Module:   sui_system_state.SuiSystemModuleName,
-			Function: sui_types.AddStakeFunName,
-			Arguments: []sui_types.Argument{
-				arg0, arg1, arg2,
+	ptb.Command(
+		sui_types.Command{
+			MoveCall: &sui_types.ProgrammableMoveCall{
+				Package:  *sui_types.SuiSystemAddress,
+				Module:   sui_system_state.SuiSystemModuleName,
+				Function: sui_types.AddStakeFunName,
+				Arguments: []sui_types.Argument{
+					arg0, arg1, arg2,
+				},
 			},
 		},
-	})
+	)
 	pt := ptb.Finish()
 	tx := sui_types.NewProgrammable(
 		*sender, []*sui_types.ObjectRef{

@@ -1,6 +1,6 @@
 package types
 
-import "github.com/coming-chat/go-sui/sui_types"
+import "github.com/coming-chat/go-sui/v2/sui_types"
 
 type EventId struct {
 	TxDigest sui_types.TransactionDigest `json:"txDigest"`

@@ -166,16 +166,16 @@ func (p *ProgrammableTransactionBuilder) Input(callArg CallArg) (Argument, error
 	}
 }
 
-func (p *ProgrammableTransactionBuilder) MakeObjList(objs []ObjectArg) error {
+func (p *ProgrammableTransactionBuilder) MakeObjList(objs []ObjectArg) (Argument, error) {
 	var objArgs []Argument
 	for _, v := range objs {
 		objArg, err := p.Obj(v)
 		if err != nil {
-			return err
+			return Argument{}, err
 		}
 		objArgs = append(objArgs, objArg)
 	}
-	p.Command(
+	arg := p.Command(
 		Command{
 			MakeMoveVec: &struct {
 				TypeTag   *move_types.TypeTag `bcs:"optional"`
@@ -183,7 +183,7 @@ func (p *ProgrammableTransactionBuilder) MakeObjList(objs []ObjectArg) error {
 			}{TypeTag: nil, Arguments: objArgs},
 		},
 	)
-	return nil
+	return arg, nil
 }
 
 func (p *ProgrammableTransactionBuilder) Command(command Command) Argument {

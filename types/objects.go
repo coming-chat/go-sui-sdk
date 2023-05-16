@@ -85,7 +85,7 @@ type TypeOrigin struct {
 }
 
 type SuiObjectData struct {
-	ObjectId sui_types.ObjectID                      `json:"sui_types.objectId"`
+	ObjectId sui_types.ObjectID                      `json:"objectId"`
 	Version  SafeSuiBigInt[sui_types.SequenceNumber] `json:"version"`
 	Digest   sui_types.ObjectDigest                  `json:"digest"`
 	/**

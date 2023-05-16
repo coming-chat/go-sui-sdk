@@ -5,8 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/stretchr/testify/require"
 )
+
+type suiAddress = sui_types.SuiAddress
+type suiObjectID = sui_types.ObjectID
 
 func balanceObject(val uint64) SafeSuiBigInt[uint64] {
 	return NewSafeSuiBigInt(val)
@@ -242,8 +246,9 @@ func TestPickupCoins(t *testing.T) {
 	type args struct {
 		inputCoins   *CoinPage
 		targetAmount big.Int
+		gasBudget    uint64
 		limit        int
-		gasAmount    uint64
+		moreCount    int
 	}
 	tests := []struct {
 		name    string
@@ -252,32 +257,48 @@ func TestPickupCoins(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "need sort",
+			name: "moreCount = 3",
 			args: args{
-				inputCoins: &Page[Coin, HexData]{
+				inputCoins: &Page[Coin, suiObjectID]{
 					Data: []Coin{
 						coin(1e3), coin(1e5), coin(1e2), coin(1e4),
 					},
 				},
-				targetAmount: *big.NewInt(1e5 + 1e3),
-				limit:        100,
+				targetAmount: *big.NewInt(1e3),
+				moreCount:    3,
 			},
 			want: &PickedCoins{
 				Coins: []Coin{
-					coin(1e5), coin(1e4),
+					coin(1e3), coin(1e5), coin(1e2),
 				},
-				TotalAmount:  *big.NewInt(1e5 + 1e4),
-				TargetAmount: *big.NewInt(1e5 + 1e3),
-				GasCoins: []Coin{
-					coin(1e3),
+				TotalAmount:  *big.NewInt(1e3 + 1e5 + 1e2),
+				TargetAmount: *big.NewInt(1e3),
+			},
+		},
+		{
+			name: "large gas",
+			args: args{
+				inputCoins: &Page[Coin, suiObjectID]{
+					Data: []Coin{
+						coin(1e3), coin(1e5), coin(1e2), coin(1e4),
+					},
 				},
-				GasTotalAmount: 1e3,
+				targetAmount: *big.NewInt(1e3),
+				gasBudget:    1e9,
+				moreCount:    3,
+			},
+			want: &PickedCoins{
+				Coins: []Coin{
+					coin(1e3), coin(1e5), coin(1e2), coin(1e4),
+				},
+				TotalAmount:  *big.NewInt(1e3 + 1e5 + 1e2 + 1e4),
+				TargetAmount: *big.NewInt(1e3),
 			},
 		},
 		{
 			name: "ErrNoCoinsFound",
 			args: args{
-				inputCoins: &Page[Coin, HexData]{
+				inputCoins: &Page[Coin, suiObjectID]{
 					Data: []Coin{},
 				},
 				targetAmount: *big.NewInt(101000),
@@ -287,7 +308,7 @@ func TestPickupCoins(t *testing.T) {
 		{
 			name: "ErrInsufficientBalance",
 			args: args{
-				inputCoins: &Page[Coin, HexData]{
+				inputCoins: &Page[Coin, suiObjectID]{
 					Data: []Coin{
 						coin(1e5), coin(1e6), coin(1e4),
 					},
@@ -299,7 +320,7 @@ func TestPickupCoins(t *testing.T) {
 		{
 			name: "ErrNeedMergeCoin 1",
 			args: args{
-				inputCoins: &Page[Coin, HexData]{
+				inputCoins: &Page[Coin, suiObjectID]{
 					Data: []Coin{
 						coin(1e5), coin(1e6), coin(1e4),
 					},
@@ -312,40 +333,26 @@ func TestPickupCoins(t *testing.T) {
 		{
 			name: "ErrNeedMergeCoin 2",
 			args: args{
-				inputCoins: &Page[Coin, HexData]{
+				inputCoins: &Page[Coin, suiObjectID]{
 					Data: []Coin{
 						coin(1e5), coin(1e6), coin(1e4), coin(1e5),
 					},
 					HasNextPage: false,
 				},
-				targetAmount: *big.NewInt(1e6 + 2e5 + 1e3),
+				targetAmount: *big.NewInt(1e6 + 1e5*2 + 1e3),
 				limit:        3,
 			},
 			wantErr: ErrNeedMergeCoin,
 		},
-		{
-			name: "ErrNeedSplitGasCoin",
-			args: args{
-				inputCoins: &Page[Coin, HexData]{
-					Data: []Coin{
-						{Balance: balanceObject(1e5), CoinType: SUI_COIN_TYPE},
-						{Balance: balanceObject(1e5), CoinType: SUI_COIN_TYPE},
-					},
-					HasNextPage: false,
-				},
-				targetAmount: *big.NewInt(1e5 + 1),
-				gasAmount:    1e4,
-			},
-			wantErr: ErrNeedSplitGasCoin,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := PickupCoins(tt.args.inputCoins, tt.args.targetAmount, tt.args.limit, tt.args.gasAmount)
+			got, err := PickupCoins(tt.args.inputCoins, tt.args.targetAmount, tt.args.gasBudget, tt.args.limit, tt.args.moreCount)
 			if tt.wantErr != nil {
 				require.Equal(t, err, tt.wantErr)
 			} else {
 				require.Equal(t, got, tt.want)
+				t.Log("suggest max gas budget = ", tt.want.SuggestMaxGasBudget())
 			}
 		})
 	}

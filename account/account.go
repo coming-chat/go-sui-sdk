@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 
 	"github.com/coming-chat/go-aptos/crypto/derivation"
+	"github.com/coming-chat/go-sui/lib"
 	"github.com/coming-chat/go-sui/sui_types"
-	"github.com/coming-chat/go-sui/types"
 	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/crypto/blake2b"
 )
@@ -70,7 +70,7 @@ func (a *Account) Sign(data []byte) []byte {
 	}
 }
 
-func (a *Account) SignSecureWithoutEncode(msg types.Base64Data, intent sui_types.Intent) (sui_types.Signature, error) {
+func (a *Account) SignSecureWithoutEncode(msg lib.Base64Data, intent sui_types.Intent) (sui_types.Signature, error) {
 	signature, err := sui_types.NewSignatureSecure(
 		sui_types.NewIntentMessage(intent, msg), &a.KeyPair,
 	)

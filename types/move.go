@@ -3,11 +3,12 @@ package types
 import (
 	"errors"
 	"fmt"
+	"github.com/coming-chat/go-sui/sui_types"
 	"strings"
 )
 
 type ResourceType struct {
-	Address    *Address
+	Address    *sui_types.SuiAddress
 	ModuleName string
 	FuncName   string
 
@@ -34,7 +35,7 @@ func NewResourceType(str string) (*ResourceType, error) {
 	if len(parts) != 3 {
 		return nil, errors.New("invalid type string literal")
 	}
-	addr, err := NewAddressFromHex(parts[0])
+	addr, err := sui_types.NewAddressFromHex(parts[0])
 	if err != nil {
 		return nil, err
 	}

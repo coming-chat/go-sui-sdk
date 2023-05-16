@@ -1,57 +1,42 @@
 package types
 
 import (
-	"bytes"
 	"encoding/json"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewAddressFromHex(t *testing.T) {
-	addr, err := NewAddressFromHex("0x2")
-	assert.Nil(t, err)
-
+	addr := AddressFromHex(t, "0x2")
+	require.Equal(t, addr.ShortString(), "0x2")
 	t.Log(addr)
 }
 
 func TestObjectOwnerJsonENDE(t *testing.T) {
-	dataStruct1 := struct {
-		Owner *ObjectOwner `json:"owner"`
-	}{}
+	{
+		var dataStruct struct {
+			Owner *ObjectOwner `json:"owner"`
+		}
+		jsonString := []byte(`{"owner":"Immutable"}`)
 
-	dataStruct2 := struct {
-		Owner *ObjectOwner `json:"owner"`
-	}{}
-	jsonString1 := []byte(`{"owner":"Immutable"}`)
-
-	jsonString2 := []byte(`{"owner":{"AddressOwner":"0x4a13f6340026019b39aaf0fb24b29e149c092a0e"}}`)
-
-	err := json.Unmarshal(jsonString1, &dataStruct1)
-	if err != nil {
-		t.Fatal(err)
+		err := json.Unmarshal(jsonString, &dataStruct)
+		require.Nil(t, err)
+		enData, err := json.Marshal(dataStruct)
+		require.Nil(t, err)
+		require.Equal(t, jsonString, enData)
 	}
+	{
+		var dataStruct struct {
+			Owner *ObjectOwner `json:"owner"`
+		}
+		jsonString := []byte(`{"owner":{"AddressOwner":"0xfb1f678fcfe31c7c1924319e49614ffbe3a984842ceed559aa2d772e60a2ef8f"}}`)
 
-	err = json.Unmarshal(jsonString2, &dataStruct2)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	enData1, err := json.Marshal(dataStruct1)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	enData2, err := json.Marshal(dataStruct2)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !bytes.Equal(jsonString1, enData1) {
-		t.Fatal("encode failed")
-	}
-
-	if !bytes.Equal(jsonString2, enData2) {
-		t.Fatal("encode failed")
+		err := json.Unmarshal(jsonString, &dataStruct)
+		require.Nil(t, err)
+		enData, err := json.Marshal(dataStruct)
+		require.Nil(t, err)
+		require.Equal(t, jsonString, enData)
 	}
 }
 
@@ -109,7 +94,7 @@ func TestIsSameStringAddress(t *testing.T) {
 			name: "same address",
 			args: args{
 				"0x00000123",
-				"0x00000000000123",
+				"0x000000123",
 			},
 			want: true,
 		},

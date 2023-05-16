@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/coming-chat/go-sui/types"
+	"github.com/coming-chat/go-sui/sui_types"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 )
 
 func FaucetFundAccount(address string, faucetUrl string) (string, error) {
-	_, err := types.NewAddressFromHex(address)
+	_, err := sui_types.NewAddressFromHex(address)
 	if err != nil {
 		return "", err
 	}

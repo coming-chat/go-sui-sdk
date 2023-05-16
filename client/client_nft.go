@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 
+	"github.com/coming-chat/go-sui/sui_types"
 	"github.com/coming-chat/go-sui/types"
 )
 
@@ -10,12 +11,12 @@ import (
 // Create an unsigned transaction to mint a nft at devnet
 func (c *Client) MintNFT(
 	ctx context.Context,
-	signer types.Address,
+	signer suiAddress,
 	nftName, nftDescription, nftUri string,
-	gas *types.ObjectId,
+	gas *suiObjectID,
 	gasBudget uint64,
 ) (*types.TransactionBytes, error) {
-	packageId, _ := types.NewAddressFromHex("0x2")
+	packageId, _ := sui_types.NewAddressFromHex("0x2")
 	args := []any{
 		nftName, nftDescription, nftUri,
 	}
@@ -32,7 +33,7 @@ func (c *Client) MintNFT(
 	)
 }
 
-func (c *Client) GetNFTsOwnedByAddress(ctx context.Context, address types.Address) ([]types.SuiObjectResponse, error) {
+func (c *Client) GetNFTsOwnedByAddress(ctx context.Context, address suiAddress) ([]types.SuiObjectResponse, error) {
 	return c.BatchGetObjectsOwnedByAddress(
 		ctx, address, types.SuiObjectDataOptions{
 			ShowType:    true,

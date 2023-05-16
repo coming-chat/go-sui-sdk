@@ -2,10 +2,12 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"testing"
 
+	"github.com/coming-chat/go-sui/lib"
 	"github.com/coming-chat/go-sui/sui_types"
 
 	"github.com/coming-chat/go-sui/types"
@@ -53,6 +55,30 @@ import (
 //	}
 //}
 
+func Test_TagJson_Owner(t *testing.T) {
+	test := func(str string) lib.TagJson[sui_types.Owner] {
+		var s lib.TagJson[sui_types.Owner]
+		data := []byte(str)
+		err := json.Unmarshal(data, &s)
+		require.Nil(t, err)
+		return s
+	}
+	{
+		v := test(`"Immutable"`).Data
+		require.Nil(t, v.AddressOwner)
+		require.Nil(t, v.ObjectOwner)
+		require.Nil(t, v.Shared)
+		require.NotNil(t, v.Immutable)
+	}
+	{
+		v := test(`{"AddressOwner": "0x7e875ea78ee09f08d72e2676cf84e0f1c8ac61d94fa339cc8e37cace85bebc6e"}`).Data
+		require.NotNil(t, v.AddressOwner)
+		require.Nil(t, v.ObjectOwner)
+		require.Nil(t, v.Shared)
+		require.Nil(t, v.Immutable)
+	}
+}
+
 func TestClient_DryRunTransaction(t *testing.T) {
 	cli := ChainClient(t)
 	signer := Address
@@ -61,7 +87,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 
 	amount := SUI(0.01).Uint64()
 	gasBudget := SUI(0.01).Uint64()
-	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount + gasBudget), 0, 0)
+	pickedCoins, err := types.PickupCoins(coins, *big.NewInt(0).SetUint64(amount), gasBudget, 0, 0)
 	require.NoError(t, err)
 	tx, err := cli.PayAllSui(
 		context.Background(), *signer, *signer,
@@ -70,7 +96,7 @@ func TestClient_DryRunTransaction(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	resp, err := cli.DryRunTransaction(context.Background(), tx)
+	resp, err := cli.DryRunTransaction(context.Background(), tx.TxBytes)
 	require.Nil(t, err)
 	t.Log("dry run status:", resp.Effects.Data.IsSuccess())
 	t.Log("dry run error:", resp.Effects.Data.V1.Status.Error)
@@ -165,8 +191,8 @@ func TestClient_GetAllCoins(t *testing.T) {
 	chain := ChainClient(t)
 	type args struct {
 		ctx     context.Context
-		address types.Address
-		cursor  *types.ObjectId
+		address suiAddress
+		cursor  *suiObjectID
 		limit   uint
 	}
 	tests := []struct {
@@ -205,8 +231,10 @@ func TestClient_GetAllCoins(t *testing.T) {
 func TestClient_GetTransaction(t *testing.T) {
 	cli := TestnetClient(t)
 	digest := "B6WTZwFp1D6poMAQyWW8EGkq6iNLgqY1V64xJkgZDwVY"
+	d, err := sui_types.NewDigest(digest)
+	require.Nil(t, err)
 	resp, err := cli.GetTransactionBlock(
-		context.Background(), digest, types.SuiTransactionBlockResponseOptions{
+		context.Background(), *d, types.SuiTransactionBlockResponseOptions{
 			ShowInput:          true,
 			ShowEffects:        true,
 			ShowObjectChanges:  true,
@@ -226,7 +254,7 @@ func TestBatchCall_GetObject(t *testing.T) {
 	if false {
 		// get sepcified object
 		idstr := "0x4ad2f0a918a241d6a19573212aeb56947bb9255a14e921a7ec78b262536826f0"
-		objId, err := types.NewHexData(idstr)
+		objId, err := sui_types.NewAddressFromHex(idstr)
 		require.Nil(t, err)
 		obj, err := cli.GetObject(
 			context.Background(), *objId, &types.SuiObjectDataOptions{
@@ -252,7 +280,7 @@ func TestBatchCall_GetObject(t *testing.T) {
 func TestClient_GetObject(t *testing.T) {
 	type args struct {
 		ctx   context.Context
-		objID types.ObjectId
+		objID suiObjectID
 	}
 	chain := ChainClient(t)
 	coins, err := chain.GetCoins(context.TODO(), *Address, nil, nil, 1)
@@ -310,7 +338,7 @@ func TestClient_MultiGetObjects(t *testing.T) {
 	}
 
 	obj := coins.Data[0].CoinObjectId
-	objs := []types.ObjectId{obj, obj}
+	objs := []suiObjectID{obj, obj}
 	resp, err := chain.MultiGetObjects(
 		context.Background(), objs, &types.SuiObjectDataOptions{
 			ShowType:                true,
@@ -330,7 +358,7 @@ func TestClient_MultiGetObjects(t *testing.T) {
 func TestClient_GetOwnedObjects(t *testing.T) {
 	cli := ChainClient(t)
 
-	obj, err := types.NewHexData("0x02")
+	obj, err := sui_types.NewAddressFromHex("0x2")
 	require.Nil(t, err)
 	query := types.SuiObjectResponseQuery{
 		Filter: &types.SuiObjectDataFilter{
@@ -455,7 +483,7 @@ func TestClient_GetLatestCheckpointSequenceNumber(t *testing.T) {
 
 func TestClient_TryGetPastObject(t *testing.T) {
 	cli := ChainClient(t)
-	objId, err := types.NewHexData("0x11462c88e74bb00079e3c043efb664482ee4551744ee691c7623b98503cb3f4d")
+	objId, err := sui_types.NewAddressFromHex("0x11462c88e74bb00079e3c043efb664482ee4551744ee691c7623b98503cb3f4d")
 	require.Nil(t, err)
 	data, err := cli.TryGetPastObject(context.Background(), *objId, 903, nil)
 	require.Nil(t, err)
@@ -465,7 +493,9 @@ func TestClient_TryGetPastObject(t *testing.T) {
 func TestClient_GetEvents(t *testing.T) {
 	cli := ChainClient(t)
 	digest := "8WvqRRZ96u3UjY24WcjmZtUZyugXUagiQNkpRe97aKRR"
-	res, err := cli.GetEvents(context.Background(), digest)
+	d, err := sui_types.NewDigest(digest)
+	require.Nil(t, err)
+	res, err := cli.GetEvents(context.Background(), *d)
 	require.NoError(t, err)
 	t.Log(res)
 }
@@ -506,7 +536,7 @@ func TestClient_QueryTransactionBlocks(t *testing.T) {
 	type args struct {
 		ctx             context.Context
 		query           types.SuiTransactionBlockResponseQuery
-		cursor          *types.TransactionDigest
+		cursor          *suiDigest
 		limit           *uint
 		descendingOrder bool
 	}
@@ -606,13 +636,13 @@ func TestClient_QueryEvents(t *testing.T) {
 
 func TestClient_GetDynamicFields(t *testing.T) {
 	chain := ChainClient(t)
-	parentObjectId, err := types.NewHexData("0x1719957d7a2bf9d72459ff0eab8e600cbb1991ef41ddd5b4a8c531035933d256")
+	parentObjectId, err := sui_types.NewAddressFromHex("0x1719957d7a2bf9d72459ff0eab8e600cbb1991ef41ddd5b4a8c531035933d256")
 	require.NoError(t, err)
 	limit := uint(5)
 	type args struct {
 		ctx            context.Context
-		parentObjectId types.ObjectId
-		cursor         *types.ObjectId
+		parentObjectId suiObjectID
+		cursor         *suiObjectID
 		limit          *uint
 	}
 	tests := []struct {
@@ -647,11 +677,11 @@ func TestClient_GetDynamicFields(t *testing.T) {
 
 func TestClient_GetDynamicFieldObject(t *testing.T) {
 	chain := ChainClient(t)
-	parentObjectId, err := types.NewHexData("0x1719957d7a2bf9d72459ff0eab8e600cbb1991ef41ddd5b4a8c531035933d256")
+	parentObjectId, err := sui_types.NewAddressFromHex("0x1719957d7a2bf9d72459ff0eab8e600cbb1991ef41ddd5b4a8c531035933d256")
 	require.NoError(t, err)
 	type args struct {
 		ctx            context.Context
-		parentObjectId types.ObjectId
+		parentObjectId suiObjectID
 		name           sui_types.DynamicFieldName
 	}
 	tests := []struct {

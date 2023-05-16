@@ -1,18 +1,20 @@
 package types
 
+import "github.com/coming-chat/go-sui/sui_types"
+
 type EventId struct {
-	TxDigest TransactionDigest     `json:"txDigest"`
-	EventSeq SafeSuiBigInt[uint64] `json:"eventSeq"`
+	TxDigest sui_types.TransactionDigest `json:"txDigest"`
+	EventSeq SafeSuiBigInt[uint64]       `json:"eventSeq"`
 }
 
 type SuiEvent struct {
 	Id EventId `json:"id"`
 	// Move package where this event was emitted.
-	PackageId ObjectId `json:"packageId"`
+	PackageId sui_types.ObjectID `json:"packageId"`
 	// Move module where this event was emitted.
 	TransactionModule string `json:"transactionModule"`
-	// Sender's Sui address.
-	Sender Address `json:"sender"`
+	// Sender's Sui sui_types.address.
+	Sender sui_types.SuiAddress `json:"sender"`
 	// Move event type.
 	Type string `json:"type"`
 	// Parsed json value of the event
@@ -23,18 +25,18 @@ type SuiEvent struct {
 }
 
 type EventFilter struct {
-	/// Query by sender address.
-	Sender *Address `json:"Sender,omitempty"`
+	/// Query by sender sui_types.address.
+	Sender *sui_types.SuiAddress `json:"Sender,omitempty"`
 	/// Return events emitted by the given transaction.
-	Transaction *TransactionDigest `json:"Transaction,omitempty"`
+	Transaction *sui_types.TransactionDigest `json:"Transaction,omitempty"`
 	///digest of the transaction, as base-64 encoded string
 
 	/// Return events emitted in a specified Package.
-	Package *ObjectId `json:"Package,omitempty"`
+	Package *sui_types.ObjectID `json:"Package,omitempty"`
 	/// Return events emitted in a specified Move module.
 	MoveModule *struct {
 		/// the Move package ID
-		Package ObjectId `json:"package"`
+		Package sui_types.ObjectID `json:"package"`
 		/// the module name
 		Module string `json:"module"`
 	} `json:"MoveModule,omitempty"`

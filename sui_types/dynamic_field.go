@@ -1,8 +1,18 @@
 package sui_types
 
+import "github.com/coming-chat/go-sui/lib"
+
 type DynamicFieldType struct {
-	DynamicField  *EmptyEnum `json:"DynamicField"`
-	DynamicObject *EmptyEnum `json:"DynamicObject"`
+	DynamicField  *lib.EmptyEnum `json:"DynamicField"`
+	DynamicObject *lib.EmptyEnum `json:"DynamicObject"`
+}
+
+func (d DynamicFieldType) Tag() string {
+	return ""
+}
+
+func (d DynamicFieldType) Content() string {
+	return ""
 }
 
 type DynamicFieldName struct {

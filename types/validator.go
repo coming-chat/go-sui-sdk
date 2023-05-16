@@ -3,14 +3,14 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"math"
 	"reflect"
 	"strings"
 
-	"github.com/shopspring/decimal"
+	"github.com/coming-chat/go-sui/lib"
+	"github.com/coming-chat/go-sui/sui_types"
 )
 
-type StakeStatus = TagJson[Status]
+type StakeStatus = lib.TagJson[Status]
 
 type Status struct {
 	Pending *struct{} `json:"Pending,omitempty"`
@@ -35,11 +35,15 @@ const (
 )
 
 type Stake struct {
-	StakedSuiId       ObjectId               `json:"stakedSuiId"`
+	StakedSuiId       sui_types.ObjectID     `json:"stakedSuiId"`
 	StakeRequestEpoch SafeSuiBigInt[EpochId] `json:"stakeRequestEpoch"`
 	StakeActiveEpoch  SafeSuiBigInt[EpochId] `json:"stakeActiveEpoch"`
 	Principal         SafeSuiBigInt[uint64]  `json:"principal"`
 	StakeStatus       *StakeStatus           `json:"-,flatten"`
+}
+
+func (s *Stake) IsActive() bool {
+	return s.StakeStatus.Data.Active != nil
 }
 
 type JsonFlatten[T Stake] struct {
@@ -71,35 +75,35 @@ func (s *JsonFlatten[T]) UnmarshalJSON(data []byte) error {
 }
 
 type DelegatedStake struct {
-	ValidatorAddress Address              `json:"validatorAddress"`
-	StakingPool      ObjectId             `json:"stakingPool"`
+	ValidatorAddress sui_types.SuiAddress `json:"validatorAddress"`
+	StakingPool      sui_types.ObjectID   `json:"stakingPool"`
 	Stakes           []JsonFlatten[Stake] `json:"stakes"`
 }
 
 type SuiValidatorSummary struct {
-	SuiAddress             Address    `json:"suiAddress"`
-	ProtocolPubkeyBytes    Base64Data `json:"protocolPubkeyBytes"`
-	NetworkPubkeyBytes     Base64Data `json:"networkPubkeyBytes"`
-	WorkerPubkeyBytes      Base64Data `json:"workerPubkeyBytes"`
-	ProofOfPossessionBytes Base64Data `json:"proofOfPossessionBytes"`
-	OperationCapId         ObjectId   `json:"operationCapId"`
-	Name                   string     `json:"name"`
-	Description            string     `json:"description"`
-	ImageUrl               string     `json:"imageUrl"`
-	ProjectUrl             string     `json:"projectUrl"`
-	P2pAddress             string     `json:"p2pAddress"`
-	NetAddress             string     `json:"netAddress"`
-	PrimaryAddress         string     `json:"primaryAddress"`
-	WorkerAddress          string     `json:"workerAddress"`
+	SuiAddress             sui_types.SuiAddress `json:"suiAddress"`
+	ProtocolPubkeyBytes    lib.Base64Data       `json:"protocolPubkeyBytes"`
+	NetworkPubkeyBytes     lib.Base64Data       `json:"networkPubkeyBytes"`
+	WorkerPubkeyBytes      lib.Base64Data       `json:"workerPubkeyBytes"`
+	ProofOfPossessionBytes lib.Base64Data       `json:"proofOfPossessionBytes"`
+	OperationCapId         sui_types.ObjectID   `json:"operationCapId"`
+	Name                   string               `json:"name"`
+	Description            string               `json:"description"`
+	ImageUrl               string               `json:"imageUrl"`
+	ProjectUrl             string               `json:"projectUrl"`
+	P2pAddress             string               `json:"p2pAddress"`
+	NetAddress             string               `json:"netAddress"`
+	PrimaryAddress         string               `json:"primaryAddress"`
+	WorkerAddress          string               `json:"workerAddress"`
 
-	NextEpochProtocolPubkeyBytes Base64Data `json:"nextEpochProtocolPubkeyBytes"`
-	NextEpochProofOfPossession   Base64Data `json:"nextEpochProofOfPossession"`
-	NextEpochNetworkPubkeyBytes  Base64Data `json:"nextEpochNetworkPubkeyBytes"`
-	NextEpochWorkerPubkeyBytes   Base64Data `json:"nextEpochWorkerPubkeyBytes"`
-	NextEpochNetAddress          string     `json:"nextEpochNetAddress"`
-	NextEpochP2pAddress          string     `json:"nextEpochP2pAddress"`
-	NextEpochPrimaryAddress      string     `json:"nextEpochPrimaryAddress"`
-	NextEpochWorkerAddress       string     `json:"nextEpochWorkerAddress"`
+	NextEpochProtocolPubkeyBytes lib.Base64Data `json:"nextEpochProtocolPubkeyBytes"`
+	NextEpochProofOfPossession   lib.Base64Data `json:"nextEpochProofOfPossession"`
+	NextEpochNetworkPubkeyBytes  lib.Base64Data `json:"nextEpochNetworkPubkeyBytes"`
+	NextEpochWorkerPubkeyBytes   lib.Base64Data `json:"nextEpochWorkerPubkeyBytes"`
+	NextEpochNetAddress          string         `json:"nextEpochNetAddress"`
+	NextEpochP2pAddress          string         `json:"nextEpochP2pAddress"`
+	NextEpochPrimaryAddress      string         `json:"nextEpochPrimaryAddress"`
+	NextEpochWorkerAddress       string         `json:"nextEpochWorkerAddress"`
 
 	VotingPower             SafeSuiBigInt[uint64] `json:"votingPower"`
 	GasPrice                SafeSuiBigInt[uint64] `json:"gasPrice"`
@@ -107,7 +111,7 @@ type SuiValidatorSummary struct {
 	NextEpochStake          SafeSuiBigInt[uint64] `json:"nextEpochStake"`
 	NextEpochGasPrice       SafeSuiBigInt[uint64] `json:"nextEpochGasPrice"`
 	NextEpochCommissionRate SafeSuiBigInt[uint64] `json:"nextEpochCommissionRate"`
-	StakingPoolId           ObjectId              `json:"stakingPoolId"`
+	StakingPoolId           sui_types.ObjectID    `json:"stakingPoolId"`
 
 	StakingPoolActivationEpoch   SafeSuiBigInt[uint64] `json:"stakingPoolActivationEpoch"`
 	StakingPoolDeactivationEpoch SafeSuiBigInt[uint64] `json:"stakingPoolDeactivationEpoch"`
@@ -118,38 +122,11 @@ type SuiValidatorSummary struct {
 	PendingStake             SafeSuiBigInt[uint64] `json:"pendingStake"`
 	PendingPoolTokenWithdraw SafeSuiBigInt[uint64] `json:"pendingPoolTokenWithdraw"`
 	PendingTotalSuiWithdraw  SafeSuiBigInt[uint64] `json:"pendingTotalSuiWithdraw"`
-	ExchangeRatesId          ObjectId              `json:"exchangeRatesId"`
+	ExchangeRatesId          sui_types.ObjectID    `json:"exchangeRatesId"`
 	ExchangeRatesSize        SafeSuiBigInt[uint64] `json:"exchangeRatesSize"`
 }
 
-func (v *SuiValidatorSummary) CalculateAPY(epoch uint64) float64 {
-	var (
-		stakingPoolSuiBalance      = v.StakingPoolSuiBalance
-		stakingPoolActivationEpoch = v.StakingPoolActivationEpoch
-		poolTokenBalance           = v.PoolTokenBalance
-	)
-
-	// If the staking pool is active then we calculate its APY. Or if staking started in epoch 0
-	if stakingPoolActivationEpoch.Uint64() == 0 {
-		numEpochsParticipated := epoch - stakingPoolActivationEpoch.Uint64()
-		pow1, _ := decimal.NewFromInt(stakingPoolSuiBalance.Int64()).Sub(decimal.NewFromInt(stakingPoolSuiBalance.Int64())).
-			Div(decimal.NewFromInt(poolTokenBalance.Int64())).Add(
-			decimal.
-				NewFromInt(1),
-		).Float64()
-		pow2, _ := decimal.NewFromInt(365).Div(decimal.NewFromInt(int64(numEpochsParticipated))).Float64()
-		apy := (math.Pow(pow1, pow2) - 1) * 100
-		if apy > 100000 {
-			return 0
-		} else {
-			return apy
-		}
-	} else {
-		return 0
-	}
-}
-
-type TypeName []Address
+type TypeName []sui_types.SuiAddress
 type SuiSystemStateSummary struct {
 	Epoch                                 SafeSuiBigInt[uint64]   `json:"epoch"`
 	ProtocolVersion                       SafeSuiBigInt[uint64]   `json:"protocolVersion"`
@@ -177,14 +154,14 @@ type SuiSystemStateSummary struct {
 	StakeSubsidyDecreaseRate              uint16                  `json:"stakeSubsidyDecreaseRate"`
 	TotalStake                            SafeSuiBigInt[uint64]   `json:"totalStake"`
 	ActiveValidators                      []SuiValidatorSummary   `json:"activeValidators"`
-	PendingActiveValidatorsId             ObjectId                `json:"pendingActiveValidatorsId"`
+	PendingActiveValidatorsId             sui_types.ObjectID      `json:"pendingActiveValidatorsId"`
 	PendingActiveValidatorsSize           SafeSuiBigInt[uint64]   `json:"pendingActiveValidatorsSize"`
 	PendingRemovals                       []SafeSuiBigInt[uint64] `json:"pendingRemovals"`
-	StakingPoolMappingsId                 ObjectId                `json:"stakingPoolMappingsId"`
+	StakingPoolMappingsId                 sui_types.ObjectID      `json:"stakingPoolMappingsId"`
 	StakingPoolMappingsSize               SafeSuiBigInt[uint64]   `json:"stakingPoolMappingsSize"`
-	InactivePoolsId                       ObjectId                `json:"inactivePoolsId"`
+	InactivePoolsId                       sui_types.ObjectID      `json:"inactivePoolsId"`
 	InactivePoolsSize                     SafeSuiBigInt[uint64]   `json:"inactivePoolsSize"`
-	ValidatorCandidatesId                 ObjectId                `json:"validatorCandidatesId"`
+	ValidatorCandidatesId                 sui_types.ObjectID      `json:"validatorCandidatesId"`
 	ValidatorCandidatesSize               SafeSuiBigInt[uint64]   `json:"validatorCandidatesSize"`
 	AtRiskValidators                      interface{}             `json:"atRiskValidators"`
 	ValidatorReportRecords                interface{}             `json:"validatorReportRecords"`

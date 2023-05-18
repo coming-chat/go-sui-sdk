@@ -5,12 +5,67 @@ import (
 	"crypto/ed25519"
 	"encoding/json"
 	"errors"
-	"github.com/coming-chat/go-sui/v2/lib"
-
+	"fmt"
 	"github.com/coming-chat/go-sui/v2/crypto"
+	"github.com/coming-chat/go-sui/v2/lib"
 	"github.com/fardream/go-bcs/bcs"
 	"golang.org/x/crypto/blake2b"
+	"hash"
+	"reflect"
 )
+
+type DefaultHash struct {
+	hash.Hash
+}
+
+func NewDefaultHash() DefaultHash {
+	digest, err := blake2b.New256([]byte{})
+	if err != nil {
+		panic(err)
+	}
+	return DefaultHash{
+		digest,
+	}
+}
+
+type Signable interface {
+	Write(digest hash.Hash)
+}
+
+type BcsSignableKind interface {
+	TransactionData | Object
+	//Not Implement | Committee | CheckpointSummary | CheckpointContents | TransactionEffects| TransactionEvents
+	//| SenderSignedData  | Accumulator | Foo
+}
+type BcsSignable[K BcsSignableKind] struct {
+	Data K
+}
+
+func (s BcsSignable[K]) Write(digest hash.Hash) {
+	rv := reflect.ValueOf(s.Data)
+	name := rv.Type().Name()
+	_, err := digest.Write([]byte(fmt.Sprintf("%s::", name)))
+	if err != nil {
+		panic("Hasher should not fail")
+	}
+	bcsData, err := bcs.Marshal(s.Data)
+	if err != nil {
+		panic("Message serialization should not fail")
+	}
+	_, err = digest.Write(bcsData)
+	if err != nil {
+		panic("Hasher should not fail")
+	}
+}
+
+func internalHash(digest hash.Hash, signable Signable) []byte {
+	signable.Write(digest)
+	return digest.Sum([]byte{})
+}
+
+func UseDefaultHash(signable Signable) []byte {
+	return internalHash(NewDefaultHash(), signable)
+}
 
 type Signature struct {
 	*Ed25519SuiSignature

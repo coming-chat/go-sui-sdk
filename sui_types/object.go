@@ -43,3 +43,10 @@ func (o Owner) Tag() string {
 func (o Owner) Content() string {
 	return ""
 }
+
+type Object struct {
+	Data                Data
+	Owner               Owner
+	PreviousTransaction TransactionDigest
+	StorageRebate       uint64
+}

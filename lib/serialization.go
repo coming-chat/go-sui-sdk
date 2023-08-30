@@ -107,10 +107,6 @@ func (h *Base64Data) UnmarshalJSON(data []byte) error {
 	return err
 }
 
-func (h Base64Data) MarshalBCS() ([]byte, error) {
-	return h, nil
-}
-
 type Base58 []byte
 
 func NewBase58(str string) (*Base58, error) {

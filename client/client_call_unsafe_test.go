@@ -14,8 +14,8 @@ import (
 )
 
 func TestClient_TransferObject(t *testing.T) {
-	cli := ChainClient(t)
-	signer := M1Address(t)
+	cli := MainnetClient(t)
+	signer := SuiAddressNoErr("0x57188743983628b3474648d8aa4a9ee8abebe8f6816243773d7e8ed4fd833a28")
 	recipient := signer
 	coins, err := cli.GetCoins(context.Background(), *signer, nil, nil, 10)
 	require.NoError(t, err)

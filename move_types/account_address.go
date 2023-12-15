@@ -49,12 +49,15 @@ func (a AccountAddress) MarshalJSON() ([]byte, error) {
 }
 
 func (a *AccountAddress) UnmarshalJSON(data []byte) error {
-	str := ""
+	var str *string
 	err := json.Unmarshal(data, &str)
 	if err != nil {
 		return err
 	}
-	tmp, err := NewAccountAddressHex(str)
+	if str == nil {
+		return errors.New("nil address")
+	}
+	tmp, err := NewAccountAddressHex(*str)
 	if err == nil {
 		*a = *tmp
 	}

@@ -70,6 +70,8 @@ const (
 	queryEvents                       SuiXMethod   = "queryEvents"
 	queryObjects                      SuiXMethod   = "queryObjects"
 	queryTransactionBlocks            SuiXMethod   = "queryTransactionBlocks"
+	resolveNameServiceAddress         SuiXMethod   = "resolveNameServiceAddress"
+	resolveNameServiceNames           SuiXMethod   = "resolveNameServiceNames"
 	subscribeEvent                    SuiXMethod   = "subscribeEvent"
 	batchTransaction                  UnsafeMethod = "batchTransaction"
 	mergeCoins                        UnsafeMethod = "mergeCoins"

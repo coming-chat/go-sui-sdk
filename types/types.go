@@ -13,7 +13,7 @@ const (
 	SuiCoinType   = "0x2::sui::SUI"
 	DevNetRpcUrl  = "https://fullnode.devnet.sui.io"
 	TestnetRpcUrl = "https://fullnode.testnet.sui.io"
-	MainnetRpcUrl = "https://sui-mainnet.coming.chat"
+	MainnetRpcUrl = "https://fullnode.mainnet.sui.io"
 )
 
 // ShortString Returns the address with leading zeros trimmed, e.g. 0x2

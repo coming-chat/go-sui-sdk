@@ -82,7 +82,7 @@ type ObjectOwner struct {
 	*string
 }
 
-type Page[T SuiTransactionBlockResponse | SuiEvent | Coin | SuiObjectResponse | DynamicFieldInfo,
+type Page[T SuiTransactionBlockResponse | SuiEvent | Coin | SuiObjectResponse | DynamicFieldInfo | string,
 	C sui_types.TransactionDigest | EventId | sui_types.ObjectID] struct {
 	Data        []T  `json:"data"`
 	NextCursor  *C   `json:"nextCursor,omitempty"`

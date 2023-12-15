@@ -224,3 +224,5 @@ func (s SuiPastObject) Tag() string {
 func (s SuiPastObject) Content() string {
 	return "details"
 }
+
+type SuiNamePage = Page[string, sui_types.ObjectID]

@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/coming-chat/go-sui/v2/lib"
@@ -385,6 +386,21 @@ func (c *Client) QueryEvents(
 ) (*types.EventPage, error) {
 	var resp types.EventPage
 	return &resp, c.CallContext(ctx, &resp, queryEvents, query, cursor, limit, descendingOrder)
+}
+
+func (c *Client) ResolveNameServiceAddress(ctx context.Context, suiName string) (*suiAddress, error) {
+	var resp suiAddress
+	err := c.CallContext(ctx, &resp, resolveNameServiceAddress, suiName)
+	if err != nil && err.Error() == "nil address" {
+		return nil, errors.New("sui name not found")
+	}
+	return &resp, nil
+}
+
+func (c *Client) ResolveNameServiceNames(ctx context.Context,
+	owner suiAddress, cursor *suiObjectID, limit *uint) (*types.SuiNamePage, error) {
+	var resp types.SuiNamePage
+	return &resp, c.CallContext(ctx, &resp, resolveNameServiceNames, owner, cursor, limit)
 }
 
 func (c *Client) GetDynamicFields(

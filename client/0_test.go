@@ -86,3 +86,8 @@ func (s SUI) Decimal() decimal.Decimal {
 func (s SUI) String() string {
 	return strconv.FormatInt(s.Int64(), 10)
 }
+
+func SuiAddressNoErr(str string) *suiAddress {
+	s, _ := sui_types.NewAddressFromHex(str)
+	return s
+}

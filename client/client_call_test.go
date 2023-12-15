@@ -229,8 +229,8 @@ func TestClient_GetAllCoins(t *testing.T) {
 }
 
 func TestClient_GetTransaction(t *testing.T) {
-	cli := TestnetClient(t)
-	digest := "B6WTZwFp1D6poMAQyWW8EGkq6iNLgqY1V64xJkgZDwVY"
+	cli := MainnetClient(t)
+	digest := "D1TM8Esaj3G9xFEDirqMWt9S7HjJXFrAGYBah1zixWTL"
 	d, err := sui_types.NewDigest(digest)
 	require.Nil(t, err)
 	resp, err := cli.GetTransactionBlock(
@@ -245,7 +245,7 @@ func TestClient_GetTransaction(t *testing.T) {
 	require.NoError(t, err)
 	t.Logf("%#v", resp)
 
-	require.Equal(t, int64(1997880), resp.Effects.Data.GasFee())
+	require.Equal(t, int64(11178568), resp.Effects.Data.GasFee())
 }
 
 func TestBatchCall_GetObject(t *testing.T) {
@@ -491,8 +491,8 @@ func TestClient_TryGetPastObject(t *testing.T) {
 }
 
 func TestClient_GetEvents(t *testing.T) {
-	cli := ChainClient(t)
-	digest := "8WvqRRZ96u3UjY24WcjmZtUZyugXUagiQNkpRe97aKRR"
+	cli := MainnetClient(t)
+	digest := "D1TM8Esaj3G9xFEDirqMWt9S7HjJXFrAGYBah1zixWTL"
 	d, err := sui_types.NewDigest(digest)
 	require.Nil(t, err)
 	res, err := cli.GetEvents(context.Background(), *d)
@@ -583,6 +583,30 @@ func TestClient_QueryTransactionBlocks(t *testing.T) {
 			},
 		)
 	}
+}
+
+func TestClient_ResolveNameServiceAddress(t *testing.T) {
+	c := MainnetClient(t)
+	addr, err := c.ResolveNameServiceAddress(context.Background(), "2222.sui")
+	require.Nil(t, err)
+	require.Equal(t, addr.String(), "0x6174c5bd8ab9bf492e159a64e102de66429cfcde4fa883466db7b03af28b3ce9")
+
+	addr, err = c.ResolveNameServiceAddress(context.Background(), "2222.suijjzzww")
+	require.ErrorContains(t, err, "not found")
+}
+
+func TestClient_ResolveNameServiceNames(t *testing.T) {
+	c := MainnetClient(t)
+	owner := SuiAddressNoErr("0x57188743983628b3474648d8aa4a9ee8abebe8f6816243773d7e8ed4fd833a28")
+	namePage, err := c.ResolveNameServiceNames(context.Background(), *owner, nil, nil)
+	require.Nil(t, err)
+	require.NotEmpty(t, namePage.Data)
+	t.Log(namePage.Data)
+
+	owner = SuiAddressNoErr("0x57188743983628b3474648d8aa4a9ee8abebe8f681")
+	namePage, err = c.ResolveNameServiceNames(context.Background(), *owner, nil, nil)
+	require.Nil(t, err)
+	require.Empty(t, namePage.Data)
 }
 
 func TestClient_QueryEvents(t *testing.T) {

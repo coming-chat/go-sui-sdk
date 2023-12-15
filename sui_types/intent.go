@@ -1,6 +1,8 @@
 package sui_types
 
-import "github.com/coming-chat/go-sui/v2/lib"
+import (
+	"github.com/coming-chat/go-sui/v2/lib"
+)
 
 type IntentScope struct {
 	TransactionData         *lib.EmptyEnum // Used for a user signature on a transaction data.
@@ -52,7 +54,6 @@ func DefaultIntent() Intent {
 
 type IntentValue interface {
 	TransactionData | ~[]byte
-	MarshalBCS() ([]byte, error)
 }
 
 type IntentMessage[T IntentValue] struct {

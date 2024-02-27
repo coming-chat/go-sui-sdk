@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/coming-chat/go-sui/v2/sui_types"
+	"github.com/W3Tools/go-sui-sdk/v2/sui_types"
 )
 
 const (

@@ -2,9 +2,10 @@ package types
 
 import (
 	"errors"
-	"github.com/coming-chat/go-sui/v2/sui_types"
 	"math/big"
 	"sort"
+
+	"github.com/W3Tools/go-sui-sdk/v2/sui_types"
 )
 
 const SUI_COIN_TYPE = "0x2::sui::SUI"

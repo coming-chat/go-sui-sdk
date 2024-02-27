@@ -3,11 +3,12 @@ package sui_types
 import (
 	"errors"
 	"fmt"
-	"github.com/coming-chat/go-sui/v2/lib"
-	"github.com/coming-chat/go-sui/v2/move_types"
+	"strconv"
+
+	"github.com/W3Tools/go-sui-sdk/v2/lib"
+	"github.com/W3Tools/go-sui-sdk/v2/move_types"
 	"github.com/fardream/go-bcs/bcs"
 	"github.com/mitchellh/hashstructure/v2"
-	"strconv"
 )
 
 type BuilderArg struct {
@@ -52,10 +53,10 @@ func (p *ProgrammableTransactionBuilder) ForceSeparatePure(value any) (Argument,
 	if err != nil {
 		return Argument{}, err
 	}
-	return p.pureBytes(pureData, true), nil
+	return p.PureBytes(pureData, true), nil
 }
 
-func (p *ProgrammableTransactionBuilder) pureBytes(bytes []byte, forceSeparate bool) Argument {
+func (p *ProgrammableTransactionBuilder) PureBytes(bytes []byte, forceSeparate bool) Argument {
 	var arg BuilderArg
 	if forceSeparate {
 		length := uint(len(p.Inputs))
@@ -67,7 +68,7 @@ func (p *ProgrammableTransactionBuilder) pureBytes(bytes []byte, forceSeparate b
 			Pure: &bytes,
 		}
 	}
-	i := p.insertFull(
+	i := p.InsertFull(
 		arg, CallArg{
 			Pure: &bytes,
 		},
@@ -78,7 +79,7 @@ func (p *ProgrammableTransactionBuilder) pureBytes(bytes []byte, forceSeparate b
 
 }
 
-func (p *ProgrammableTransactionBuilder) insertFull(key BuilderArg, value CallArg) uint16 {
+func (p *ProgrammableTransactionBuilder) InsertFull(key BuilderArg, value CallArg) uint16 {
 	_, ok := p.Inputs[key.String()]
 	p.Inputs[key.String()] = value
 	if !ok {
@@ -98,7 +99,7 @@ func (p *ProgrammableTransactionBuilder) Pure(value any) (Argument, error) {
 	if err != nil {
 		return Argument{}, err
 	}
-	return p.pureBytes(pureData, false), nil
+	return p.PureBytes(pureData, false), nil
 }
 
 func (p *ProgrammableTransactionBuilder) Obj(objArg ObjectArg) (Argument, error) {
@@ -143,7 +144,7 @@ func (p *ProgrammableTransactionBuilder) Obj(objArg ObjectArg) (Argument, error)
 	} else {
 		oj = objArg
 	}
-	i := p.insertFull(
+	i := p.InsertFull(
 		BuilderArg{
 			Object: &id,
 		}, CallArg{
@@ -158,7 +159,7 @@ func (p *ProgrammableTransactionBuilder) Obj(objArg ObjectArg) (Argument, error)
 func (p *ProgrammableTransactionBuilder) Input(callArg CallArg) (Argument, error) {
 	switch {
 	case callArg.Pure != nil:
-		return p.pureBytes(*callArg.Pure, false), nil
+		return p.PureBytes(*callArg.Pure, false), nil
 	case callArg.Object != nil:
 		return p.Obj(*callArg.Object)
 	default:

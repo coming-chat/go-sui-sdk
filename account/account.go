@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 
+	"github.com/W3Tools/go-sui-sdk/v2/sui_types"
 	"github.com/coming-chat/go-aptos/crypto/derivation"
-	"github.com/coming-chat/go-sui/v2/sui_types"
 	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/crypto/blake2b"
 )

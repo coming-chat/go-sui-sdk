@@ -1,6 +1,6 @@
 package sui_types
 
-import "github.com/coming-chat/go-sui/v2/lib"
+import "github.com/W3Tools/go-sui-sdk/v2/lib"
 
 const (
 	ObjectStartVersion = SequenceNumber(1)

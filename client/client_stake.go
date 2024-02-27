@@ -3,10 +3,10 @@ package client
 import (
 	"context"
 
-	"github.com/coming-chat/go-sui/v2/lib"
-	"github.com/coming-chat/go-sui/v2/sui_types"
-	"github.com/coming-chat/go-sui/v2/sui_types/sui_system_state"
-	"github.com/coming-chat/go-sui/v2/types"
+	"github.com/W3Tools/go-sui-sdk/v2/lib"
+	"github.com/W3Tools/go-sui-sdk/v2/sui_types"
+	"github.com/W3Tools/go-sui-sdk/v2/sui_types/sui_system_state"
+	"github.com/W3Tools/go-sui-sdk/v2/types"
 	"github.com/fardream/go-bcs/bcs"
 )
 

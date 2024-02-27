@@ -117,7 +117,7 @@ func (p *ProgrammableTransactionBuilder) Obj(objArg ObjectArg) (Argument, error)
 		}
 
 		switch {
-		case oldObjArg.SharedObject.InitialSharedVersion == objArg.SharedObject.InitialSharedVersion:
+		case oldObjArg.SharedObject != nil && oldObjArg.SharedObject.InitialSharedVersion == objArg.SharedObject.InitialSharedVersion:
 			if oldObjArg.id() != objArg.id() {
 				return Argument{}, errors.New("invariant violation! object has id does not match call arg")
 			}
@@ -131,6 +131,13 @@ func (p *ProgrammableTransactionBuilder) Obj(objArg ObjectArg) (Argument, error)
 					InitialSharedVersion: objArg.SharedObject.InitialSharedVersion,
 					Mutable:              oldObjArg.SharedObject.Mutable || objArg.SharedObject.Mutable,
 				},
+			}
+		case oldObjArg.ImmOrOwnedObject != nil && oldObjArg.ImmOrOwnedObject.ObjectId.String() == objArg.ImmOrOwnedObject.ObjectId.String():
+			if oldObjArg.id() != objArg.id() {
+				return Argument{}, errors.New("invariant violation! object has id does not match call arg")
+			}
+			oj = ObjectArg{
+				ImmOrOwnedObject: objArg.ImmOrOwnedObject,
 			}
 		default:
 			if oldObjArg != objArg {

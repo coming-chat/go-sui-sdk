@@ -11,7 +11,7 @@ import (
 )
 
 // NOTE: This copys the query limit from our Rust JSON RPC backend, this needs to be kept in sync!
-const QUERY_MAX_RESULT_LIMIT = 1000
+const QUERY_MAX_RESULT_LIMIT = 50
 
 type suiAddress = sui_types.SuiAddress
 type suiObjectID = sui_types.ObjectID

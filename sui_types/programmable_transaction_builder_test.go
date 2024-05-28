@@ -30,5 +30,10 @@ func TestTransferSui(t *testing.T) {
 	)
 	txByte, err := bcs.Marshal(tx)
 	require.NoError(t, err)
+
+	var reTx = TransactionData{}
+	_, err = bcs.Unmarshal(txByte, &reTx)
+	require.NoError(t, err)
+
 	t.Logf("%x", txByte)
 }

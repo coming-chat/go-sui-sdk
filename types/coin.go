@@ -1,7 +1,6 @@
 package types
 
 import (
-	"errors"
 	"math/big"
 	"sort"
 
@@ -161,18 +160,19 @@ func (cs Coins) TotalBalance() *big.Int {
 	return total
 }
 
-func (cs Coins) PickCoinNoLess(amount uint64) (*Coin, error) {
-	for i, coin := range cs {
-		if coin.Balance.Uint64() >= amount {
-			cs = append(cs[:i], cs[i+1:]...)
-			return &coin, nil
-		}
-	}
-	if len(cs) <= 3 {
-		return nil, errors.New("insufficient balance")
-	}
-	return nil, errors.New("no coin is enough to cover the gas")
-}
+// func (cs Coins) PickCoinNoLess(amount uint64) (ncs []*Coin, err error) {
+// 	ncs = make([]*Coin, 0)
+// 	for i, coin := range cs {
+// 		if coin.Balance.Uint64() >= amount {
+// 			cs = append(cs[:i], cs[i+1:]...)
+// 			return &coin, nil
+// 		}
+// 	}
+// 	if len(cs) <= 3 {
+// 		return nil, errors.New("insufficient balance")
+// 	}
+// 	return nil, errors.New("no coin is enough to cover the gas")
+// }
 
 const (
 	PickSmaller = iota // pick smaller coins to match amount

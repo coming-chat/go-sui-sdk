@@ -35,7 +35,7 @@ type EventFilter struct {
 	MoveModule *MoveModule `json:"MoveModule,omitempty"`
 
 	// Events emitted, defined on the specified Move module.
-	MoveEventModule **MoveModule `json:"MoveEventModule,omitempty"`
+	MoveEventModule *MoveModule `json:"MoveEventModule,omitempty"`
 
 	// Move struct name of the event
 	MoveEvent *string `json:"MoveEvent,omitempty"`

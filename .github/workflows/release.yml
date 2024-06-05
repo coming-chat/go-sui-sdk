@@ -1,0 +1,42 @@
+name: Create Tag and Release
+
+on:
+  push:
+    branches:
+      - mainnet
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Get the version from package.json
+        id: get_version
+        run: |
+          VERSION=VERSION=$(cat .version)
+          echo "::set-output name=VERSION::$VERSION"
+
+      - name: Create tag
+        id: create_tag
+        run: |
+          VERSION=${{ steps.get_version.outputs.VERSION }}
+          git tag -a "$VERSION" -m "Release version $VERSION"
+          git push origin "$VERSION"
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: "${{ steps.get_version.outputs.VERSION }}"
+          release_name: "Release ${{ steps.get_version.outputs.VERSION }}"
+          body: "Release notes for version ${{ steps.get_version.outputs.VERSION }}"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

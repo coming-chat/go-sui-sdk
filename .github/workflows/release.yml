@@ -20,7 +20,7 @@ jobs:
       - name: Get the version from package.json
         id: get_version
         run: |
-          VERSION=VERSION=$(cat .version)
+          VERSION=$(cat .version)
           echo "::set-output name=VERSION::$VERSION"
 
       - name: Create tag

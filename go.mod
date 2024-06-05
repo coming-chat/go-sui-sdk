@@ -1,11 +1,11 @@
-module github.com/coming-chat/go-sui/v2
+module github.com/W3Tools/go-sui-sdk/v2
 
-go 1.18
+go 1.22.1
 
 require (
+	github.com/W3Tools/go-bcs v1.0.1
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/coming-chat/go-aptos v0.0.0-20221013022715-39f91035c785
-	github.com/fardream/go-bcs v0.2.1
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.8.0

@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/coming-chat/go-sui/v2/lib"
-	"github.com/coming-chat/go-sui/v2/sui_types"
 	"strings"
+
+	"github.com/W3Tools/go-sui-sdk/v2/lib"
+	"github.com/W3Tools/go-sui-sdk/v2/sui_types"
 )
 
 const (
@@ -90,13 +91,19 @@ type SenderSignedData struct {
 }
 
 type TimeRange struct {
-	StartTime uint64 `json:"startTime"` // left endpoint of time interval, milliseconds since epoch, inclusive
-	EndTime   uint64 `json:"endTime"`   // right endpoint of time interval, milliseconds since epoch, exclusive
+	StartTime SafeSuiBigInt[uint64] `json:"startTime"` // left endpoint of time interval, milliseconds since epoch, inclusive
+	EndTime   SafeSuiBigInt[uint64] `json:"endTime"`   // right endpoint of time interval, milliseconds since epoch, exclusive
 }
 
 type MoveModule struct {
+	// The Move package id
 	Package sui_types.ObjectID `json:"package"`
-	Module  string             `json:"module"`
+	// The Move module name
+	Module string `json:"module"`
+}
+
+type Recipient struct {
+	AddressOwner sui_types.ObjectID `json:"AddressOwner,omitempty"`
 }
 
 func (o ObjectOwner) MarshalJSON() ([]byte, error) {
@@ -136,12 +143,8 @@ func (o *ObjectOwner) UnmarshalJSON(data []byte) error {
 }
 
 func IsSameStringAddress(addr1, addr2 string) bool {
-	if strings.HasPrefix(addr1, "0x") {
-		addr1 = addr1[2:]
-	}
-	if strings.HasPrefix(addr2, "0x") {
-		addr2 = addr2[2:]
-	}
-	addr1 = strings.TrimLeft(addr1, "0")
+	addr1 = strings.TrimPrefix(addr1, "0x")
+	addr2 = strings.TrimPrefix(addr2, "0x")
+
 	return strings.TrimLeft(addr1, "0") == strings.TrimLeft(addr2, "0")
 }

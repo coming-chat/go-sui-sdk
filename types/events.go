@@ -1,6 +1,6 @@
 package types
 
-import "github.com/coming-chat/go-sui/v2/sui_types"
+import "github.com/W3Tools/go-sui-sdk/v2/sui_types"
 
 type EventId struct {
 	TxDigest sui_types.TransactionDigest `json:"txDigest"`
@@ -25,45 +25,35 @@ type SuiEvent struct {
 }
 
 type EventFilter struct {
-	/// Query by sender sui_types.address.
-	Sender *sui_types.SuiAddress `json:"Sender,omitempty"`
-	/// Return events emitted by the given transaction.
-	Transaction *sui_types.TransactionDigest `json:"Transaction,omitempty"`
-	///digest of the transaction, as base-64 encoded string
-
-	/// Return events emitted in a specified Package.
-	Package *sui_types.ObjectID `json:"Package,omitempty"`
-	/// Return events emitted in a specified Move module.
-	MoveModule *struct {
-		/// the Move package ID
-		Package sui_types.ObjectID `json:"package"`
-		/// the module name
-		Module string `json:"module"`
-	} `json:"MoveModule,omitempty"`
-	/// Return events with the given move event struct name
-	MoveEventType  *string `json:"MoveEventType,omitempty"`
-	MoveEventField *struct {
-		Path  string      `json:"path"`
-		Value interface{} `json:"value"`
-	} `json:"MoveEventField,omitempty"`
-	/// Return events emitted in [start_time, end_time] interval
-	TimeRange *struct {
-		/// left endpoint of time interval, milliseconds since epoch, inclusive
-		StartTime SafeSuiBigInt[uint64] `json:"startTime"`
-		/// right endpoint of time interval, milliseconds since epoch, exclusive
-		EndTime SafeSuiBigInt[uint64] `json:"endTime"`
-	} `json:"TimeRange,omitempty"`
-
 	All *[]EventFilter `json:"All,omitempty"`
-	Any *[]EventFilter `json:"Any,omitempty"`
-	//And *struct {
-	//	*EventFilter
-	//	*EventFilter
-	//} `json:"And,omitempty"`
-	//Or *struct {
-	//	EventFilter
-	//	EventFilter
-	//} `json:"Or,omitempty"`
+
+	// Events emitted from the specified transaction.
+	// digest of the transaction, as base-64 encoded string
+	Transaction *sui_types.TransactionDigest `json:"Transaction,omitempty"`
+
+	// Events emitted from the specified Move module.
+	MoveModule *MoveModule `json:"MoveModule,omitempty"`
+
+	// Events emitted, defined on the specified Move module.
+	MoveEventModule *MoveModule `json:"MoveEventModule,omitempty"`
+
+	// Move struct name of the event
+	MoveEvent *string `json:"MoveEvent,omitempty"`
+
+	// Type of event described in Events section
+	EventType *string `json:"EventType,omitempty"`
+
+	// Query by sender address
+	Sender *sui_types.SuiAddress `json:"Sender,omitempty"`
+
+	// Query by recipient
+	Recipient *Recipient `json:"Recipient,omitempty"`
+
+	// Return events associated with the given object
+	Object *sui_types.ObjectID `json:"Object,omitempty"`
+
+	// Return events emitted in [start_time, end_time] interval
+	TimeRange *TimeRange `json:"TimeRange,omitempty"`
 }
 
 type EventPage = Page[SuiEvent, EventId]

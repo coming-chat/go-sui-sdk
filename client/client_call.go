@@ -158,7 +158,7 @@ func (c *Client) BatchGetFilteredObjectsOwnedByAddress(
 		if obj.Data == nil {
 			continue // error obj
 		}
-		if filter != nil && filter(obj.Data) == false {
+		if filter != nil && !filter(obj.Data) {
 			continue // ignore objects if non-specified type
 		}
 		objIds = append(objIds, obj.Data.ObjectId)

@@ -39,7 +39,7 @@ type Stake struct {
 	StakeRequestEpoch SafeSuiBigInt[EpochId] `json:"stakeRequestEpoch"`
 	StakeActiveEpoch  SafeSuiBigInt[EpochId] `json:"stakeActiveEpoch"`
 	Principal         SafeSuiBigInt[uint64]  `json:"principal"`
-	StakeStatus       *StakeStatus           `json:"-,flatten"`
+	StakeStatus       *StakeStatus           `json:"-"`
 }
 
 func (s *Stake) IsActive() bool {

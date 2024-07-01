@@ -33,6 +33,4 @@ type MoveObjectType_ struct {
 	Coin      *move_types.TypeTag
 }
 
-func (o MoveObjectType_) IsBcsEnum() {
-
-}
+func (o MoveObjectType_) IsBcsEnum() {}

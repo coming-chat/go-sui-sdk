@@ -60,23 +60,13 @@ func (p *ProgrammableTransactionBuilder) PureBytes(bytes []byte, forceSeparate b
 	var arg BuilderArg
 	if forceSeparate {
 		length := uint(len(p.Inputs))
-		arg = BuilderArg{
-			ForcedNonUniquePure: &length,
-		}
+		arg = BuilderArg{ForcedNonUniquePure: &length}
 	} else {
-		arg = BuilderArg{
-			Pure: &bytes,
-		}
+		arg = BuilderArg{Pure: &bytes}
 	}
-	i := p.InsertFull(
-		arg, CallArg{
-			Pure: &bytes,
-		},
-	)
-	return Argument{
-		Input: &i,
-	}
+	i := p.InsertFull(arg, CallArg{Pure: &bytes})
 
+	return Argument{Input: &i}
 }
 
 func (p *ProgrammableTransactionBuilder) InsertFull(key BuilderArg, value CallArg) uint16 {
@@ -105,9 +95,7 @@ func (p *ProgrammableTransactionBuilder) Pure(value any) (Argument, error) {
 func (p *ProgrammableTransactionBuilder) Obj(objArg ObjectArg) (Argument, error) {
 	id := objArg.id()
 	var oj ObjectArg
-	if oldValue, ok := p.Inputs[BuilderArg{
-		Object: &id,
-	}.String()]; ok {
+	if oldValue, ok := p.Inputs[BuilderArg{Object: &id}.String()]; ok {
 		var oldObjArg ObjectArg
 		switch {
 		case oldValue.Pure != nil:
@@ -141,26 +129,16 @@ func (p *ProgrammableTransactionBuilder) Obj(objArg ObjectArg) (Argument, error)
 			}
 		default:
 			if oldObjArg != objArg {
-				return Argument{}, fmt.Errorf(
-					"mismatched Object argument kind for object %s. "+
-						"%v is not compatible with %v", id.String(), oldValue, objArg,
-				)
+				return Argument{}, fmt.Errorf("mismatched Object argument kind for object %s. %v is not compatible with %v", id.String(), oldValue, objArg)
 			}
 			oj = objArg
 		}
 	} else {
 		oj = objArg
 	}
-	i := p.InsertFull(
-		BuilderArg{
-			Object: &id,
-		}, CallArg{
-			Object: &oj,
-		},
-	)
-	return Argument{
-		Input: &i,
-	}, nil
+
+	i := p.InsertFull(BuilderArg{Object: &id}, CallArg{Object: &oj})
+	return Argument{Input: &i}, nil
 }
 
 func (p *ProgrammableTransactionBuilder) Input(callArg CallArg) (Argument, error) {
@@ -202,21 +180,14 @@ func (p *ProgrammableTransactionBuilder) Command(command Command) Argument {
 	}
 }
 
-func (p *ProgrammableTransactionBuilder) TransferObject(
-	recipient SuiAddress,
-	objectRefs []*ObjectRef,
-) error {
+func (p *ProgrammableTransactionBuilder) TransferObject(recipient SuiAddress, objectRefs []*ObjectRef) error {
 	recArg, err := p.Pure(recipient)
 	if err != nil {
 		return err
 	}
 	var objArgs []Argument
 	for _, v := range objectRefs {
-		objArg, err := p.Obj(
-			ObjectArg{
-				ImmOrOwnedObject: v,
-			},
-		)
+		objArg, err := p.Obj(ObjectArg{ImmOrOwnedObject: v})
 		if err != nil {
 			return err
 		}
@@ -240,9 +211,7 @@ func (p *ProgrammableTransactionBuilder) TransferSui(recipient SuiAddress, amoun
 	}
 	var coinArg Argument
 	if amount == nil {
-		coinArg = Argument{
-			GasCoin: &lib.EmptyEnum{},
-		}
+		coinArg = Argument{GasCoin: &lib.EmptyEnum{}}
 	} else {
 		amtArg, err := p.Pure(*amount)
 		if err != nil {
@@ -278,13 +247,7 @@ func (p *ProgrammableTransactionBuilder) TransferSui(recipient SuiAddress, amoun
 	return nil
 }
 
-func (p *ProgrammableTransactionBuilder) MoveCall(
-	packageID ObjectID,
-	module move_types.Identifier,
-	function move_types.Identifier,
-	typeArguments []move_types.TypeTag,
-	callArgs []CallArg,
-) error {
+func (p *ProgrammableTransactionBuilder) MoveCall(packageID ObjectID, module move_types.Identifier, function move_types.Identifier, typeArguments []move_types.TypeTag, callArgs []CallArg) error {
 	var arguments []Argument
 	for _, v := range callArgs {
 		argument, err := p.Input(v)
@@ -307,15 +270,8 @@ func (p *ProgrammableTransactionBuilder) MoveCall(
 	return nil
 }
 
-func (p *ProgrammableTransactionBuilder) PaySui(
-	recipients []SuiAddress,
-	amounts []uint64,
-) error {
-	return p.PayMulInternal(
-		recipients, amounts, Argument{
-			GasCoin: &lib.EmptyEnum{},
-		},
-	)
+func (p *ProgrammableTransactionBuilder) PaySui(recipients []SuiAddress, amounts []uint64) error {
+	return p.PayMulInternal(recipients, amounts, Argument{GasCoin: &lib.EmptyEnum{}})
 }
 
 func (p *ProgrammableTransactionBuilder) PayAllSui(recipient SuiAddress) error {
@@ -334,30 +290,18 @@ func (p *ProgrammableTransactionBuilder) PayAllSui(recipient SuiAddress) error {
 	return nil
 }
 
-func (p *ProgrammableTransactionBuilder) Pay(
-	coins []*ObjectRef,
-	recipients []SuiAddress,
-	amounts []uint64,
-) error {
+func (p *ProgrammableTransactionBuilder) Pay(coins []*ObjectRef, recipients []SuiAddress, amounts []uint64) error {
 	if len(coins) == 0 {
 		return errors.New("coins is empty")
 	}
-	coinArg, err := p.Obj(
-		ObjectArg{
-			ImmOrOwnedObject: coins[0],
-		},
-	)
+	coinArg, err := p.Obj(ObjectArg{ImmOrOwnedObject: coins[0]})
 	coins = coins[1:]
 	if err != nil {
 		return err
 	}
 	var mergeArgs []Argument
 	for _, v := range coins {
-		mergeCoin, err := p.Obj(
-			ObjectArg{
-				ImmOrOwnedObject: v,
-			},
-		)
+		mergeCoin, err := p.Obj(ObjectArg{ImmOrOwnedObject: v})
 		if err != nil {
 			return err
 		}
@@ -376,16 +320,9 @@ func (p *ProgrammableTransactionBuilder) Pay(
 	return p.PayMulInternal(recipients, amounts, coinArg)
 }
 
-func (p *ProgrammableTransactionBuilder) PayMulInternal(
-	recipients []SuiAddress,
-	amounts []uint64, coin Argument,
-) error {
+func (p *ProgrammableTransactionBuilder) PayMulInternal(recipients []SuiAddress, amounts []uint64, coin Argument) error {
 	if len(recipients) != len(amounts) {
-		return fmt.Errorf(
-			"recipients and amounts mismatch. Got %d recipients but %d amounts",
-			len(recipients),
-			len(amounts),
-		)
+		return fmt.Errorf("recipients and amounts mismatch. Got %d recipients but %d amounts", len(recipients), len(amounts))
 	}
 	if len(amounts) == 0 {
 		return nil

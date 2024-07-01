@@ -43,8 +43,7 @@ type TransactionKind struct {
 	ConsensusCommitPrologue *ConsensusCommitPrologue
 }
 
-func (t TransactionKind) IsBcsEnum() {
-}
+func (t TransactionKind) IsBcsEnum() {}
 
 type ConsensusCommitPrologue struct {
 	Epoch             uint64
@@ -87,9 +86,7 @@ type Command struct {
 	}
 }
 
-func (c Command) IsBcsEnum() {
-
-}
+func (c Command) IsBcsEnum() {}
 
 type Argument struct {
 	GasCoin      *lib.EmptyEnum

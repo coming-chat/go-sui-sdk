@@ -1,5 +1,5 @@
-github.com/W3Tools/go-bcs v1.0.1 h1:1eydej59tol6M6OjPmgxYG61szVCes8lp+zzo/0DqGQ=
-github.com/W3Tools/go-bcs v1.0.1/go.mod h1:jFLtqCWh+uI3iEktX2y7JhJM7OxS7rCfzFn0F6xrqGw=
+github.com/W3Tools/go-bcs v0.0.3 h1:FbTcnM+RmKm2sp2FQ0t/kNgznK8oOOdJh0q34iv+4Gs=
+github.com/W3Tools/go-bcs v0.0.3/go.mod h1:UsoxhIoe2GsVexX0s5NDLIChxeb/JUbjw7IWzzgF3Xk=
 github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBAUSII=
 github.com/btcsuite/btcd v0.20.1-beta/go.mod h1:wVuoA8VJLEcwgqHBwHmzLRazpKxTv13Px/pDuV7OomQ=
 github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f/go.mod h1:TdznJufoqS23FtqVCzL0ZqgP5MqXbb4fg/WgDys70nA=

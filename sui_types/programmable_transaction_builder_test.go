@@ -3,8 +3,8 @@ package sui_types
 import (
 	"testing"
 
-	"github.com/W3Tools/go-bcs/bcs"
 	"github.com/W3Tools/go-sui-sdk/v2/move_types"
+	"github.com/fardream/go-bcs/bcs"
 	"github.com/stretchr/testify/require"
 )
 

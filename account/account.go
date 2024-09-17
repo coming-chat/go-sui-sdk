@@ -45,7 +45,11 @@ func NewAccountWithKeystore(keystore string) (*Account, error) {
 }
 
 func NewAccountWithMnemonic(mnemonic string) (*Account, error) {
-	seed, err := bip39.NewSeedWithErrorChecking(mnemonic, "")
+	return NewAccountWithMnemonicAndPassword(mnemonic, "")
+}
+
+func NewAccountWithMnemonicAndPassword(mnemonic string, password string) (*Account, error) {
+	seed, err := bip39.NewSeedWithErrorChecking(mnemonic, password)
 	if err != nil {
 		return nil, err
 	}

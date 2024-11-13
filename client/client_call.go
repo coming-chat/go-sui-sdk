@@ -366,7 +366,7 @@ func (c *Client) BatchTransaction(
 	signer suiAddress,
 	txnParams []map[string]interface{},
 	gas *suiObjectID,
-	gasBudget uint64,
+	gasBudget types.SafeSuiBigInt[uint64],
 ) (*types.TransactionBytes, error) {
 	resp := types.TransactionBytes{}
 	return &resp, c.CallContext(ctx, &resp, batchTransaction, signer, txnParams, gas, gasBudget)

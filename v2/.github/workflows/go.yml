@@ -1,0 +1,27 @@
+name: Go
+
+on:
+  push:
+    branches: [ "main", "devnet", "testnet"]
+  pull_request:
+    branches: [ "main", "devnet", "testnet" ]
+
+jobs:
+
+  TestAndBuild:
+    runs-on: ubuntu-latest
+    env:
+      WalletSdkTestM1: ${{ secrets.WALLETSDKTESTM1 }}
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19
+
+    - name: Test
+      run: go test -v ./...
+
+    - name: Build
+      run: go build -v ./...

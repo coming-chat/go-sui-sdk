@@ -1,0 +1,32 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = false
+max_line_length = 120
+tab_width = 4
+ij_wrap_on_typing = true
+
+[{*.bash,*.sh,*.zsh}]
+indent_size = 2
+tab_width = 2
+
+[{*.go,*.go2}]
+indent_style = tab
+ij_go_wrap_comp_lit = on_every_item
+ij_go_wrap_func_params = on_every_item
+ij_go_wrap_func_result = on_every_item
+ij_go_call_parameters_wrap = on_every_item
+
+
+[{*.har,*.jsb2,*.jsb3,*.json,.babelrc,.eslintrc,.stylelintrc,bowerrc,jest.config}]
+indent_size = 2
+
+[{*.http,*.rest}]
+indent_size = 0
+
+[{*.yaml,*.yml}]
+indent_size = 2

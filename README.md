@@ -10,7 +10,7 @@ We welcome other developers to participate in the development and testing of sui
 ## Install
 
 ```sh
-go get github.com/coming-chat/go-sui
+go get github.com/coming-chat/go-sui/v2
 ```
 
 

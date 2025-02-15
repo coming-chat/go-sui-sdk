@@ -123,6 +123,9 @@ type TransactionBlockKind struct {
 	/// A system transaction marking the start of a series of transactions scheduled as part of a
 	/// checkpoint
 	ConsensusCommitPrologue *SuiConsensusCommitPrologue `json:"ConsensusCommitPrologue,omitempty"`
+	/// A system transaction marking the start of a series of transactions scheduled as part of a
+	/// checkpoint (v3)
+	ConsensusCommitPrologueV3 *SuiConsensusCommitPrologueV3 `json:"ConsensusCommitPrologueV3,omitempty"`
 	/// A series of transactions where the results of one transaction can be used in future
 	/// transactions
 	ProgrammableTransaction *SuiProgrammableTransactionBlock `json:"ProgrammableTransaction,omitempty"`
@@ -153,6 +156,14 @@ type SuiConsensusCommitPrologue struct {
 	Epoch             uint64 `json:"epoch"`
 	Round             uint64 `json:"round"`
 	CommitTimestampMs uint64 `json:"commit_timestamp_ms"`
+}
+
+type SuiConsensusCommitPrologueV3 struct {
+	Epoch                 *SafeSuiBigInt[uint64] `json:"epoch"`
+	Round                 *SafeSuiBigInt[uint64] `json:"round"`
+	CommitTimestampMs     *SafeSuiBigInt[uint64] `json:"commit_timestamp_ms"`
+	SubDagIndex           *SafeSuiBigInt[uint64] `json:"sub_dag_index"`
+	ConsensusCommitDigest sui_types.ObjectDigest `json:"consensus_commit_digest"`
 }
 
 type SuiProgrammableTransactionBlock struct {

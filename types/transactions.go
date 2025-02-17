@@ -1,6 +1,8 @@
 package types
 
 import (
+	"encoding/json"
+
 	"github.com/coming-chat/go-sui/v2/lib"
 	"github.com/coming-chat/go-sui/v2/sui_types"
 )
@@ -115,18 +117,24 @@ const (
 
 type SuiTransactionBlockKind = lib.TagJson[TransactionBlockKind]
 
+// https://github.com/MystenLabs/sui/blob/main/crates/sui-types/src/transaction.rs#L279
 type TransactionBlockKind struct {
 	/// A system transaction that will update epoch information on-chain.
 	ChangeEpoch *SuiChangeEpoch `json:"ChangeEpoch,omitempty"`
 	/// A system transaction used for initializing the initial state of the chain.
 	Genesis *SuiGenesisTransaction `json:"Genesis,omitempty"`
 	/// A system transaction marking the start of a series of transactions scheduled as part of a
-	/// checkpoint
-	ConsensusCommitPrologue *SuiConsensusCommitPrologue `json:"ConsensusCommitPrologue,omitempty"`
+	/// checkpoint (v1 - v3)
+	ConsensusCommitPrologue   *SuiConsensusCommitPrologue   `json:"ConsensusCommitPrologue,omitempty"`
+	ConsensusCommitPrologueV2 *json.RawMessage              `json:"ConsensusCommitPrologueV2,omitempty"`
+	ConsensusCommitPrologueV3 *SuiConsensusCommitPrologueV3 `json:"ConsensusCommitPrologueV3,omitempty"`
 	/// A series of transactions where the results of one transaction can be used in future
 	/// transactions
 	ProgrammableTransaction *SuiProgrammableTransactionBlock `json:"ProgrammableTransaction,omitempty"`
 	// .. more transaction types go here
+	AuthenticatorStateUpdate *json.RawMessage `json:"AuthenticatorStateUpdate,omitempty"`
+	EndOfEpochTransaction    *json.RawMessage `json:"EndOfEpochTransaction,omitempty"`
+	RandomnessStateUpdate    *json.RawMessage `json:"RandomnessStateUpdate,omitempty"`
 }
 
 func (t TransactionBlockKind) Tag() string {
@@ -153,6 +161,14 @@ type SuiConsensusCommitPrologue struct {
 	Epoch             uint64 `json:"epoch"`
 	Round             uint64 `json:"round"`
 	CommitTimestampMs uint64 `json:"commit_timestamp_ms"`
+}
+
+type SuiConsensusCommitPrologueV3 struct {
+	Epoch                 *SafeSuiBigInt[uint64] `json:"epoch"`
+	Round                 *SafeSuiBigInt[uint64] `json:"round"`
+	CommitTimestampMs     *SafeSuiBigInt[uint64] `json:"commit_timestamp_ms"`
+	SubDagIndex           *SafeSuiBigInt[uint64] `json:"sub_dag_index"`
+	ConsensusCommitDigest sui_types.ObjectDigest `json:"consensus_commit_digest"`
 }
 
 type SuiProgrammableTransactionBlock struct {
